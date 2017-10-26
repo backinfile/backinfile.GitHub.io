@@ -2,8 +2,8 @@
 <html>
 <head>
 <style>h1 {text-align:center;}</style>
-<script src="http://chatroom.bmob.cn/javascripts/bmobSocketIo.js"></script>
-<script src="http://chatroom.bmob.cn/javascripts/bmob.js"></script>
+<script src="bmobSocketIo.js"></script>
+<script src="bmob.js"></script>
 </head>
 <body>
 <h1>chess</h1>
@@ -12,6 +12,7 @@
 
 <script>
 Bmob.initialize("f37ecd3d83035241b6714c8e1e9ee638","2d56b93775a0b1c4999a99c25b387b6d");
+BmobSocketIo.initialize("f37ecd3d83035241b6714c8e1e9ee638");
 var WaitList = Bmob.Object.extend("WaitList");
 var BattleList = Bmob.Object.extend("BattleList");
 
@@ -373,8 +374,6 @@ var chess = {
 		gameState = isFirst?2:1;
 		p.innerHTML = isFirst?"己方回合":"对手回合";
 	},
-	opponentMove: function() {
-	},
 	moveChess: function (x1,y1,x2,y2,isLocal) {
 			// on move
 			var flag = 0;
@@ -392,7 +391,7 @@ var chess = {
 				gameState = 3-gameState;
 				chess.sendMessage(gameState==1?"对手回合":"己方回合");
 			}
-			if (isLocal)  canvas.onclick = function(){};
+			if (isOnline && isLocal)  canvas.onclick = function(){};
 			else canvas.onclick = chess.onclick;
 	},
 	endGame:function(){
