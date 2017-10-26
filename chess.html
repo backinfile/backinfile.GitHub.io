@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>h1 {text-align:center;}</style>
+<script src="http://chatroom.bmob.cn/javascripts/bmobSocketIo.js"></script>
+<script src="http://chatroom.bmob.cn/javascripts/bmob.js"></script>
+</head>
+<body>
+<h1>chess</h1>
+<hr/>
+<div id="chess"></div>
+
+<script>
+Bmob.initialize("f37ecd3d83035241b6714c8e1e9ee638","2d56b93775a0b1c4999a99c25b387b6d");
+var WaitList = Bmob.Object.extend("WaitList");
+var BattleList = Bmob.Object.extend("BattleList");
+
+
+// changable var
+var size = 40;
+
+// code
+var c = document.getElementById("chess");
+var canvas = document.createElement("canvas");
+var p = document.createElement("p");
+var p2 = document.createElement("p");
+canvas.width = size*9;
+canvas.height = size*10;
+canvas.style.marginTop = "20px";
+p2.innerHTML = "正在本地游戏";
+p.innerHTML = "己方回合";
+c.appendChild(canvas);
+c.style.textAlign = "center";
+
+
+var name = "chess";
+
+var nameDiv = document.createElement("div");
+var nameLabel = document.createElement("span");
+var nameSpan = document.createElement("span");
+nameDiv.appendChild(nameLabel);
+nameDiv.appendChild(nameSpan);
+c.appendChild(nameDiv);
+nameLabel.innerHTML = "昵称：";
+nameSpan.innerHTML = name;
+nameDiv.style.marginTop = "20px";
+nameSpan.style.padding = "0 10px";
+
+var restartBtn = document.createElement("span");
+var searchBtn = document.createElement("span");
+restartBtn.innerHTML = "重新开始";
+searchBtn.innerHTML = "开始匹配";
+restartBtn.style.marginLeft = "20px";
+searchBtn.style.marginLeft = "20px";
+nameDiv.appendChild(searchBtn);
+nameDiv.appendChild(restartBtn);
+c.appendChild(p2);
+c.appendChild(p);
+
+restartBtn.onclick = function(){
+	isFirst = true;
+	isOnline = false;
+	chess.startGame();
+}
+
+
+
+
+var cnt = canvas.getContext("2d");
+chessName=["車","馬","将","仕","相","炮","兵"];
+
+var gameState = -1;
+//-1 game not ready
+//0  game ready
+//1  game running user1
+//2  game running user2
+//3  game end
+
+var selected = -1;
+board = [...Array(10*9)].map(_=>-1);
+hints = []; // save points availble
+ori = [];  	// save a point
+isFirst = true;
+isOnline = false;
+
+var chess = {
+	clear:function(){
+		cnt.clearRect(0,0,size*9,size*10);
+		cnt.beginPath();
+		cnt.lineWidth = 1;
+		cnt.strokeStyle = "#999";
+		for (i=0; i<10; i++) {
+			cnt.moveTo(size/2,size/2+size*i);
+			cnt.lineTo(size*8+size/2,size/2+size*i);
+		}
+		for (i=0; i<9; i++) {
+			if (i==0 || i==8) {
+				cnt.moveTo(size/2+size*i,size/2);
+				cnt.lineTo(size/2+size*i,size*9+size/2);
+			} else {
+				cnt.moveTo(size/2+size*i,size/2);
+				cnt.lineTo(size/2+size*i,size*4+size/2);
+				cnt.moveTo(size/2+size*i,size*5+size/2);
+				cnt.lineTo(size/2+size*i,size*9+size/2);
+			}
+		}
+		cnt.moveTo(size/2+size*3, size/2)
+		cnt.lineTo(size/2+size*5, size/2+size*2);
+		cnt.moveTo(size/2+size*5, size/2);
+		cnt.lineTo(size/2+size*3, size/2+size*2);
+		cnt.moveTo(size/2+size*3, size/2+size*7)
+		cnt.lineTo(size/2+size*5, size/2+size*9);
+		cnt.moveTo(size/2+size*5, size/2+size*7)
+		cnt.lineTo(size/2+size*3, size/2+size*9);
+		cnt.stroke();
+		cnt.closePath();
+	},
+	putChess: function(x,y,color,type) {
+		chess.setChess(x,y,color,type);
+		chess.drawAllChess();
+	},
+	drawChess: function(x,y,color,type) {
+		// color = 0 or 1 means red or black
+		if (x<0 || x>8 || y<0 || y>9) {
+			console.log("ERROR:("+x+","+y+")");
+		} else if (type<0 || type>= chessName.length){
+			console.log("ERROR:chessName "+type);
+		} else {
+			type = chessName[type];
+			if (color == 0) color = "red";
+			else color = "black";
+			cnt.beginPath();
+			cnt.fillStyle = "#CCC";
+			cnt.arc(size/2+size*x, size/2+size*y, size/2, 0, 2*Math.PI);
+			cnt.fill();
+			cnt.closePath();
+			cnt.beginPath();
+			cnt.fillStyle = color;
+			cnt.font = size*0.8+"px SimHei";
+			cnt.fillText(type, size*x+size*0.1, size*0.8+size*y);
+			cnt.closePath();
+		}
+	},
+	drawSelect: function(x,y){
+		cnt.beginPath();
+		cnt.strokeStyle = "blue";
+		cnt.lineWidth = 2;
+		cnt.arc(size/2+size*x, size/2+size*y, size/2-1, 0, 2*Math.PI);
+		cnt.stroke();
+		cnt.closePath();
+	},
+	drawHint: function(x,y) {
+		var d = 1;
+		cnt.beginPath();
+		cnt.strokeStyle = "blue";
+		cnt.lineWidth = 1;
+		cnt.moveTo(size*x, size*y+d);
+		cnt.lineTo(size*x+size/4, size*y+d);
+		cnt.moveTo(size*x+size*3/4, size*y+d);
+		cnt.lineTo(size*x+size, size*y+d);
+		
+		cnt.moveTo(size*x, size*y+size-d);
+		cnt.lineTo(size*x+size/4, size*y+size-d);
+		cnt.moveTo(size*x+size*3/4, size*y+size-d);
+		cnt.lineTo(size*x+size, size*y+size-d);
+		
+		cnt.moveTo(size*x+d, size*y);
+		cnt.lineTo(size*x+d, size*y+size/4);
+		cnt.moveTo(size*x+d, size*y+size*3/4);
+		cnt.lineTo(size*x+d, size*y+size);
+		
+		cnt.moveTo(size*x+size-d, size*y);
+		cnt.lineTo(size*x+size-d, size*y+size/4);
+		cnt.moveTo(size*x+size-d, size*y+size*3/4);
+		cnt.lineTo(size*x+size-d, size*y+size);
+		
+		cnt.stroke();
+		cnt.closePath();
+		
+	},
+	drawAllHint: function(x,y) {
+		ret = chess.getAllHint(x,y);
+		for (i=0; i<ret.length; i++) chess.drawHint(ret[i][0], ret[i][1]);
+		return ret;
+	},
+	getAllHint: function(x,y) {
+		//chessName=[0"車",1"馬",2"将",3"仕",4"相",5"炮","6兵"];
+		var color = Math.floor(board[x*10+y]/7);
+		var type = board[x*10+y]%7;
+		var dx = [0, 0, 1, -1], dy = [1, -1, 0, 0];
+		var dx2 = [1, 1, -1, -1], dy2 = [1, -1, 1, -1];
+		var ret = [];
+		switch(type) {
+			case 0:
+				for (i=0; i<4; i++) {
+					for (j=1; j<11; j++) {
+						var nx = dx[i]*j+x;
+						var ny = dy[i]*j+y;
+						if (nx<0 || nx>8 || ny<0 || ny>9) break;
+						var tb = board[nx*10+ny];
+						if (tb < 0) {
+							ret.push([nx,ny]);
+						} else if (Math.floor(tb/7) == color){
+							break;
+						} else {
+							ret.push([nx,ny]);
+							break;
+						}
+					}
+				}
+				break;
+			case 5:
+				for (i=0; i<4; i++) {
+					var jump = 0;
+					for (j=1; j<11; j++) {
+						var nx = dx[i]*j+x;
+						var ny = dy[i]*j+y;
+						if (nx<0 || nx>8 || ny<0 || ny>9) continue;
+						var tb = board[nx*10+ny];
+						if (tb < 0) {
+							if (jump == 0) ret.push([nx,ny]);
+						} else if (jump){
+							if (Math.floor(tb/7) != color) {
+								ret.push([nx,ny]);
+								break;
+							}
+						} else {
+							jump = 1;
+						}
+					}
+				}
+				break;
+			case 4:
+				for(i=0; i<4; i++) {
+					var nx = dx2[i]*2+x;
+					var ny = dy2[i]*2+y;
+					if (nx<0 || nx>8) continue;
+					if (color==0 && (ny<0 || ny>4)) continue;
+					if (color==1 && (ny<5 || ny>9)) continue;
+					var tb = board[nx*10+ny];
+					if (tb<0 || Math.floor(tb/7) != color) {
+						ret.push([nx,ny]);
+					}
+				}
+				break;
+			case 1:
+				for(i=0; i<8; i++) {
+					var nx = dx2[i%4]*(i<4?1:2)+x;
+					var ny = dy2[i%4]*(i<4?2:1)+y;
+					if (nx<0 || nx>8 || ny<0 || ny>9) continue;
+					var tb = board[nx*10+ny];
+					if (tb<0 || Math.floor(tb/7) != color) {
+						// house leg
+						if (board[(x+dx2[i%4]*(i<4?0:1))*10+(y+dy2[i%4]*(i<4?1:0))] >= 0) continue;
+						ret.push([nx,ny]);
+					}
+				}
+				break;
+			case 3:
+				for(i=0; i<4; i++) {
+					var nx = dx2[i]+x;
+					var ny = dy2[i]+y;
+					if (nx<3 || nx>5) continue;
+					if (color == 0 && (ny<0 || ny>2)) continue;
+					if (color == 1 && (ny<7 || ny>9)) continue;
+					var tb = board[nx*10+ny];
+					if (tb<0 || Math.floor(tb/7) != color) {
+						ret.push([nx,ny]);
+					}
+				}
+				break;
+			case 2:
+				for(i=0; i<4; i++) {
+					var nx = dx[i]+x;
+					var ny = dy[i]+y;
+					if (nx<3 || nx>5) continue;
+					if (color == 0 && (ny<0 || ny>2)) continue;
+					if (color == 1 && (ny<7 || ny>9)) continue;
+					var tb = board[nx*10+ny];
+					if (tb<0 || Math.floor(tb/7) != color) {
+						ret.push([nx,ny]);
+					}
+				}
+				for(i=1; i<11; i++) {
+					var ddy = (color==0)?1:-1;
+					var ny = y+ddy*i;
+					if (ny<0 || ny>9) break;
+					var tb = board[x*10+ny];
+					if (tb < 0) continue; 
+					else if (tb%7 == 2) {
+						ret.push([x,ny]);
+						break;
+					} else break;
+				}
+				break;
+			case 6:
+				for (i=0; i<4; i++) {
+					if (color==0 && i==1) continue;
+					if (color==1 && i==0) continue;
+					if (color==0 && y<5 && i>1) break;
+					if (color==1 && y>4 && i>1) break;
+					var nx = dx[i]+x;
+					var ny = dy[i]+y;
+					if (nx<0 || nx>8 || ny<0 || ny>9) continue;
+					var tb = board[nx*10+ny];
+					if (tb<0 || Math.floor(tb/7) != color) {
+						ret.push([nx,ny]);
+					}
+				}
+			default:
+		}
+		return ret;
+	},
+	drawAllChess: function() {
+		chess.clear();
+		for (i=0; i<board.length; i++) {
+			var x = Math.floor(i/10);
+			var y = i%10;
+			if (board[i]>=0)chess.drawChess(x,y,Math.floor(board[i]/7),board[i]%7);
+		}
+	},
+	setChess: function(x, y, color, type) {
+		if (color<0 || type<0) {
+			board[x*10+y] = -1;
+		} else {
+			board[x*10+y] = 7*color + type;
+		}
+	},
+	resetBoard: function() {
+		for(i=0; i<board.length; i++) {
+			board[i] = -1;
+		}
+		chess.setChess(0,0,0,0);
+		chess.setChess(1,0,0,1);
+		chess.setChess(2,0,0,4);
+		chess.setChess(3,0,0,3);
+		chess.setChess(4,0,0,2);
+		chess.setChess(5,0,0,3);
+		chess.setChess(6,0,0,4);
+		chess.setChess(7,0,0,1);
+		chess.setChess(8,0,0,0);
+		chess.setChess(1,2,0,5);
+		chess.setChess(7,2,0,5);
+		chess.setChess(0,3,0,6);
+		chess.setChess(2,3,0,6);
+		chess.setChess(4,3,0,6);
+		chess.setChess(6,3,0,6);
+		chess.setChess(8,3,0,6);
+		
+		chess.setChess(0,9,1,0);
+		chess.setChess(1,9,1,1);
+		chess.setChess(2,9,1,4);
+		chess.setChess(3,9,1,3);
+		chess.setChess(4,9,1,2);
+		chess.setChess(5,9,1,3);
+		chess.setChess(6,9,1,4);
+		chess.setChess(7,9,1,1);
+		chess.setChess(8,9,1,0);
+		chess.setChess(1,7,1,5);
+		chess.setChess(7,7,1,5);
+		chess.setChess(0,6,1,6);
+		chess.setChess(2,6,1,6);
+		chess.setChess(4,6,1,6);
+		chess.setChess(6,6,1,6);
+		chess.setChess(8,6,1,6);
+	},
+	startGame:function(){
+		chess.clear();
+		board = [...Array(10*9)].map(_=>-1);
+		chess.resetBoard();
+		chess.drawAllChess();
+		canvas.onclick = chess.onclick;
+		gameState = isFirst?2:1;
+		p.innerHTML = isFirst?"己方回合":"对手回合";
+	},
+	opponentMove: function() {
+	},
+	moveChess: function (x1,y1,x2,y2,isLocal) {
+			// on move
+			var flag = 0;
+			if (board[x2*10+y2]%7 == 2) flag = 1;	// eat type 2
+			board[x2*10+y2] = board[x1*10+y1];
+			chess.setChess(x1, y1, -1, -1);
+			chess.drawAllChess();
+			if (flag == 1) {
+				chess.sendMessage(gameState==1?"对手获胜":"获胜");
+				chess.endGame();
+			} else {
+				selected = -1;
+				hints = [];
+				// switch player
+				gameState = 3-gameState;
+				chess.sendMessage(gameState==1?"对手回合":"己方回合");
+			}
+			if (isLocal)  canvas.onclick = function(){};
+			else canvas.onclick = chess.onclick;
+	},
+	endGame:function(){
+		canvas.onclick = chess.startGame;
+		gameState = -1;
+	},
+	onclick: function(e) {
+		var x = Math.floor(e.offsetX/size);
+		var y = Math.floor(e.offsetY/size);
+		console.log("click:",x,y);
+		var t = board[x*10+y];
+		if (t>=0 && Math.floor(t/7)+1 == gameState) {
+			selected = x*10+y;
+			chess.drawAllChess();
+			chess.drawSelect(x,y);
+			var thints = chess.drawAllHint(x,y);
+			hints = thints.map(l=>l[0]*10+l[1]);
+			ori = [x,y];
+		} else if (hints.includes(x*10+y)){
+			chess.moveChess(ori[0], ori[1], x, y, true);
+		} else {
+			selected = -1;
+			hints = [];
+			chess.drawAllChess();
+		}
+	},
+	sendMessage: function(str) {
+		p.innerHTML = str;
+	}
+};
+//chessName=[0"車",1"馬",2"将",3"仕",4"相",5"炮","6兵"];
+chess.startGame();
+
+
+</script>
+
+</body>
+</html>
