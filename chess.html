@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
 <style>h1 {text-align:center;}</style>
 <script src="bmobSocketIo.js"></script>
 <script src="bmob.js"></script>
@@ -12,12 +11,6 @@
 <div id="chess"></div>
 
 <script>
-Bmob.initialize("f37ecd3d83035241b6714c8e1e9ee638","2d56b93775a0b1c4999a99c25b387b6d");
-BmobSocketIo.initialize("f37ecd3d83035241b6714c8e1e9ee638");
-var WaitList = Bmob.Object.extend("WaitList");
-var BattleList = Bmob.Object.extend("BattleList");
-
-
 // changable var
 var size = 40;
 
@@ -26,51 +19,32 @@ var c = document.getElementById("chess");
 var canvas = document.createElement("canvas");
 var p = document.createElement("p");
 var p2 = document.createElement("p");
+p2.innerHTML = "正在本地游戏";
 canvas.width = size*9;
 canvas.height = size*10;
-canvas.style.marginTop = "20px";
-p2.innerHTML = "正在本地游戏";
-p.innerHTML = "己方回合";
-c.appendChild(canvas);
-c.style.textAlign = "center";
-
-
-var name = "chess";
-
+p.innerHTML = "message box";
 var nameDiv = document.createElement("div");
 var nameLabel = document.createElement("span");
+nameLabel.innerHTML = "昵称:";
 var nameSpan = document.createElement("span");
 nameDiv.appendChild(nameLabel);
 nameDiv.appendChild(nameSpan);
-c.appendChild(nameDiv);
-nameLabel.innerHTML = "昵称：";
-nameSpan.innerHTML = name;
-nameDiv.style.marginTop = "20px";
-nameSpan.style.padding = "0 10px";
-
-var restartBtn = document.createElement("span");
 var searchBtn = document.createElement("span");
-restartBtn.innerHTML = "重新开始";
 searchBtn.innerHTML = "开始匹配";
-restartBtn.style.marginLeft = "20px";
 searchBtn.style.marginLeft = "20px";
 nameDiv.appendChild(searchBtn);
-nameDiv.appendChild(restartBtn);
-c.appendChild(p2);
+c.appendChild(canvas);
 c.appendChild(p);
-
-restartBtn.onclick = function(){
-	isFirst = true;
-	isOnline = false;
-	chess.startGame();
-}
-
-
-
-
+c.appendChild(p2);
+c.style.textAlign = "center";
+c.appendChild(nameDiv);
 var cnt = canvas.getContext("2d");
-chessName=["車","馬","将","仕","相","炮","兵"];
 
+
+Bmob.initialize("f37ecd3d83035241b6714c8e1e9ee638","2d56b93775a0b1c4999a99c25b387b6d");
+var RoomList = Bmob.Object.extend("RoomList");
+
+chessName=["車","馬","将","仕","相","炮","兵"];
 var gameState = -1;
 //-1 game not ready
 //0  game ready
@@ -78,12 +52,152 @@ var gameState = -1;
 //2  game running user2
 //3  game end
 
+// state online
+VACANCY		= 0;
+WAITING		= 1;
+CONNECTED	= 2;
+
 var selected = -1;
-board = [...Array(10*9)].map(_=>-1);
-hints = []; // save points availble
-ori = [];  	// save a point
-isFirst = true;
-isOnline = false;
+var board = [...Array(10*9)].map(_=>-1);
+var hints = []; // save points availble
+var ori = [];  	// save a point
+var isOnline = false;
+var isFirst = true;
+var name = randomName();
+nameSpan.innerHTML = name;
+var self_obj = null;
+var opponent_obj = null;
+var online_state = VACANCY;
+function randomName() {
+	var rn = "";
+	var len = Math.floor(Math.random()*100)%7+1;
+	for (var i=0; i<len; i++)
+		rn+=String.fromCharCode('a'.charCodeAt(0)+Math.floor(Math.random()*100)%26);
+	return rn;
+}
+
+function updateName() {
+	var room = new RoomList();
+	room.set("state", online_state);
+	room.set("name", name);
+	room.save({
+		success: function() {
+			self_obj = room;
+		}
+	});
+};
+(function keepAlive() {
+	if (self_obj) {
+		self_obj.save({error:updateName});
+	} else {
+		updateName();
+	}
+	setTimeout(keepAlive, 500);
+})();
+(function autoClean() {
+	var query = new Bmob.Query(RoomList);
+	var d = new Date();
+	query.find({
+		success: function(res) {
+			for (var i=0; i<res.length; i++) {
+				if (d-new Date(res[i].updatedAt) > 14000) {
+					//console.log(d-new Date(res[i].updatedAt));
+					res[i].destroy();
+				}
+			}
+			setTimeout(autoClean, 500);
+		}
+	});
+})();
+
+searchBtn.onclick = onSearch;
+function onSearch() {
+	var query = new Bmob.Query(RoomList);
+	query.find({
+		success:function(res){
+			searchBtn.onclick = null;
+			p2.innerHTML = "正在匹配...";
+			var flag = 0;
+			for (var i=0; i<res.length; i++) {
+				var obj = res[i];
+				if (obj.get("state") == WAITING && self_obj) {
+					flag = 1;
+					isFirst = Math.random() > 0.5;
+					self_obj.set("to", obj);
+					self_obj.set("state", CONNECTED);
+					self_obj.set("first", isFirst);
+					self_obj.set("isMoved", 0);
+					obj.set("to", self_obj);
+					obj.set("state", CONNECTED);
+					obj.set("first", !isFirst);
+					obj.set("isMoved", 0);
+					obj.save({
+						success: function() {
+							isOnline = true;
+							chess.startGame();
+							p2.innerHTML = "正在与["+obj.get("name")+"]进行游戏";
+							opponent_obj = obj;
+							gameLoop();
+						},
+						error: function() {
+							console.log("error in onSearch()");
+						}
+					});
+				}
+			}
+			if (!flag) {
+				self_obj.set("state", WAITING);
+				self_obj.save();
+				checkLoop();
+			}
+		}
+	});
+}
+
+function checkLoop() {
+	var query = new Bmob.Query(RoomList);
+	query.get(self_obj.id, {
+		success: function (obj) {
+			var ts = obj.get("state");
+			if (ts == CONNECTED) {
+				opponent_obj = obj.get("to");
+				isFirst = obj.get("first");
+				isOnline = 1;
+				chess.startGame();
+				p2.innerHTML = "正在与["+obj.get("name")+"]进行游戏";
+				gameLoop();
+			} else {
+				setTimeout(checkLoop, 100);
+			}
+		}
+	});
+}
+
+function gameLoop() {
+	var query = new Bmob.Query(RoomList);
+	query.get(opponent_obj.id, {
+		success: function(obj) {
+			// console.log("opponent_obj:",obj.get("name"));
+			if (obj) {
+				if (obj.get("isMoved")) {
+					var x1 = 8-obj.get("x1");
+					var y1 = 9-obj.get("y1");
+					var x2 = 8-obj.get("x2");
+					var y2 = 9-obj.get("y2");
+					chess.moveChess(x1,y1,x2,y2, false);
+					obj.set("isMoved", 0);
+					obj.save();
+				}
+				setTimeout(gameLoop, 300);
+			} else {
+				isOnline = false;
+				isFirst = true;
+				chess.startGame();
+				p2.innerHTML = "对方断开连接";	
+			}
+		}
+	});
+}
 
 var chess = {
 	clear:function(){
@@ -372,32 +486,36 @@ var chess = {
 		chess.resetBoard();
 		chess.drawAllChess();
 		canvas.onclick = chess.onclick;
-		gameState = isFirst?2:1;
-		p.innerHTML = isFirst?"己方回合":"对手回合";
-	},
-	moveChess: function (x1,y1,x2,y2,isLocal) {
-			// on move
-			var flag = 0;
-			if (board[x2*10+y2]%7 == 2) flag = 1;	// eat type 2
-			board[x2*10+y2] = board[x1*10+y1];
-			chess.setChess(x1, y1, -1, -1);
-			chess.drawAllChess();
-			if (flag == 1) {
-				chess.sendMessage(gameState==1?"对手获胜":"获胜");
-				chess.endGame();
-			} else {
-				selected = -1;
-				hints = [];
-				// switch player
-				gameState = 3-gameState;
-				chess.sendMessage(gameState==1?"对手回合":"己方回合");
-			}
-			if (isOnline && isLocal)  canvas.onclick = function(){};
-			else canvas.onclick = chess.onclick;
+		gameState = 2;
+		if (isOnline && !isFirst) gameState = 1;
+		if (isOnline) {
+			chess.sendMessage(isFirst?"先手":"后手");
+			if (!isFirst) canvas.onclick = null;
+		}
 	},
 	endGame:function(){
 		canvas.onclick = chess.startGame;
 		gameState = -1;
+	},
+	moveChess: function(x1,y1,x2,y2, isLocal) {
+		var flag = 0;
+		if (board[x2*10+y2]%7 == 2) flag = 1;	// eat type 2
+		board[x2*10+y2] = board[x1*10+y1];
+		chess.setChess(x1, y1, -1, -1);
+		chess.drawAllChess();
+		if (flag == 1) {
+			chess.sendMessage((gameState==1?"red":"black")+" wins!");
+			chess.endGame();
+		} else {
+			selected = -1;
+			hints = [];
+			gameState = 3-gameState;
+			chess.sendMessage((gameState==1?"red":"black")+" is thinking...");
+		}
+		if(isOnline) {
+			if (canvas.onclick) canvas.onclick = null;
+			else canvas.onclick = chess.onclick;
+		}
 	},
 	onclick: function(e) {
 		var x = Math.floor(e.offsetX/size);
@@ -413,6 +531,15 @@ var chess = {
 			ori = [x,y];
 		} else if (hints.includes(x*10+y)){
 			chess.moveChess(ori[0], ori[1], x, y, true);
+			if (isOnline) {
+				self_obj.save({
+					"isMoved":1,
+					"x1":ori[0],
+					"y1":ori[1],
+					"x2":x,
+					"y2":y
+				});
+			}
 		} else {
 			selected = -1;
 			hints = [];
