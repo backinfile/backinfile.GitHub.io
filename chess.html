@@ -143,6 +143,7 @@ function onSearch() {
 							console.log("error in onSearch()");
 						}
 					});
+					break;
 				}
 			}
 			if (!flag) {
@@ -164,7 +165,9 @@ function checkLoop() {
 				isFirst = obj.get("first");
 				isOnline = 1;
 				chess.startGame();
-				p2.innerHTML = "正在与["+obj.get("name")+"]进行游戏";
+				query.get(opponent_obj.id,{success:function(ooo){
+					p2.innerHTML = "正在与["+ooo.get("name")+"]进行游戏";
+				}});
 				gameLoop();
 			} else {
 				setTimeout(checkLoop, 100);
