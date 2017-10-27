@@ -135,7 +135,7 @@ function onSearch() {
 						success: function() {
 							isOnline = true;
 							chess.startGame();
-							p2.innerHTML = "正在与["+obj.get("name")+"]进行对战";
+							p2.innerHTML = "正在与["+obj.get("name")+"]进行游戏";
 							opponent_obj = obj;
 							gameLoop();
 						},
@@ -164,7 +164,7 @@ function checkLoop() {
 				isFirst = obj.get("first");
 				isOnline = 1;
 				chess.startGame();
-				p2.innerHTML = "正在与["+opponent_obj.get("name")+"]进行游戏";
+				p2.innerHTML = "正在与["+obj.get("name")+"]进行游戏";
 				gameLoop();
 			} else {
 				setTimeout(checkLoop, 100);
