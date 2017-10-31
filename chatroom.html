@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+h1 {
+	text-align:center;
+}
+.subDiv {
+	margin:10px auto;;
+	width:80%;
+}
+.chatDiv {
+	margin:0 auto;
+	width:80%;
+	position:relative;
+	//border:1px red dashed;
+	//border-bottom:none;
+}
+.msg {
+	margin:10px 2px 0 2px;
+	border-top:1px blue dashed;
+	position:relative;
+}
+.people a{
+	font-weight:bold;
+	font-size:1.2em;
+}
+.people span {
+	font-size:0.5em;
+	color:#999
+}
+.content {
+	margin-left:1.5em;
+	margin-top:0.5em;
+}
+</style>
+<script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+<script src="https://cdn.wilddog.com/sdk/js/2.5.8/wilddog.js"></script>
+<script>
+wilddog.initializeApp({
+	syncURL:"https://test1motivate.wilddogio.com"
+});
+var ref = wilddog.sync().ref("chatroom");
+</script>
+
+</head>
+<body>
+<h1>chat room</h1>
+<hr/>
+<div class="subDiv">
+	name:&nbsp;&nbsp;&nbsp;<input lable="name" id="people" value="anonymous"/><br/>
+	content:<input placeholder="content" id="submsg"/><br/>
+	<button id="subbtn">submit</button>
+</div>
+<div class="chatDiv">
+</div>
+
+<script>
+function msg(people, time, msg) {
+	return '<div class="msg">'+
+	'<div class="people">'+
+	'<a>'+people+'</a>'+
+	'<span>'+time+'</span>'+
+	'</div>'+
+	'<div class="content">'+
+	'<span >'+msg+'</span>'+
+	'</div>'+
+	'</div>';
+}
+$("#subbtn").click(function(){
+	var people = $("#people").val();
+	var msg = $("#submsg").val();
+	if (people == "" || msg == "") return;
+	var data = new Date();
+	var time = data.toLocaleString();
+	ref.push({
+		"people":people,
+		"time":time,
+		"msg":msg});
+});
+ref.on("value", function(m){
+	var chatDiv = $(".chatDiv");
+	chatDiv.empty();
+	var val = m.val();
+	$.each(val, function(a,b) {
+		chatDiv.prepend(msg(b.people || "null", b.time || "null", b.msg || "null"));
+	});
+});
+</script>
+</body>
+</html>
