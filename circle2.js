@@ -1,6 +1,10 @@
 
-var width = 300;
-var height = 300;
+
+
+var width = 1366;
+var height = 700;
+var speed = 1.5;
+
 
 function randInt(min, max) {return Math.floor(Math.random()*(max-min+1)+min);}
 function randTri(v=45) {
@@ -27,25 +31,37 @@ function randTri(v=45) {
 }
 
 $(function(){
+	
+	$('div').mouseenter(function(){speed=0;});
+	$('div').mouseout(function(){speed=1.5;});
 	$canvas = $('canvas');
 	var arcrotate = 0;
+	var arcrotate2 = 0;
 	var trirotate = new randTri(45);
 	var trirotate2 = new randTri(90);
 	var trirotate3 = new randTri(160);
+	$canvas.clearCanvas({
+		fillStyle: '#222',
+		x:0,y:0,
+		width:width,
+		height:height,
+		fromCenter:false,
+	});
 	setInterval(function() {
-		$canvas.drawRect({
+		$canvas.clearCanvas({
 			fillStyle: 'rgb(50%,25%,50%)',
-			x:0,y:0,
-			width:width,
-			height:height,
+			x:533,y:200,
+			width:300,
+			height:300,
 			fromCenter:false,
-		}).drawArc({
+		});
+		$canvas.drawArc({
 			strokeStyle: 'rgba(100%,100%,100%,0.1)',
 			strokeWidth: 20,
 			x: width/2, y: height/2,
 			radius: 110,
 			start: 110, end: 359,
-			rotate:arcrotate,
+			rotate:arcrotate2,
 			shadowColor: '#FFF',
 			shadowBlur: 5
 		}).drawArc({
@@ -54,7 +70,7 @@ $(function(){
 			x: width/2, y: height/2,
 			radius: 110,
 			start: 0, end: 109,
-			rotate:arcrotate,
+			rotate:arcrotate2,
 			shadowColor: '#FFF',
 			shadowBlur: 5
 		});
@@ -157,10 +173,13 @@ $(function(){
 			shadowColor: '#FFF',
 			shadowBlur: 5
 		});
-		arcrotate += 1.5;
-		trirotate.update();
-		trirotate2.update();
-		trirotate3.update();
+		arcrotate += speed;
+		arcrotate2 += 1.5;
+		if (speed >= 1) {
+			trirotate.update();
+			trirotate2.update();
+			trirotate3.update();
+		}
 		
 	}, 1000/30);
 	
