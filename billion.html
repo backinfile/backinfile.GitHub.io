@@ -8,9 +8,56 @@
 		<script src="weui/lib/jquery.js"></script>
 		<script src="weui/lib/fastclick.js"></script>
 		<script src="weui/js/jquery-weui.js"></script>
-		<title></title>
+		<title>炉石小兵进化之路v1</title>
+		
+		<style>
+		  .placeholder {
+			margin: 5px;
+			padding: 0 10px;
+			background-color: #ebebeb;
+			height: 2.3em;
+			line-height: 2.3em;
+			text-align: center;
+			//color: #cfcfcf;
+		  }
+		  .placeholder_m {
+			margin: 5px 20px ;
+			padding: 0 10px;
+			height: 2.3em;
+			line-height: 2.3em;
+			text-align: center;
+			//color: #cfcfcf;
+			font-weight: bold;
+		  }
+		  .btns {
+			position:fixed;
+			width: 100%;
+			bottom:0px;
+			padding-bottom:10px;
+		  }
+		  #msg {
+			margin:10px;
+			height: 168px;
+			overflow:scroll;
+			background-color: #EEE;
+		  }
+		</style>
 	</head>
 	<body ontouchstart>
-		
+		<div class="weui-flex">
+      <div class="weui-flex__item"><div class="placeholder" id='player'>weui</div></div>
+      <div class="placeholder_m">vs</div>
+      <div class="weui-flex__item"><div class="placeholder" id='boss'>weui</div></div>
+		</div>
+		<div class="weui-cells__title">战斗信息</div>
+		<div id='msg'>
+			
+		</div>
+		<div class='btns'>
+			
+			<a href="javascript:game.attack();" class="weui-btn weui-btn_primary">攻击</a>
+			<a href="javascript:location.reload();" class="weui-btn weui-btn_primary">重新开始</a>
+		</div>
+		<script src='billion.js'></script>
 	</body>
 </html>
