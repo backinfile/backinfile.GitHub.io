@@ -1,5 +1,4 @@
 
-		alert('in scripts');
 var width = 1000;
 var height = 600;
 var unitSize = 40;
@@ -9,10 +8,8 @@ function randInt(min, max) {return Math.floor(Math.random()*(max-min+1)+min);}
 
 
 $(function() {
-	alert('in');
 	$canvas = $('canvas');
 	game = new function Game() {	//only one
-		alert('in game');
 		this.W = Math.floor(width/(unitSize))-1;
 		this.H = Math.floor(height/(unitSize))-1;;
 		this.offsetX = (width-unitSize*this.W)/2;
@@ -197,10 +194,8 @@ $(function() {
 			
 		}
 		$canvas.on('click',this.onclick);
-		alert('out game');
 	};
 	game.flush();
-	alert('ok');
 });
 
 
