@@ -26,7 +26,42 @@
 
 	function randInt(min, max) {return Math.floor(Math.random()*(max-min+1)+min);}
 
+	function GameMap(W, H, initval=0) {
+		this.W = W;
+		this.H = H;
+		this.maparray = new Array(W);
+		for (var i=0; i<W; i++) {
+			this.maparray[i] = new Array(H);
+			for (var j=0; j<H; j++) 
+				this.maparray[i][j] = initval;
+		}
+		this.init = function (initval) {
+			for (var i=0; i<W; i++) {
+				for (var j=0; j<H; j++) 
+					this.maparray[i][j] = initval;
+			}
+		}
+		this.set = function(x,y,val=0) {
+			if (x<0 || x>=this.W || y<0 || y>=this.H) 
+				return null;
+			this.maparray[x][y] = val;
+			return true;
+		}
+		this.get = function(x,y) {
+			if (x<0 || x>=this.W || y<0 || y>=this.H) 
+				return -2;
+			return this.maparray[x][y];
+		}
+		this.tranfrom = function(gmap,wallvalue=-1) {
+			for (var i=0; i<this.W; i++) {
+				for (var j=0; j<this.H; j++) {
+					this.maparray[i][j] = gmap.maparray[i][j]>0?wallvalue:0;
+				}
+			}
+		}
+	}
 
+	alert('in');
 	$(function() {
 		$canvas = $('canvas');
 		game = new function Game() {	//only one
@@ -217,42 +252,8 @@
 		};
 		game.flush();
 	});
+	alert('out');
 
-
-	function GameMap(W, H, initval=0) {
-		this.W = W;
-		this.H = H;
-		this.maparray = new Array(W);
-		for (var i=0; i<W; i++) {
-			this.maparray[i] = new Array(H);
-			for (var j=0; j<H; j++) 
-				this.maparray[i][j] = initval;
-		}
-		this.init = function (initval) {
-			for (var i=0; i<W; i++) {
-				for (var j=0; j<H; j++) 
-					this.maparray[i][j] = initval;
-			}
-		}
-		this.set = function(x,y,val=0) {
-			if (x<0 || x>=this.W || y<0 || y>=this.H) 
-				return null;
-			this.maparray[x][y] = val;
-			return true;
-		}
-		this.get = function(x,y) {
-			if (x<0 || x>=this.W || y<0 || y>=this.H) 
-				return -2;
-			return this.maparray[x][y];
-		}
-		this.tranfrom = function(gmap,wallvalue=-1) {
-			for (var i=0; i<this.W; i++) {
-				for (var j=0; j<this.H; j++) {
-					this.maparray[i][j] = gmap.maparray[i][j]>0?wallvalue:0;
-				}
-			}
-		}
-	}
 
 </script>
 	</body>
