@@ -9,7 +9,7 @@
 		<script src="linegame/lib/jcanvas.min.js"></script>
 		<style>
 			canvas {
-				//background-color:#AAA;
+				background-color:#EEE;
 			}
 			#icons {
 				//display:none;
@@ -19,7 +19,8 @@
 	<body>
 		<center><canvas width="1000" height="600"></canvas></center>
 		<script>
-			$('canvas').drawRect({
+			$(function(){
+				$('canvas').drawRect({
 					fillStyle: '#CCC',
 					x:0,
 					y:0,
@@ -27,6 +28,7 @@
 					height:100,
 					fromCenter:false,
 					cornerRadius: 10
+				});
 			});
 		</script>
 	</body>
