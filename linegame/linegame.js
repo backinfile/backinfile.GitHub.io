@@ -1,4 +1,5 @@
 
+		alert('in scripts');
 var width = 1000;
 var height = 600;
 var unitSize = 40;
