@@ -166,8 +166,6 @@ $(function() {
 					game.first = null;
 				} else if (game.map.get(game.first[0],game.first[1]) == game.map.get(x,y)){
 					var res = game.line([x,y], game.first);
-					console.log(res);
-					console.log(game.tmpmap);
 					if (res) {
 						game.drawRect(x,y,false);
 						game.drawPath(res);

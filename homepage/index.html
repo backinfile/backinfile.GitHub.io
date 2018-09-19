@@ -1,8 +1,13 @@
 
 <html>
 <head>
-<script src='lib/jquery.min.js'></script>
+<link rel="stylesheet" href="weui/lib/weui.min.css">
+<link rel="stylesheet" href="weui/css/jquery-weui.css">
+<script src="weui/lib/jquery.js"></script>
+<script src="weui/lib/fastclick.js"></script>
+<script src="weui/js/jquery-weui.js"></script>
 <script src='lib/jquery.rotate.js'></script>
+<title>backinfile's site</title>
 <style>
 	body {
 		margin:0;
@@ -18,7 +23,7 @@
 	#left {
 		width:25%;
 		height:100%;
-		background-color:green;
+		background-color:#FFF;
 		float:left;
 	}
 	#right {
@@ -39,7 +44,43 @@
 </head>
 <body ondragstart="return false;">
 <div id='left'>
-
+	<div class="weui-cells">
+	  <a class="weui-cell weui-cell_access" href="../chess.html">
+		<div class="weui-cell__bd">
+		  <p>chess</p>
+		</div>
+		<div class="weui-cell__ft">
+		</div>
+	  </a>
+	  <a class="weui-cell weui-cell_access" href="../chatroom.html">
+		<div class="weui-cell__bd">
+		  <p>chatroom</p>
+		</div>
+		<div class="weui-cell__ft">
+		</div>
+	  </a> 
+	  <a class="weui-cell weui-cell_access" href="../circle/circle.html">
+		<div class="weui-cell__bd">
+		  <p>circle</p>
+		</div>
+		<div class="weui-cell__ft">
+		</div>
+	  </a>
+	  <a class="weui-cell weui-cell_access" href="../billion/billion.html">
+		<div class="weui-cell__bd">
+		  <p>炉石小兵进化之路v1(移动端)</p>
+		</div>
+		<div class="weui-cell__ft">
+		</div>
+	  </a>
+	  <a class="weui-cell weui-cell_access" href="../linegame/index.html">
+		<div class="weui-cell__bd">
+		  <p>连连看</p>
+		</div>
+		<div class="weui-cell__ft">
+		</div>
+	  </a>
+	</div>
 </div>
 <div id='right'>
 
