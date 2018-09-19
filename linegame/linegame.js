@@ -196,6 +196,7 @@ $(function() {
 		$canvas.on('click',this.onclick);
 	};
 	game.flush();
+	alert('ok');
 });
 
 
