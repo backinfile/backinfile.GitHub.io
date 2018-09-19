@@ -1,0 +1,50 @@
+
+<html>
+<head>
+<script src='lib/jquery.min.js'></script>
+<script src='lib/jquery.rotate.js'></script>
+<style>
+	body {
+		margin:0;
+		padding:0;
+		position:relative;
+		-webkit-touch-callout: none;
+		-webkit-user-select: none;
+		-khtml-user-select: none;
+		-moz-user-select: none;
+		-ms-user-select: none;
+		user-select: none;
+	}
+	#left {
+		width:25%;
+		height:100%;
+		background-color:green;
+		float:left;
+	}
+	#right {
+		position:relative;
+		float:left;
+		width:75%;
+		height:100%;
+		background-image:url(img/ke8.jpeg);
+		background-size:100% auto;
+		filter:alpha(Opacity=60);-moz-opacity:0.6;opacity: 0.6; 
+	}
+	.arrow {
+		width:35px;
+		height:35px;
+		padding:15px;
+	}
+</style>
+</head>
+<body ondragstart="return false;">
+<div id='left'>
+
+</div>
+<div id='right'>
+
+<img class='arrow' src='img/arrowblue.png'>
+</div>
+<script src='homepage.js'></script>
+</body>
+</html>
