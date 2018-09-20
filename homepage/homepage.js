@@ -21,7 +21,7 @@ $(function() {
 					$right.css('width', '100%');
 					folded = true;
 				}
-			}, 500/25);
+			}, 400/25);
 		} else {
 			var anicnt = 25;
 			var ani = setInterval(function() {

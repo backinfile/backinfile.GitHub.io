@@ -1,0 +1,148 @@
+
+<html>
+<head>
+<link rel="stylesheet" href="weui/lib/weui.min.css">
+<link rel="stylesheet" href="weui/css/jquery-weui.css">
+<script src="weui/lib/jquery.js"></script>
+<script src="weui/lib/fastclick.js"></script>
+<script src="weui/js/jquery-weui.js"></script>
+<script src='lib/jcanvas.min.js'></script>
+<script src='lib/jquery.rotate.js'></script>
+<title>backinfile's site</title>
+<style>
+	body {
+		margin:0;
+		padding:0;
+		position:relative;
+		-webkit-touch-callout: none;
+		-webkit-user-select: none;
+		-khtml-user-select: none;
+		-moz-user-select: none;
+		-ms-user-select: none;
+		user-select: none;
+	}
+	#left {
+		width:75%;
+		height:100%;
+		background-color:#DDD;
+		float:left;
+	}
+	#right {
+		position:relative;
+		float:left;
+		width:25%;
+		height:100%;
+		background-color:#EEE;
+	}
+	.canvaswarp {
+		position:relative;
+		width:100%;
+		height:100%;
+	}
+	canvas {
+		position:absolute;
+		top:0;left:0;
+		right:0;bottom:0;
+		margin:auto;
+	}
+</style>
+</head>
+<body ondragstart="return false;">
+<div id='left'>
+<div class='canvaswarp'><canvas width='800px' height='600px'/></div>
+</div>
+<div id='right'>
+	<div class="weui-cells__title">画笔</div>
+	<div class="weui-cells weui-cells_radio">
+	  <label class="weui-cell weui-check__label" for="x10">
+		<div class="weui-cell__bd">
+		  <p>点</p>
+		</div>
+		<div class="weui-cell__ft">
+		  <input type="radio" class="weui-check" name="radio1" id="x10">
+		  <span class="weui-icon-checked"></span>
+		</div>
+	  </label>
+	  <label class="weui-cell weui-check__label" for="x11">
+		<div class="weui-cell__bd">
+		  <p>直线</p>
+		</div>
+		<div class="weui-cell__ft">
+		  <input type="radio" class="weui-check" name="radio1" id="x11" checked="checked">
+		  <span class="weui-icon-checked"></span>
+		</div>
+	  </label>
+	  <label class="weui-cell weui-check__label" for="x12">
+
+		<div class="weui-cell__bd">
+		  <p>填充</p>
+		</div>
+		<div class="weui-cell__ft">
+		  <input type="radio" name="radio1" class="weui-check" id="x12">
+		  <span class="weui-icon-checked"></span>
+		</div>
+	  </label>
+	</div>
+	
+    <div class="weui-cells__title">填充方式</div>
+	<div class="weui-cells weui-cells_radio">
+	  <label class="weui-cell weui-check__label" for="x21">
+		<div class="weui-cell__bd">
+		  <p>深度优先搜索</p>
+		</div>
+		<div class="weui-cell__ft">
+		  <input type="radio" class="weui-check" name="radio2" id="x21" checked="checked">
+		  <span class="weui-icon-checked"></span>
+		</div>
+	  </label>
+	  <label class="weui-cell weui-check__label" for="x22">
+
+		<div class="weui-cell__bd">
+		  <p>广度优先搜索</p>
+		</div>
+		<div class="weui-cell__ft">
+		  <input type="radio" name="radio2" class="weui-check" id="x22">
+		  <span class="weui-icon-checked"></span>
+		</div>
+	  </label>
+	  <label class="weui-cell weui-check__label" for="x23">
+
+		<div class="weui-cell__bd">
+		  <p>直接填充</p>
+		</div>
+		<div class="weui-cell__ft">
+		  <input type="radio" name="radio2" class="weui-check" id="x23">
+		  <span class="weui-icon-checked"></span>
+		</div>
+	  </label>
+	</div>
+	
+    <div class="weui-cells__title">填充速度</div>
+	<div class="weui-cells weui-cells_radio">
+	  <label class="weui-cell weui-check__label" for="x31">
+		<div class="weui-cell__bd">
+		  <p>fast</p>
+		</div>
+		<div class="weui-cell__ft">
+		  <input type="radio" class="weui-check" name="radio3" id="x31" checked="checked">
+		  <span class="weui-icon-checked"></span>
+		</div>
+	  </label>
+	  <label class="weui-cell weui-check__label" for="x32">
+
+		<div class="weui-cell__bd">
+		  <p>slow</p>
+		</div>
+		<div class="weui-cell__ft">
+		  <input type="radio" name="radio3" class="weui-check" id="x32">
+		  <span class="weui-icon-checked"></span>
+		</div>
+	  </label>
+	</div>
+	<div class="weui-cells">
+		<a href="javascript:clear();" class="weui-btn weui-btn_primary">清空</a>
+	</div>
+</div>
+<script src='canvas.js'></script>
+</body>
+</html>
