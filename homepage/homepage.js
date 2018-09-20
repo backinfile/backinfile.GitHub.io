@@ -1,4 +1,67 @@
 
+function htmlphone() {
+	return '	<div class="weui-cells">'
+		+'	  <a class="weui-cell weui-cell_access" href="../chess.html">'
+		+'		<div class="weui-cell__bd">'
+		+'		  <p>象棋</p>'
+		+'		</div>'
+		+'		<div class="weui-cell__ft">'
+		+'		</div>'
+		+'	  </a>'
+		+'	  <a class="weui-cell weui-cell_access" href="../chatroom.html">'
+		+'		<div class="weui-cell__bd">'
+		+'		  <p>简易聊天室</p>'
+		+'		</div>'
+		+'		<div class="weui-cell__ft">'
+		+'		</div>'
+		+'	  </a> '
+		+'	  <a class="weui-cell weui-cell_access" href="../circle/circle.html">'
+		+'		<div class="weui-cell__bd">'
+		+'		  <p>circle</p>'
+		+'		</div>'
+		+'		<div class="weui-cell__ft">'
+		+'		</div>'
+		+'	  </a>'
+		+'	  <a class="weui-cell weui-cell_access" href="../billion/billion.html">'
+		+'		<div class="weui-cell__bd">'
+		+'		  <p>炉石小兵进化之路v1(移动端)</p>'
+		+'		</div>'
+		+'		<div class="weui-cell__ft">'
+		+'		</div>'
+		+'	  </a>'
+		+'	  <a class="weui-cell weui-cell_access" href="../linegame/index.html">'
+		+'		<div class="weui-cell__bd">'
+		+'		  <p>连连看</p>'
+		+'		</div>'
+		+'		<div class="weui-cell__ft">'
+		+'		</div>'
+		+'	  </a>'
+		+'	  <a class="weui-cell weui-cell_access" href="../canvas/index.html">'
+		+'		<div class="weui-cell__bd">'
+		+'		  <p>黑白画板</p>'
+		+'		</div>'
+		+'		<div class="weui-cell__ft">'
+		+'		</div>'
+		+'	  </a>'
+		+'	</div>';
+}
+function htmlpc() {
+	return '<div id="left">'
+		+htmlphone()
+		+'</div>'
+		+'<div id="right">'
+		+'<img class="arrow" src="img/arrowblue.png">'
+		+'</div>';
+}
+
+var ispc = true;
+if ($(document).width()<800) {
+	ispc = false;
+	$('#body').html(htmlphone());
+} else {
+	$('#body').html(htmlpc());
+}
+
 $(function() {
 	var folded = false;
 	$arrow = $('.arrow');
