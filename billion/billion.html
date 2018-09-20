@@ -30,8 +30,7 @@
 			font-weight: bold;
 		  }
 		  .btns {
-			position:fixed;
-			width: 100%;
+			position:absolute;
 			bottom:0px;
 			padding-bottom:10px;
 		  }
@@ -41,23 +40,26 @@
 			overflow:scroll;
 			background-color: #EEE;
 		  }
+		  #body {
+			margin:0 auto;
+		  }
 		</style>
 	</head>
 	<body ontouchstart>
-		<div class="weui-flex">
-      <div class="weui-flex__item"><div class="placeholder" id='player'>weui</div></div>
-      <div class="placeholder_m">vs</div>
-      <div class="weui-flex__item"><div class="placeholder" id='boss'>weui</div></div>
-		</div>
-		<div class="weui-cells__title">战斗信息</div>
-		<div id='msg'>
+		<div id='body'>
+			<div class="weui-flex">
+				<div class="weui-flex__item"><div class="placeholder" id='player'>weui</div></div>
+				<div class="placeholder_m">vs</div>
+				<div class="weui-flex__item"><div class="placeholder" id='boss'>weui</div></div>
+			</div>
+			<div class="weui-cells__title">战斗信息</div>
+			<div id='msg'></div>
+			<div id='btns' class='weui-cells'>
+				<a href="javascript:game.attack();" class="weui-btn weui-btn_primary">攻击</a>
+				<a href="javascript:location.reload();" class="weui-btn weui-btn_primary">重新开始</a>
+			</div>
 			
+			<script src='billion.js'></script>
 		</div>
-		<div class='btns'>
-			
-			<a href="javascript:game.attack();" class="weui-btn weui-btn_primary">攻击</a>
-			<a href="javascript:location.reload();" class="weui-btn weui-btn_primary">重新开始</a>
-		</div>
-		<script src='billion.js'></script>
 	</body>
 </html>

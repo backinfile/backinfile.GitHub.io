@@ -1,4 +1,8 @@
 
+if ($(document).width()>600) {
+	$('#body').width(400);
+}
+
 
 function Minion() {
 	this.Health = 1;	// fixed attributes
@@ -163,8 +167,8 @@ function Game() {
 				loadplayer(warrior);
 				value = this.rndgen();
 				ori = value[0];
-				orihtml = $('.btns').html();
-				$('.btns').html(value[1]);
+				orihtml = $('#btns').html();
+				$('#btns').html(value[1]);
 				level += 1;
 				loadboss(bosses[level]);
 			}
@@ -202,7 +206,7 @@ function Game() {
 			warrior.Shield += 3;
 		}
 		warrior.init();
-		$('.btns').html(orihtml);
+		$('#btns').html(orihtml);
 		loadplayer(warrior);
 	}
 }
