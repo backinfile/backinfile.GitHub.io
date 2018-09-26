@@ -77,7 +77,7 @@ $(function() {
 			var y = Math.floor((e.offsetY-game.offsetY)/unitSize);
 			if (x>=0 && x<game.W && y>=0 && y<game.H) {
 				console.log(x,y);
-				var sp = fast?7:500;
+				var sp = fast?1:500;
 				if (method == 3) game.fill(x,y);
 				else if (method == 2) game.fillTimeoutF1(x,y,sp);
 				else if (method == 1) game.fillTimeoutF2(x,y,sp);
@@ -99,6 +99,7 @@ $(function() {
 					this.map.set(pos1[0]+i*(tx>0?1:-1), Math.round(pos1[1]+i*ty/Math.abs(tx)), 1);
 				}
 				this.drawArc(pos2[0],pos2[1], 1);
+				this.map.set(pos2[0],pos2[1], 1);
 			} else {
 				for (var i=0; i<Math.abs(ty); i++) {
 					this.drawArc(Math.round(pos1[0]+i*tx/Math.abs(ty)), pos1[1]+i*(ty>0?1:-1), 1);
@@ -192,28 +193,38 @@ $(function() {
 			var dy = [0, 1,  0,-1];
 			function dsp(dir) {
 				//console.log(queue.length);
-				var pos = queue[queue.length-1]
-				var x = pos[0];
-				var y = pos[1];
-				var tx = x+dx[dir];
-				var ty = y+dy[dir];
+				if (!queue.length) return;
+				var pos = queue[queue.length-1];
+				var tx = pos[0]+dx[dir];
+				var ty = pos[1]+dy[dir];
 				if (game.map.get(tx,ty) == 0) {
 					queue.push([tx,ty]);
 					game.drawArc(tx,ty,1);
 					game.map.set(tx,ty,1);
-					if (queue.length) {
-						setTimeout(function(){dsp(dir);},to);
-					}
+					setTimeout(function(){dsp(0);},to);
 				} else {
 					if (dir == 3) {
 						queue.pop();
 						dir = 0;
+						while (queue.length) {
+							var pos = queue[queue.length-1];
+							var flag = 0;
+							for (var i=0; i<4; i++) {
+								var tx = pos[0]+dx[i];
+								var ty = pos[1]+dy[i];
+								if (game.map.get(tx,ty) == 0) {
+									flag = 1;
+									break;
+								}
+							}
+							if (!flag) {
+								queue.pop();
+							} else break;
+						}
 					} else {
 						dir++;
 					}
-					if (queue.length) {
-						setTimeout(function(){dsp(dir);},0);
-					}
+					setTimeout(function (){dsp(dir);},0);
 				}
 				
 			}

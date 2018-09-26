@@ -1,0 +1,73 @@
+
+<html>
+<head>
+<link rel="stylesheet" href="weui/lib/weui.min.css">
+<link rel="stylesheet" href="weui/css/jquery-weui.css">
+<script src="weui/lib/jquery.js"></script>
+<script src="weui/lib/fastclick.js"></script>
+<script src="weui/js/jquery-weui.js"></script>
+<script src='lib/jcanvas.min.js'></script>
+<script src='lib/jquery.rotate.js'></script>
+<title>backinfile's site</title>
+<style>
+	body {
+		margin:0;
+		padding:0;
+		position:relative;
+		-webkit-touch-callout: none;
+		-webkit-user-select: none;
+		-khtml-user-select: none;
+		-moz-user-select: none;
+		-ms-user-select: none;
+		user-select: none;
+	}
+	#left {
+		width:75%;
+		height:100%;
+		background-color:#DDD;
+		float:left;
+	}
+	#right {
+		position:relative;
+		float:left;
+		width:25%;
+		height:100%;
+		background-color:#EEE;
+	}
+	.canvaswarp {
+		position:relative;
+		width:100%;
+		height:100%;
+	}
+	canvas {
+		position:absolute;
+		top:0;left:0;
+		right:0;bottom:0;
+		margin:auto;
+	}
+</style>
+</head>
+<body ondragstart="return false;">
+<div id='left'>
+<div class='canvaswarp'><canvas width='800px' height='600px'/></div>
+</div>
+<div id='right'>
+	<!-- <div class="weui-cells__title">画笔</div>
+	<div class="weui-cells weui-cells_radio">
+	  <label class="weui-cell weui-check__label" for="x10">
+		<div class="weui-cell__bd">
+		  <p>点</p>
+		</div>
+		<div class="weui-cell__ft">
+		  <input type="radio" class="weui-check" name="radio1" id="x10">
+		  <span class="weui-icon-checked"></span>
+		</div>
+	  </label>
+	</div>
+	<div class="weui-cells">
+		<a href="javascript:clear();" class="weui-btn weui-btn_primary">清空</a>
+	</div> -->
+</div>
+<script src='tree2.js'></script>
+</body>
+</html>
