@@ -1,49 +1,31 @@
 
+var content = [
+	['彩色画板','../canvasV2/index.html'],
+	['黑白画板','../canvas/index.html'],
+	['连连看', '../linegame/index.html'],
+	['象棋','../chess.html'],
+	['circle','../circle/circle.html'],
+	['炉石小兵','../billion/billion.html'],
+	['聊天室','../chatroom.html'],
+	];
+
+function htmlcontent(name, url) {
+	return '  <a class="weui-cell weui-cell_access" href="'+url+'">'
+		+'		<div class="weui-cell__bd">'
+		+'		  <p>'+name+'</p>'
+		+'		</div>'
+		+'		<div class="weui-cell__ft">'
+		+'		</div>'
+		+'	  </a>';
+}
+
 function htmlphone() {
-	return '	<div class="weui-cells">'
-		+'	  <a class="weui-cell weui-cell_access" href="../linegame/index.html">'
-		+'		<div class="weui-cell__bd">'
-		+'		  <p>连连看</p>'
-		+'		</div>'
-		+'		<div class="weui-cell__ft">'
-		+'		</div>'
-		+'	  </a>'
-		+'	  <a class="weui-cell weui-cell_access" href="../canvas/index.html">'
-		+'		<div class="weui-cell__bd">'
-		+'		  <p>黑白画板</p>'
-		+'		</div>'
-		+'		<div class="weui-cell__ft">'
-		+'		</div>'
-		+'	  </a>'
-		+'	  <a class="weui-cell weui-cell_access" href="../chess.html">'
-		+'		<div class="weui-cell__bd">'
-		+'		  <p>象棋</p>'
-		+'		</div>'
-		+'		<div class="weui-cell__ft">'
-		+'		</div>'
-		+'	  </a>'
-		+'	  <a class="weui-cell weui-cell_access" href="../billion/billion.html">'
-		+'		<div class="weui-cell__bd">'
-		+'		  <p>炉石小兵</p>'
-		+'		</div>'
-		+'		<div class="weui-cell__ft">'
-		+'		</div>'
-		+'	  </a>'
-		+'	  <a class="weui-cell weui-cell_access" href="../chatroom.html">'
-		+'		<div class="weui-cell__bd">'
-		+'		  <p>简易聊天室</p>'
-		+'		</div>'
-		+'		<div class="weui-cell__ft">'
-		+'		</div>'
-		+'	  </a> '
-		+'	  <a class="weui-cell weui-cell_access" href="../circle/circle.html">'
-		+'		<div class="weui-cell__bd">'
-		+'		  <p>circle</p>'
-		+'		</div>'
-		+'		<div class="weui-cell__ft">'
-		+'		</div>'
-		+'	  </a>'
-		+'	</div>';
+	var html = '<div class="weui-cells">';
+	for (var i=0; i<content.length; i++) {
+		html += htmlcontent(content[i][0], content[i][1]);
+	}
+	html += '</div>';
+	return html;
 }
 function htmlpc() {
 	return '<div id="left">'
@@ -92,7 +74,7 @@ if (ispc) {
 					$left.css('width', 25-anicnt+"%");
 					$right.css('width', 75+anicnt+"%");
 					$arrow.css('rotate', 90+180/25*anicnt);
-					anicnt -= 4;
+					anicnt -= 3;
 					if (anicnt < 0) {
 						clearInterval(ani);
 						$arrow.css('rotate', 90);
