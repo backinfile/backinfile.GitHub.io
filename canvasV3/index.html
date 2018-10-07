@@ -24,18 +24,25 @@
 			user-select: none;
 		}
 		#left {
-			width:20%;
+			width:15%;
 			height:100%;
 			background-color:#CCC;
 			float:left;
 			overflow:hidden;
 		}
+		#middle {
+			position:relative;
+			float:left;
+			width:70%;
+			height:100%;
+			background-color:#DDD;
+		}
 		#right {
 			position:relative;
 			float:left;
-			width:80%;
+			width:15%;
 			height:100%;
-			background-color:#DDD;
+			background-color:#EEE;
 		}
 		.canvaswarp {
 			position:relative;
@@ -53,45 +60,63 @@
 </head>
 <body ondragstart="return false;">
 <div id='left'>
-	<div class="weui-cells__title">选择画笔</div>
-	<div class="weui-cells weui-cells_radio">
-	  <label class="weui-cell weui-check__label" for="x10">
-		<div class="weui-cell__bd">
-		  <p>点</p>
+	<div class="weui-cells">
+		<div class="weui-cells_radio">
+		  <label class="weui-cell weui-check__label" for="x111">
+			<div class="weui-cell__bd">
+			  <p>移动</p>
+			</div>
+			<div class="weui-cell__ft">
+			  <input type="radio" class="weui-check" name="radio1" id="x111" value='-1'>
+			  <span class="weui-icon-checked"></span>
+			</div>
+		  </label>
+		  <label class="weui-cell weui-check__label" for="x10">
+			<div class="weui-cell__bd">
+			  <p>点</p>
+			</div>
+			<div class="weui-cell__ft">
+			  <input type="radio" class="weui-check" name="radio1" id="x10" value='0'>
+			  <span class="weui-icon-checked"></span>
+			</div>
+		  </label>
+		  <label class="weui-cell weui-check__label" for="x11">
+			<div class="weui-cell__bd">
+			  <p>直线</p>
+			</div>
+			<div class="weui-cell__ft">
+			  <input type="radio" class="weui-check" name="radio1" id="x11" checked="checked" value='1'>
+			  <span class="weui-icon-checked"></span>
+			</div>
+		  </label>
+		  <label class="weui-cell weui-check__label" for="x12">
+			<div class="weui-cell__bd">
+			  <p>形状</p>
+			</div>
+			<div class="weui-cell__ft">
+			  <input type="radio" name="radio1" class="weui-check" id="x12" value='2'>
+			  <span class="weui-icon-checked"></span>
+			</div>
+		  </label>
+		  <label class="weui-cell weui-check__label" for="x13">
+			<div class="weui-cell__bd">
+			  <p>填充</p>
+			</div>
+			<div class="weui-cell__ft">
+			  <input type="radio" name="radio1" class="weui-check" id="x13" value='3'>
+			  <span class="weui-icon-checked"></span>
+			</div>
+		  </label>
 		</div>
-		<div class="weui-cell__ft">
-		  <input type="radio" class="weui-check" name="radio1" id="x10" value='0'>
-		  <span class="weui-icon-checked"></span>
+		<!-- <div class="weui-cell"></div> -->
+		<div class="weui-cell weui-cell_switch">
+			<div class="weui-cell__bd">网格线</div>
+			<div class="weui-cell__ft">
+				<input class="weui-switch" type="checkbox" name='grid'>
+			</div>
 		</div>
-	  </label>
-	  <label class="weui-cell weui-check__label" for="x11">
-		<div class="weui-cell__bd">
-		  <p>直线</p>
-		</div>
-		<div class="weui-cell__ft">
-		  <input type="radio" class="weui-check" name="radio1" id="x11" checked="checked" value='1'>
-		  <span class="weui-icon-checked"></span>
-		</div>
-	  </label>
-	  <label class="weui-cell weui-check__label" for="x12">
-		<div class="weui-cell__bd">
-		  <p>形状</p>
-		</div>
-		<div class="weui-cell__ft">
-		  <input type="radio" name="radio1" class="weui-check" id="x12" value='2'>
-		  <span class="weui-icon-checked"></span>
-		</div>
-	  </label>
-	  <label class="weui-cell weui-check__label" for="x13">
-		<div class="weui-cell__bd">
-		  <p>填充</p>
-		</div>
-		<div class="weui-cell__ft">
-		  <input type="radio" name="radio1" class="weui-check" id="x13" value='3'>
-		  <span class="weui-icon-checked"></span>
-		</div>
-	  </label>
 	</div>
+		
 	
 	<div class="weui-cells__title">选择绘制颜色</div>
 	<div class="weui-cells">
@@ -123,25 +148,15 @@
       </div>
     </div>
 	<div class="weui-cells">
-		<div class="weui-cell weui-cell_switch">
-			<div class="weui-cell__bd">网格线</div>
-			<div class="weui-cell__ft">
-				<input class="weui-switch" type="checkbox" name='grid'>
-			</div>
-		</div>
-	</div>
-	<div class="weui-cells">
-      <a class="weui-btn weui-btn_primary" id='cancel'>撤销上一步</a>
-    </div>
-	<div class="weui-cells">
+      <a class="weui-btn weui-btn_primary" id='cancel'>撤销</a>
       <a class="weui-btn weui-btn_primary" id='clear'>清空画板</a>
-    </div>
-	<div class="weui-cells">
       <a class="weui-btn weui-btn_primary" id='save'>保存</a>
     </div>
 </div>
-<div id='right'>
+<div id='middle'>
 <div class='canvaswarp'></div>
+</div>
+<div id='right'>
 </div>
 <a id="download"></a>
 

@@ -95,20 +95,24 @@ $(function() {
 		this.offsetY = (height-unitSize*this.H)/2;
 		
 		this.map = new GameMap(this.W, this.H, 0);
+		this.tmap = new GameMap(this.W, this.H);
 		this.colormap = ['white', '#AAA', '#777','#333', 'black', 'red', 'blue', 'green', 'rgba(0,0,0,0)'];
 		this.colorid = 0;
 		this.ismapchanged = true;
 		this.shapeSave = {
 			state: false, list: [],
+			shapelist:[],
 			begin: function() {this.state = true;this.list = [];},
 			push: function(x,y,color) {if (this.state)this.list.push([x,y,color]);},
 			recover: function() {
-				for (var i=0; i<this.list.length; i++) {
-					var t = this.list[i];
-					game.point({x:t[0],y:t[1],color:t[2]});
+				if (!this.shapelist.length) return;
+				var t = this.shapelist.pop();
+				for (var i=0; i<t.length; i++) {
+					var tt = t[i];
+					game.point({x:tt[0],y:tt[1],color:tt[2]});
 				}
 			},
-			end: function() {this.state = false;}
+			end: function() {this.state = false;this.shapelist.push(this.list);}
 		}
 		this.point = function(options) {
 			options = $.extend({x:0,y:0,color:this.colorid}, options);
@@ -179,8 +183,8 @@ $(function() {
 		this.draw = function (force) { // clear and draw (the only one draws)
 			if (force || this.ismapchanged) {
 				$canvas.clear();
-				var size = unitSize;
-				if (!this.isgrid) size += 1;
+				var size = unitSize-1;
+				if (!this.isgrid) size += 2;
 				for (var i=0; i<this.W; i++) {
 					for (var j=0; j<this.H; j++) {
 						var color = this.map.get(i,j);
@@ -240,6 +244,8 @@ $(function() {
 				$canvas.css('cursor','crosshair');
 			} else if (val == 3) {
 				$canvas.css('cursor','url(img/fill.ico) 0 16, auto');
+			} else if (val == -1) {
+				$canvas.css('cursor', 'move');
 			}
 			if (val == 1) {game.mouse.addDrag(dragline);}
 			else if (val == 0) {
@@ -249,6 +255,8 @@ $(function() {
 				game.mouse.addClick(clickfill);
 			} else if (val == 2) {
 				game.mouse.addDrag(dragshape);
+			} else if (val == -1) {
+				game.mouse.addDrag(dragmove);
 			}
 			
 		});
@@ -290,10 +298,18 @@ function GameMap(W, H, initval=0) {
 		this.maparray[x][y] = val;
 		return true;
 	}
-	this.get = function(x,y) {
+	this.get = function(x,y,defaultval=-2) {
 		if (x<0 || x>=this.W || y<0 || y>=this.H) 
-			return -2;
+			return defaultval;
 		return this.maparray[x][y];
+	}
+	this.copy = function(gm) {
+		if (gm.W != this.W || gm.H != this.H) return;
+		for (var i=0; i<this.W; i++) {
+			for (var j=0; j<this.H; j++) {
+				this.maparray[i][j] = gm.maparray[i][j];
+			}
+		}
 	}
 }
 
@@ -378,6 +394,35 @@ function dragshape(x1,y1,x2,y2,st) {
 	if (st) game.shapeSave.recover();
 }
 
+function dragmove(x1,y1,x2,y2,st) {
+	if (!game.dragmap) {
+		game.dragmap = game.tmap;
+		game.dragmap.copy(game.map);
+	}
+	var pos1 = game.getmappos(x1,y1);
+	var pos2 = game.getmappos(x2,y2);
+	var dx = Math.round(pos1[0]-pos2[0]);
+	var dy = Math.round(pos1[1]-pos2[1]);
+	for (var i=0; i<game.W; i++) {
+		for (var j=0; j<game.H; j++) {
+			game.point({x:i,y:j,color:game.dragmap.get(i+dx,j+dy, 0)});
+		}
+	}
+	game.draw();
+	
+	if (!st) {
+		game.tmap = game.map;
+		game.map = game.dragmap;
+		game.dragmap = null;
+		game.shapeSave.begin();
+		for (var i=0; i<game.W; i++) {
+			for (var j=0; j<game.H; j++) {
+				game.point({x:i,y:j,color:game.tmap.get(i,j,0)});
+			}
+		}
+		game.shapeSave.end();
+	}
+}
 
 
 
