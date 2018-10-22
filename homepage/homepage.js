@@ -1,5 +1,6 @@
 
 var content = [
+	['贝塞尔曲线','../curve/index.html'],
 	['彩色画板','../canvasV3/index.html'],
 	['黑白画板','../canvas/index.html'],
 	['连连看', '../linegame/index.html'],
