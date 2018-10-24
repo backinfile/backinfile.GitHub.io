@@ -85,21 +85,27 @@ var Sun = (function() {
 		},
 		light: function(cur_pos, color, shake=10) {
 			this._light(cur_pos, color);
-			var n = 3;
+			/* var n = 3;
 			for (var i=0; i<n; i++) {
 				var radian = Math.PI*2*i/n;
 				var cos = Math.cos(radian);
 				var sin = Math.sin(radian);
 				this._light([cur_pos[0]+cos*shake,cur_pos[1]+sin*shake],"rgba(255,255,255,0.3)");
-			}
+			} */
 		},
-		update: function() {
-			this.time += 0.001;
+		update: function(delta) {
+			delta /= 1000/60;
+			this.time += 0.001*delta;
 			this.time %= 24;
 		},
 		render: function(ctx) {
+			var ctx = ctx || $.ctx;
 			var cur_pos = this.getPos();
-			this.light(cur_pos, 'white', 10);
+			var max = Math.max($.width, $.height);
+			var grd=ctx.createRadialGradient(cur_pos[0],cur_pos[1],1,cur_pos[0],cur_pos[1],max);
+			grd.addColorStop(0,"rgba(255,255,255,0.6)");
+			grd.addColorStop(1,"rgba(255,255,255,0)");
+			this.light(cur_pos, grd, 10);
 		}
 	}
 	return Sun;
@@ -127,14 +133,13 @@ var Tank = (function () {
 			var dx = [1,1,-1,-1];
 			var dy = [1.2,-1.2,-1.2,1.2];
 			var pos = this.getPos();
-			if (coe == 1) {
-				var rotate = this.getRotate();
-			} else {
-				var rotate = this.getPipeRoate();
+			var rotate = this.getRotate();
+			if (coe != 1) {
+				rotate += this.getPipeRoate();
 			}
 			for (var i=0; i<4; i++) {
 				var tp = [pos[0]+dx[i]*this.size*coe/2,pos[1]+dy[i]*this.size*coe/2]
-					.rotate(rotate);
+				tp = tp.tran(-pos[0],-pos[1]).rotate(rotate).tran(pos[0],pos[1]);
 				polygon.push(tp);
 			}
 			return polygon;
@@ -142,33 +147,48 @@ var Tank = (function () {
 		getPipe: function() {
 			var pos = this.getPos();
 			var protate = this.getPipeRoate();
-			return [[pos[0]-this.size/15,pos[1]].rotate(protate),
-					[pos[0]+this.size/15,pos[1]].rotate(protate),
-					[pos[0]+this.size/15,pos[1]-this.size*3/4].rotate(protate),
-					[pos[0]-this.size/15,pos[1]-this.size*3/4].rotate(protate)];
+			protate+=this.getRotate();
+			var tps = [[pos[0]-this.size/15,pos[1]],
+					[pos[0]+this.size/15,pos[1]],
+					[pos[0]+this.size/15,pos[1]-this.size*3/4],
+					[pos[0]-this.size/15,pos[1]-this.size*3/4]];
+			for (var i=0; i<tps.length; i++) {
+				tps[i] = tps[i].tran(-pos[0],-pos[1]).rotate(protate).tran(pos[0],pos[1]);
+			}
+			return tps;
 		},
-		_render: function(ctx=null) {
+		_render: function(ctx) {
 			ctx.beginPath();
 			ctx.fillStyle = 'white';
 			ctx.fillRect(0,0,$.width,$.height);
-			this.getPolygon().drawPolygon('#333', true, 20, ctx);
-			this.getPolygon(0.6).drawPolygon('#333', true, 5, ctx);
-			this.getPipe().drawPolygon('#333', true, 5, ctx);
+			this.getPolygon().drawPolygon('#333', true, 20, ctx, this.getPos());
+			this.getPolygon(0.6).drawPolygon('#333', true, 5, ctx, this.getPos());
+			this.getPipe().drawPolygon('#333', true, 5, ctx, this.getPos());
 		},
-		render: function(ctx=null) {
+		render: function(ctx) {
 			var pos = this.getPos();
+			this._render(this.ctx);
 			ctx.drawImage(this.canvas,0,0);
 		},
-		update: function() {
-			var speed = 1;
+		update: function(delta) {
+			delta /= 1000/60;
+			var speed = 2*delta;
+			var cos = Math.cos(this.rotate-Math.PI/2);
+			var sin = Math.sin(this.rotate-Math.PI/2);
 			if ($.keystate['W'.charCodeAt()]) {
-				this.pos[1] -= speed;
+				this.pos[0] += cos*speed;
+				this.pos[1] += sin*speed;
 			} else if ($.keystate['A'.charCodeAt()]) {
-				this.pos[0] -= speed;
+				this.rotate -= 0.1;
 			} else if ($.keystate['S'.charCodeAt()]) {
-				this.pos[1] += speed;
+				this.pos[0] -= cos*speed;
+				this.pos[1] -= sin*speed;
 			} else if ($.keystate['D'.charCodeAt()]) {
-				this.pos[0] += speed;
+				this.rotate += 0.1;
+			} else if ($.keystate['Q'.charCodeAt()]) {
+				this.piperotate -= 0.1;
+			} else if ($.keystate['E'.charCodeAt()]) {
+				this.piperotate += 0.1;
 			}
 		}
 	};
@@ -210,7 +230,15 @@ window.onload = function () {
 		}
 		ctx.closePath();
 		ctx.shadowBlur=shadowBlur;
-		ctx.shadowColor='white';
+		ctx.shadowColor='black';
+		if ($.sun && shadowBlur>0 && isfill) {
+			var pos = $.sun.getPos();
+			pos[0] -= this[0][0];
+			pos[1] -= this[0][1];
+			var dist = Math.sqrt(pos[0]*pos[0]+pos[1]*pos[1]);
+			ctx.shadowOffsetX = -pos[0]/dist*shadowBlur/3;
+			ctx.shadowOffsetY = -pos[1]/dist*shadowBlur/3;
+		}
 		if (isfill) {
 			ctx.fillStyle = color;
 			ctx.fill();
@@ -229,10 +257,10 @@ window.onload = function () {
 		}
 		return barriers;
 	})(segments);
-	
+	$.barriers = barriers;
 	var enemyes = (function() {
 		var e = [];
-		var poses = [[400,300]];
+		var poses = [];//[[400,300]];
 		for (var i=0; i<poses.length; i++) {
 			e.push(new Tank(poses[i]));
 		}
@@ -241,12 +269,14 @@ window.onload = function () {
 	
 	var sun = new Sun(width, height);
 	sun.hookBarrier(barriers);
+	$.sun = sun;
 	
 	var player = new Tank([400,200]);
-	$.animationFrame(function () {
+	$.animationFrame(function (delta) {
+		//console.log(delta);
 		(function update() {
-			sun.update();
-			//player.update();
+			sun.update(delta);
+			player.update(delta);
 		})();
 		(function render() {
 			ctx.clearRect(0,0,width,height);
@@ -262,8 +292,8 @@ window.onload = function () {
 			for (var i=0; i<enemyes.length; i++) {
 				enemyes[i].render(ctx);
 			}
+			player.render(ctx);
 			ctx.globalCompositeOperation = "source-over";
-			//player.render();
 		})();
 	});
 }

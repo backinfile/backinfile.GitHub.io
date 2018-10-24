@@ -10,30 +10,39 @@ var content = [
 	['炉石小兵','../billion/billion.html'],
 	['聊天室','../chatroom.html'],
 	];
+	
+var left = 15;
 
 function htmlcontent(name, url) {
-	return '  <a class="weui-cell weui-cell_access" href="'+url+'">'
+	/* return '  <a class="weui-cell weui-cell_access" href="'+url+'">'
 		+'		<div class="weui-cell__bd">'
 		+'		  <p>'+name+'</p>'
 		+'		</div>'
 		+'		<div class="weui-cell__ft">'
 		+'		</div>'
-		+'	  </a>';
+		+'	  </a>'; */
+	return '<li><a href='+url+'>'+name+'</a></li>';
 }
 
 function htmlphone() {
-	var html = '<div class="weui-cells">';
+	/* var html = '<div class="weui-cells">';
 	for (var i=0; i<content.length; i++) {
 		html += htmlcontent(content[i][0], content[i][1]);
 	}
 	html += '</div>';
+	return html; */
+	var html = '<ul>';
+	for (var i=0; i<content.length; i++) {
+		html += htmlcontent(content[i][0], content[i][1]);
+	}
+	html += '</ul>';
 	return html;
 }
 function htmlpc() {
-	return '<div class="left">'
+	return '<div id="left">'
 		+htmlphone()
 		+'</div>'
-		+'<div class="right">'
+		+'<div id="right">'
 		+'<img class="arrow" src="img/arrowblue.png">'
 		+'<img class="rightimage" src="img/ke9.jpg">'
 		+'<div class="text"><div>'
@@ -51,17 +60,20 @@ if ($(document).width()<800) {
 
 if (ispc) {
 	$(function() {
-		(function() {
+		(function loadImage(){
 			var im = new Image();
 			im.onload = (function() {
-				$('.rightimage')[0].src = im.src;
+				var $image = $('.rightimage');
+				$image[0].src = im.src;
+				$image.css("opacity","0.75"); 
 			});
 			im.src = 'img/ke8.jpeg';
 		})();
+		
 		(function ArrowControl() {
 			$arrow = $('.arrow');
-			$left = $('.left');
-			$right = $('.right');
+			$left = $('#left');
+			$right = $('#right');
 			$arrow.css('cursor', 'pointer');
 			
 			/* var folded = false;
@@ -71,8 +83,8 @@ if (ispc) {
 			$left.css('width', '0%');
 			$right.css('width', '100%');
 			
-			var left = 20;
-			var right = 80;
+			var left = left || 15;
+			var right = 100 - left;
 			$arrow.click(function() {
 				if (!folded) {
 					var anicnt = 5;

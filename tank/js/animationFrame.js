@@ -1,4 +1,7 @@
 
+var $;
+$ = $ || {};
+
 (function() {
     var lastTime = 0;
     var vendors = ['webkit', 'moz'];
@@ -12,7 +15,7 @@
         window.requestAnimationFrame = function(callback, element) {
             var currTime = new Date().getTime();
             var timeToCall = Math.max(0, 16 - (currTime - lastTime));
-            var id = window.setTimeout(function() { callback(currTime + timeToCall); },
+            var id = window.setTimeout(function() { callback(currTime +  timeToCall); },
               timeToCall);
             lastTime = currTime + timeToCall;
             return id;
@@ -24,15 +27,20 @@
         };
 }());
 
-var $;
-$ = $ || {};
 (function ($) {
+	var last_time = 0;
+	var cur_time = 0;
+	var delta = 0;
 	$.animationFrame = function(render) {
 		if (!render) return;
-		(function animloop(){
+		(function animloop(time){
 		  requestAnimationFrame(animloop);
-		  render();
-		})();
+		  last_time = cur_time;
+		  cur_time = time;
+		  if (last_time>0 && cur_time>0)
+			  delta = cur_time-last_time;
+		  render(delta);
+		})(0);
 	}
 })($);
 
