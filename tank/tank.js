@@ -30,7 +30,7 @@ var Sun = (function() {
 			var color = 'rgb('+light+','+light+','+light+')';
 			var cos = Math.cos(radian);
 			var sin = Math.sin(radian);
-			var r = Math.sqrt(this.width*this.width+this.height*this.height)/2;
+			var r = Math.sqrt(this.width*this.width+this.height*this.height);
 			var p = [this.width/2+cos*r, this.height/2+sin*r];
 			p.color = color;
 			p.r = r;
@@ -85,13 +85,13 @@ var Sun = (function() {
 		},
 		light: function(cur_pos, color, shake=10) {
 			this._light(cur_pos, color);
-			/* var n = 3;
+			var n = 3;
 			for (var i=0; i<n; i++) {
 				var radian = Math.PI*2*i/n;
 				var cos = Math.cos(radian);
 				var sin = Math.sin(radian);
 				this._light([cur_pos[0]+cos*shake,cur_pos[1]+sin*shake],"rgba(255,255,255,0.3)");
-			} */
+			}
 		},
 		update: function(delta) {
 			delta /= 1000/60;
@@ -101,9 +101,9 @@ var Sun = (function() {
 		render: function(ctx) {
 			var ctx = ctx || $.ctx;
 			var cur_pos = this.getPos();
-			var max = Math.max($.width, $.height);
+			var max = Math.max($.width, $.height) *4/3;
 			var grd=ctx.createRadialGradient(cur_pos[0],cur_pos[1],1,cur_pos[0],cur_pos[1],max);
-			grd.addColorStop(0,"rgba(255,255,255,0.6)");
+			grd.addColorStop(0,"rgba(255,255,255,0.4)");
 			grd.addColorStop(1,"rgba(255,255,255,0)");
 			this.light(cur_pos, grd, 10);
 		}
@@ -161,7 +161,7 @@ var Tank = (function () {
 			ctx.beginPath();
 			ctx.fillStyle = 'white';
 			ctx.fillRect(0,0,$.width,$.height);
-			this.getPolygon().drawPolygon('#333', true, 20, ctx, this.getPos());
+			this.getPolygon().drawPolygon('#333', true, 10, ctx, this.getPos());
 			this.getPolygon(0.6).drawPolygon('#333', true, 5, ctx, this.getPos());
 			this.getPipe().drawPolygon('#333', true, 5, ctx, this.getPos());
 		},
@@ -210,8 +210,8 @@ var Barrier = (function() {
 
 window.onload = function () {
 	var canvas = document.createElement('canvas');
-	var width = window.innerWidth;
-	var height = window.innerHeight;
+	var width = window.innerWidth*2/3;
+	var height = window.innerHeight*2/3;
 	canvas.width = width;
 	canvas.height = height;
 	canvas.style.backgroundColor = 'black';
@@ -250,7 +250,7 @@ window.onload = function () {
 	}
 	
 	var barriers = (function(segments) {
-		segments.push([[-width,-height],[2*width,-height],[2*width,2*height],[-width,2*height]]);
+		segments.push([[-3*width,-3*height],[3*width,-3*height],[3*width,3*height],[-3*width,3*height]]);
 		var barriers = [];
 		for(var i=0; i<segments.length; i++) {
 			barriers.push(new Barrier(segments[i]));

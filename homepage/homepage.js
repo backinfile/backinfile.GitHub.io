@@ -60,6 +60,7 @@ if ($(document).width()<800) {
 
 if (ispc) {
 	$(function() {
+		$('.rightimage').css("opacity","0.75"); 
 		(function loadImage(){
 			var im = new Image();
 			im.onload = (function() {
