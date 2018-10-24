@@ -85,13 +85,13 @@ var Sun = (function() {
 		},
 		light: function(cur_pos, color, shake=10) {
 			this._light(cur_pos, color);
-			var n = 3;
+			/* var n = 3;
 			for (var i=0; i<n; i++) {
 				var radian = Math.PI*2*i/n;
 				var cos = Math.cos(radian);
 				var sin = Math.sin(radian);
 				this._light([cur_pos[0]+cos*shake,cur_pos[1]+sin*shake],"rgba(255,255,255,0.3)");
-			}
+			} */
 		},
 		update: function(delta) {
 			delta /= 1000/60;
@@ -101,9 +101,9 @@ var Sun = (function() {
 		render: function(ctx) {
 			var ctx = ctx || $.ctx;
 			var cur_pos = this.getPos();
-			var max = Math.max($.width, $.height) *4/3;
+			var max = cur_pos.r*1.5;
 			var grd=ctx.createRadialGradient(cur_pos[0],cur_pos[1],1,cur_pos[0],cur_pos[1],max);
-			grd.addColorStop(0,"rgba(255,255,255,0.4)");
+			grd.addColorStop(0,"rgba(255,255,255,0.8)");
 			grd.addColorStop(1,"rgba(255,255,255,0)");
 			this.light(cur_pos, grd, 10);
 		}
@@ -131,7 +131,7 @@ var Tank = (function () {
 		getPolygon: function(coe=1) {
 			var polygon = [];
 			var dx = [1,1,-1,-1];
-			var dy = [1.2,-1.2,-1.2,1.2];
+			var dy = [1.1,-1.5,-1.5,1.1];
 			var pos = this.getPos();
 			var rotate = this.getRotate();
 			if (coe != 1) {
@@ -175,21 +175,66 @@ var Tank = (function () {
 			var speed = 2*delta;
 			var cos = Math.cos(this.rotate-Math.PI/2);
 			var sin = Math.sin(this.rotate-Math.PI/2);
+			var dx = 0;
+			var dy = 0;
+			var dr = 0;
 			if ($.keystate['W'.charCodeAt()]) {
-				this.pos[0] += cos*speed;
-				this.pos[1] += sin*speed;
+				dx += cos*speed;
+				dy += sin*speed;
 			} else if ($.keystate['A'.charCodeAt()]) {
-				this.rotate -= 0.1;
+				dr -= 0.1;
 			} else if ($.keystate['S'.charCodeAt()]) {
-				this.pos[0] -= cos*speed;
-				this.pos[1] -= sin*speed;
+				dx -= cos*speed;
+				dy -= sin*speed;
 			} else if ($.keystate['D'.charCodeAt()]) {
-				this.rotate += 0.1;
+				dr += 0.1;
 			} else if ($.keystate['Q'.charCodeAt()]) {
 				this.piperotate -= 0.1;
 			} else if ($.keystate['E'.charCodeAt()]) {
 				this.piperotate += 0.1;
 			}
+			this.pos[0] += dx;
+			this.pos[1] += dy;
+			this.rotate += dr;
+			
+			if (this.isCollision() || !this.isInRect(0,0,$.width,$.height)) {
+				this.pos[0] -= dx;
+				this.pos[1] -= dy;
+				this.rotate -= dr;
+			}
+		},
+		isInRect: function(x1,y1,x2,y2) {
+			var pos = this.getPos();
+			var x = pos[0];
+			var y = pos[1];
+			if (Math.min(x1,x2,x)==x || Math.min(y1,y2,y)==y ||
+				Math.max(x1,x2,x)==y || Math.max(y1,y2,y)==y)
+				return false;
+			return true;
+		},
+		isCollision: function() {
+			var polygon = this.getPolygon();
+			var pos = this.getPos();
+			for (var i=0; i<$.barriers.length; i++) {
+				var polys = $.barriers[i].polygon;
+				for (var j=0; j<polys.length; j++) {
+					var len = polys.length;
+					var pa = polys[j];
+					var pb = polys[(j-1+len)%len];
+					if (getDistanceP2L(pos, [pa, pb]) < getDistanceP2P(pos, polygon[0])) {
+						for (var k=0; k<polygon.length; k++) {
+							var paa = polygon[k];
+							var pbb = polygon[(k-1+polygon.length)%polygon.length];
+							var interPos = getIntersection([paa, pbb], [pa, pb], false);
+							if (!interPos) continue;
+							if (interPos.t1 == 1 || interPos.t1 == 0) continue;
+							if (interPos.t2 == 1 || interPos.t2 == 0) continue;
+							return true;
+						}
+					}
+				}
+			}
+			return false;
 		}
 	};
 	return Tank;
@@ -210,8 +255,10 @@ var Barrier = (function() {
 
 window.onload = function () {
 	var canvas = document.createElement('canvas');
-	var width = window.innerWidth*2/3;
-	var height = window.innerHeight*2/3;
+	var width = window.innerWidth;
+	var height = window.innerHeight;
+	if (width > 1000) width=1000;
+	if (height > 600) height=600;
 	canvas.width = width;
 	canvas.height = height;
 	canvas.style.backgroundColor = 'black';
@@ -250,7 +297,7 @@ window.onload = function () {
 	}
 	
 	var barriers = (function(segments) {
-		segments.push([[-3*width,-3*height],[3*width,-3*height],[3*width,3*height],[-3*width,3*height]]);
+		segments.push([[-width,-2*height],[2*width,-2*height],[2*width,4*height],[-width,4*height]]);
 		var barriers = [];
 		for(var i=0; i<segments.length; i++) {
 			barriers.push(new Barrier(segments[i]));
@@ -301,10 +348,8 @@ window.onload = function () {
 var segments = [
 	[[100,150],[120,50],[200,80],[140,210]],
 	[[100,200],[120,250],[60,300]],
-	[[200,260],[220,150],[300,320]],
-	[[540,60],[560,40],[570,70]],
-	[[650,190],[760,170],[740,270],[630,290]],
-	[[450,490],[760,470],[740,530],[640,530],[630,590]],
+	[[650,390],[760,370],[740,270],[630,290]],
+	[[350,490],[560,470],[640,490],[570,530],[430,550]],
 	[[600,95],[780,50],[680,150]]
 ];
 
@@ -328,10 +373,28 @@ function getIntersection(ray,segment,isray=true){
 	if (!isray && T1>1) return null;
 	if(T2<0 || T2>1) return null;
 	var tp = [r_px+r_dx*T1, r_py+r_dy*T1];
-	tp.p = T1;
+	tp.t1 = T1;
+	tp.t2 = T2;
 	return tp;
 }
-
+function getDistanceP2L(Point, Line) {
+	if (Line[0][0] == Line[1][0]) 
+		return Math.abs(Line[0][0]-Point[0]);
+	if (Line[0][1] == Line[1][1]) 
+		return Math.abs(Line[0][1]-Point[1]);
+	var la = getDistanceP2P(Line[0], Point);
+	var lb = getDistanceP2P(Line[1], Point);
+	var lc = getDistanceP2P(Line[0], Line[1]);
+	var p = (la+lb+lc)/2;
+	// 海伦公式
+	var Area = Math.sqrt(p*(p-la)*(p-lb)*(p-lc));
+	return Area*2/lc;
+}
+function getDistanceP2P(pa, pb) {
+	var dx = pa[0]-pb[0];
+	var dy = pa[1]-pb[1];
+	return Math.sqrt(dx*dx+dy*dy);
+};
 
 
 
