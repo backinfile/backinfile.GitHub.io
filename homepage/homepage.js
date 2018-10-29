@@ -1,5 +1,6 @@
 
 var content = [
+	['Friday','../Friday/index.html'],
 	['贝塞尔曲线','../curve/index.html'],
 	['shadow','../tank/index.html'],
 	['彩色画板','../canvasV3/index.html'],

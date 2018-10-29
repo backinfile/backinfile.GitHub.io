@@ -482,7 +482,9 @@ var Player = (function() {
 			return false;
 		},
 		playCard: function(isTrue) {
-			var functions = [null];
+			if (!this.functions)
+				this.functions = [null];
+			var functions = this.functions;
 			if (isTrue) {
 				this.tip.setUseable(true);
 				this.next.setUseable(true);
@@ -496,20 +498,25 @@ var Player = (function() {
 					//$.selected = my.selected;
 					if (my.checkPlayable(null, outCards)) {
 						my.action.setUseable(true);
+						console.log('in functions[0]', functions);
 					} else {
 						my.action.setUseable(false);
 					}
 				};
 				functions[0]();
-				hookClick(function() {
-					for (var i=0; i<functions.length; i++) {
-						if (functions[i])functions[i]();
-					}
-				});
-				hookClick(function() {
-					$.clicked = null;
-				});
+				if (!this.hooked) {
+					hookClick(function() {
+						for (var i=0; i<functions.length; i++) {
+							if (functions[i])functions[i]();
+						}
+					});
+					hookClick(function() {
+						$.clicked = null;
+					});
+					this.hooked = true;
+				}
 			} else {
+				console.log('in');
 				functions[0] = null;
 				this.tip.setUseable(false);
 				this.next.setUseable(false);
@@ -581,6 +588,10 @@ function boardInit() {
 		players[i].sortCards();
 		//console.log(players[i].hands.join('\n'));
 	}
+	players[0].hands.push(allCards[17*3]);
+	players[0].hands.push(allCards[17*3+1]);
+	players[0].hands.push(allCards[17*3+2]);
+	players[0].sortCards();
 	var width = window.innerWidth;
 	var height = window.innerHeight;
 	$.width = width;
