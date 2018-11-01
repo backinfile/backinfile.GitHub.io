@@ -9,6 +9,23 @@ GameObject.Card = (function() {
 		this.data = data;
 	}
 	Card.prototype = {
+		toString: function() {
+			if (this.str) return this.str;
+			var title = Resources.CardTypeName[this.type];
+			var attack = this.data.attack;
+			var skill = this.data.skill;
+			var str = '['+title+']';
+			if (this.type != 'pirateCard') {
+				str += '['+attack+']';
+				if (skill.size() > 0) {
+					skill.forEach(function(key) {
+						str += '['+Resources.SkillShortcut[key](skill[key])+']';
+					});
+				}
+			}
+			this.str = str;
+			return str;
+		}
 	};
 	return Card;
 })();
@@ -70,7 +87,6 @@ GameObject.HandsDiv = (function() {
 		},
 		animateRemove: function(card, callback) {
 			var index = -1;
-			var cnt = 0;
 			for (let i=0; i<this.warps.length; i++) {
 				if (this.warps[i].cardList[0] == card) {
 					index = i;
@@ -87,15 +103,43 @@ GameObject.HandsDiv = (function() {
 				if (callback) callback();
 				return;
 			}
-			for (let i=0; i<len; i++) {
-				Control.Animation.CardsDivMove(cards, this.getPos(i+(i>index?1:0),1), 
-					this.getPos(i), function() {
-					cnt++;
-					if (cnt >= len) {
-						if (callback) callback();
-					}
-				});
+			var cnt = len;
+			var my = this;
+			setTimeout(function() {
+				for (let i=0; i<len; i++) {
+					let cards = my.warps[i];
+					Control.Animation.CardsDivMove(cards, my.getPos(i+(i>=index?1:0),1), 
+						my.getPos(i), function() {
+						cnt++;
+						if (cnt >= len) {
+							if (callback) callback();
+						}
+					});
+				}
+			}, 200);
+		},
+		animateRemove2: function(i, callback) {
+			var index = i;
+			this.warps.splice(i,1);
+			var len = this.warps.length;
+			if (len <= 0) {
+				if (callback) callback();
+				return;
 			}
+			var cnt = len;
+			var my = this;
+			setTimeout(function() {
+				for (let i=0; i<len; i++) {
+					let cards = my.warps[i];
+					Control.Animation.CardsDivMove(cards, my.getPos(i+(i>=index?1:0),1), 
+						my.getPos(i), function() {
+						cnt++;
+						if (cnt >= len) {
+							if (callback) callback();
+						}
+					});
+				}
+			}, 200);
 		},
 		animatePush: function(callback) {
 			var len = this.warps.length;
@@ -144,6 +188,20 @@ GameObject.HandsDiv = (function() {
 				var cell = width/len;
 				var gap = cell - cardWidth;
 				return [offsetX+cell*i+gap/2, 400];
+			}
+		},
+		getCardPos: function(card) {
+			for (let i=0; i<this.warps.length; i++) {
+				if (this.warps[i].cardList[0] == card) {
+					return this.getPos(i);
+				}
+			}
+		},
+		getCardStation: function(card) {
+			for (let i=0; i<this.warps.length; i++) {
+				if (this.warps[i].cardList[0] == card) {
+					return i;
+				}
 			}
 		}
 	}

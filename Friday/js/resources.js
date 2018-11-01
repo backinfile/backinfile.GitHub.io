@@ -24,27 +24,27 @@ Resources.SkillDescription = {
 	LIFE: v => '生命值'+(v>0?'+':'')+v,
 	STOP: v => '免费抽牌数置为0',
 	MAX2ZERO: v => '战力最高的牌的战力置为0',
-	DESTORY: v => '摧毁一张牌',
-	EXCHANGE: v => '交换至多'+v+'张牌',
+	DESTORY: v => '废弃一张牌',
+	EXCHANGE: v => '弃掉至多'+v+'张牌,然后抽取等量的牌',
 	DOUBLE: v => '使1张牌的攻击力加倍',
 	COPY: v => '复制1张牌的战力',
 	CARD: v => '抽'+v+'张牌',
 	STEP: v => '当前冒险的阶段-1',
 	PLACE: v => '将1张牌放到牌库底部',
-	VISION: v => '查看牌库顶至多三张牌, 你可以弃掉其中一张，然后将未弃掉的以任意次数放回牌库顶'
+	VISION: v => '抽三张牌,然后你可以废弃抽到的牌'
 };
 Resources.SkillShortcut = {
 	LIFE: v => '生命值'+(v>0?'+':'')+v,
 	STOP: v => '停止免费抽牌',
 	MAX2ZERO: v => '最大战力为0',
-	DESTORY: v => '摧毁:1',
+	DESTORY: v => '废弃:1',
 	EXCHANGE: v => '交换:'+v+'',
 	DOUBLE: v => '加倍:1',
 	COPY: v => '复制:1',
 	CARD: v => '卡牌'+(v>0?'+':'')+v,
 	STEP: v => '阶段-1',
 	PLACE: v => '埋葬:'+v,
-	VISION: v => '挑选:'+v
+	VISION: v => '遴选:'+v
 };
 Resources.CardTypeName = {
 	agingCard: ['衰老'],
@@ -52,6 +52,7 @@ Resources.CardTypeName = {
 	hazardCard: ['冒险','知识'],
 	pirateCard: ['海盗']
 };
+Resources.StepName = ['green', 'yellow', 'red'];
 
 Resources.Image = {
 	agingCard: {path:'img/aging.jpg', size:{width:145, height:231}},
@@ -102,14 +103,14 @@ Resources.CardDate = {
 		{attack:2,num:1,cost:1,skill:{EXCHANGE:1},	aim:{white:3,green:2,yellow:5,red:8}},
 		{attack:2,num:1,cost:1,skill:{DOUBLE:1},	aim:{white:3,green:2,yellow:5,red:8}},
 		{attack:3,num:1,cost:1,skill:{CARD:1},		aim:{white:4,green:4,yellow:7,red:11}},
-		{attack:3,num:1,cost:1,skill:{VISION:1},	aim:{white:4,green:4,yellow:7,red:11}},
+		{attack:3,num:1,cost:1,skill:{VISION:3},	aim:{white:4,green:4,yellow:7,red:11}},
 		{attack:3,num:1,cost:1,skill:{EXCHANGE:1},	aim:{white:4,green:4,yellow:7,red:11}},
 		{attack:1,num:1,cost:1,skill:{LIFE:1},		aim:{white:2,green:1,yellow:3,red:6}},
 		{attack:2,num:1,cost:1,skill:{DESTORY:1},	aim:{white:2,green:1,yellow:3,red:6}},
 		{attack:1,num:1,cost:1,skill:{DOUBLE:1},	aim:{white:2,green:1,yellow:3,red:6}},
 		{attack:2,num:1,cost:1,skill:{CARD:1},		aim:{white:3,green:2,yellow:5,red:8}},
 		{attack:2,num:1,cost:1,skill:{DESTORY:1},	aim:{white:3,green:2,yellow:5,red:8}},
-		{attack:2,num:1,cost:1,skill:{VISION:1},	aim:{white:3,green:2,yellow:5,red:8}},
+		{attack:2,num:1,cost:1,skill:{VISION:3},	aim:{white:3,green:2,yellow:5,red:8}},
 		{attack:1,num:1,cost:1,skill:{LIFE:1},		aim:{white:2,green:1,yellow:3,red:6}},
 		{attack:1,num:1,cost:1,skill:{COPY:1},		aim:{white:2,green:1,yellow:3,red:6}},
 		{attack:2,num:1,cost:1,skill:{DESTORY:1},	aim:{white:2,green:1,yellow:3,red:6}},

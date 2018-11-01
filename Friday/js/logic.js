@@ -1,28 +1,5 @@
 
 
-(function NumKit() {
-	Math.randInt = function (min, max) {
-		return Math.floor(Math.random() * (max - min + 1) + min);
-	}
-	Math.distance = function (posa, posb) {
-		var dx = posa[0] - posb[0];
-		var dy = posa[1] - posb[1];
-		return Math.sqrt(dx * dx + dy * dy);
-	}
-	if (!Array.prototype.shuffle) {
-		Array.prototype.shuffle = function () {
-			for (var i = 0; i < this.length; i++) {
-				var rnd = Math.randInt(0, this.length - 1);
-				if (rnd == i)
-					continue;
-				var x = this[i];
-				this[i] = this[rnd];
-				this[rnd] = x;
-			}
-			return this;
-		}
-	}
-})();
 
 var Game = {};
 
@@ -43,16 +20,23 @@ Game.Init = function () {
 		// GameObject.HandsDiv Control.getCardUnit
 		Game.CardUnit = Control.getCardUnit();	// 用来表示抽牌堆的顶部
 		
-		Game.hazardPile = GameObject.AllCards['hazardCard'].slice(0,5).shuffle();
-		Game.drawPile = GameObject.AllCards['battleCard'].slice(4,8);//.shuffle();
-		Game.drawPile = Game.drawPile.concat(GameObject.AllCards['hazardCard'].slice(15,20)).shuffle();
+		Game.hazardPile = GameObject.AllCards['hazardCard'].slice(15,30).shuffle();
+		Game.drawPile = GameObject.AllCards['battleCard'].slice(0,4);//.shuffle();
+		Game.drawPile = Game.drawPile.concat(GameObject.AllCards['hazardCard'].slice(0,15));//.shuffle();
 		Game.agingPile = GameObject.AllCards['agingCard'].slice().shuffle();
+		/* Game.drawPile.forEach(function(key) {
+			console.log(key.toString());
+		}); */
 		Game.discardPile = [];			// 丢弃的冒险牌
 		Game.discardBattlePile = [];	// player丢弃的牌
 		Game.destroyedPile = [];		// 摧毁的牌
 		Game.hands = [];				// 手牌
 
 		Game.cardsTmp = GameObject.getCardWarp();  		// 用来移动抽过来的卡的卡套
+		Game.cardsTmpForDestroy = GameObject.getCardWarp();// 用来移动废弃的牌的卡套
+		Game.cardsTmpDisCard = GameObject.getCardWarp(); // 用来移动丢弃的牌的卡套
+		Game.cardsTmpDisCardSave = GameObject.getCardWarp();// 用来保存丢弃的牌的卡套
+		
 		Game.cardsMiddle = [GameObject.getCardWarp(),
 				GameObject.getCardWarp()]; 				// 用来冒险牌二选一的卡套
 		Game.currentMiddle = null;						// 当前选中的冒险牌的卡套
@@ -73,7 +57,7 @@ Game.Init = function () {
 	});
 }
 
-Game.Loop = function () {
+Game.Loop = function () {  // 选择冒险牌
 	//GameObject.HandsDiv 
 	console.log('loop!');
 	GameObject.Mask.show(true);
@@ -132,8 +116,7 @@ Game.FirstCheckStates = function () {
 	Game.Data.curStep = Game.Data.step;
 	GameObject.Buttons.showSole(1);
 	GameObject.Buttons.show(Game.ButtonsPos[0],Game.ButtonsPos[1]);
-	GameObject.Buttons.onclick[1] = function() {
-		// 结算时
+	GameObject.Buttons.onclick[1] = function() { // 结算
 		if (Game.selected) {
 			Game.selected.div.selected(false);
 			Game.selected = null;
@@ -226,7 +209,278 @@ Game.FirstCheckStates = function () {
 			}
 		}
 	}
+	GameObject.Buttons.onclick[0] = function() { // 发动技能
+		var skill = Game.selected.data.skill;
+		var card = Game.selected;
+		card.div.div.onclick = null;
+		card.div.canBeSelect(false);
+		card.div.used(true);
+		card.used = true;
+		card.div.selected(false);
+		card.onclick = null;
+		Game.selected = null;
+		GameObject.Buttons.show([]);
+		if (skill.LIFE) {
+			Game.Data.health += skill.LIFE;
+			if (Game.Data.health > Game.Data.healthMax)
+				Game.Data.health = Game.Data.healthMax;
+			Game.LoopCheckStates();
+		} else if (skill.STEP) {
+			Game.Data.curStep--;
+			if (Game.Data.curStep<0) Game.Data.curStep=0;
+			Game.LoopCheckStates();
+		} else if (skill.COPY) {
+			!function() {
+				var selected = null;
+				function CheckCopy() {
+					GameObject.Buttons.showSole(2, selected?true:false);
+				}
+				CheckCopy();
+				GameObject.Buttons.onclick[2] = function() {
+					// skill
+					var attack = getCurrentAttackInHand(selected);
+					card.buff.COPY = {attack:attack};
+					// 通用
+					GameObject.Buttons.showSole(2, false);
+					Game.LoopCheckStates();
+					selected.div.selected(false);
+					card.div.div.onclick = null;
+				}
+				for (let i=0; i<Game.hands.length; i++) {
+					let hcard = Game.hands[i];
+					if (hcard === card) {
+						card.div.div.onclick = null;
+						continue;
+					}
+					hcard.onCopyClickDown =  function() {
+						hcard.div.selected(true);
+						hcard.div.div.onclick = hcard.onCopyClickUp;
+						if (selected) {
+							selected.div.div.onclick = selected.onCopyClickDown;
+							selected.div.selected(false);
+						}
+						selected = hcard;
+						CheckCopy();
+					}
+					hcard.onCopyClickUp = function() {
+						hcard.div.selected(false);
+						hcard.div.div.onclick = hcard.onCopyClickDown;
+						selected = null;
+						CheckCopy();
+					}
+					hcard.div.div.onclick = hcard.onCopyClickDown;
+				}
+			}();
+		} else if (skill.DESTORY) {
+			!function() {
+				var selected = null;
+				function CheckSkill() {
+					GameObject.Buttons.showSole(2, selected?true:false);
+				}
+				CheckSkill();
+				GameObject.Buttons.onclick[2] = function() {
+					GameObject.Buttons.showSole(2, false);
+					selected.div.selected(false);
+					card.div.div.onclick = null;
+					
+					Game.hands.remove(selected);
+					
+					var pos = GameObject.HandsDiv.getCardPos(selected);
+					var index = GameObject.HandsDiv.getCardStation(selected);
+					Game.cardsTmpForDestroy.div.setAlpha(1);
+					Game.cardsTmpForDestroy.add(selected);
+					Game.cardsTmpForDestroy.div.show(true);
+					Game.cardsTmpForDestroy.div.setLayer(index+50);
+					Control.Animation.CardsDesTroy(Game.cardsTmpForDestroy, pos, function() {
+						Game.cardsTmpForDestroy.remove(selected);
+						GameObject.HandsDiv.animateRemove2(index, function() {
+							console.log('done');
+							Game.LoopCheckStates();
+						});
+					});
+					
+				}
+				for (let i=0; i<Game.hands.length; i++) {
+					let hcard = Game.hands[i];
+					if (hcard === card) {
+						card.div.div.onclick = null;
+						continue;
+					}
+					hcard.onSkillClickDown =  function() {
+						hcard.div.selected(true);
+						hcard.div.div.onclick = hcard.onSkillClickUp;
+						if (selected) {
+							selected.div.div.onclick = selected.onSkillClickDown;
+							selected.div.selected(false);
+						}
+						selected = hcard;
+						CheckSkill();
+					}
+					hcard.onSkillClickUp = function() {
+						hcard.div.selected(false);
+						hcard.div.div.onclick = hcard.onSkillClickDown;
+						selected = null;
+						CheckSkill();
+					}
+					hcard.div.div.onclick = hcard.onSkillClickDown;
+				}
+			}();
+		} else if (skill.CARD) {
+			card.div.div.onclick = null;
+			Game.CardUnit.drawCard(function() {
+				if (skill.CARD == 2) {
+					Game.CardUnit.drawCard(function() {
+						Game.LoopCheckStates();
+					});
+				} else {
+					Game.LoopCheckStates();
+				}
+			});
+			
+		} else if (skill.DOUBLE) {
+			!function() {
+				var selected = null;
+				function CheckSkill() {
+					GameObject.Buttons.showSole(2, selected?true:false);
+				}
+				CheckSkill();
+				GameObject.Buttons.onclick[2] = function() {
+					selected.buff.DOUBLE = true;
+					
+					GameObject.Buttons.showSole(2, false);
+					selected.div.selected(false);
+					card.div.div.onclick = null;
+					Game.LoopCheckStates();
+					
+				}
+				for (let i=0; i<Game.hands.length; i++) {
+					let hcard = Game.hands[i];
+					if (hcard === card) {
+						card.div.div.onclick = null;
+						continue;
+					}
+					hcard.onSkillClickDown =  function() {
+						hcard.div.selected(true);
+						hcard.div.div.onclick = hcard.onSkillClickUp;
+						if (selected) {
+							selected.div.div.onclick = selected.onSkillClickDown;
+							selected.div.selected(false);
+						}
+						selected = hcard;
+						CheckSkill();
+					}
+					hcard.onSkillClickUp = function() {
+						hcard.div.selected(false);
+						hcard.div.div.onclick = hcard.onSkillClickDown;
+						selected = null;
+						CheckSkill();
+					}
+					hcard.div.div.onclick = hcard.onSkillClickDown;
+				}
+			}();
+
+		} else if (skill.VISION) {
+			/* card.div.div.onclick = null;
+			Game.LoopCheckStates(true);
+			Game.CardUnit.drawCard(function() {
+				Game.LoopCheckStates(true);
+				Game.CardUnit.drawCard(function() {
+					Game.LoopCheckStates(true);
+					Game.CardUnit.drawCard(function() {
+						Game.LoopCheckStates(true);
+						var selected = [];
+						function CheckSkill() {
+							var flag = true;
+							for (let i=0; i<Game.hands.length; i++) {
+								if (Game.hands.length-i > 3 && selected[i]) {
+									flag = false;
+								}
+							}
+							GameObject.Buttons.showSole(2, flag);
+						}
+						CheckSkill();
+						GameObject.Buttons.onclick[2] = function() {
+							GameObject.Buttons.showSole(2, false);
+							selected.div.selected(false);
+							card.div.div.onclick = null;
+							
+							var cnt = 0;
+							var len = Game.hands.length;
+							function _clear() {
+								Game.LoopCheckStates();
+							}
+							function _destroy(j) {
+								if (selected[len-1-i]) {
+									var selectedCard = Game.hands[len-1-j];
+									Game.hands.remove(selectedCard);
+									
+									var pos = GameObject.HandsDiv.getCardPos(selectedCard);
+									var index = GameObject.HandsDiv.getCardStation(selectedCard);
+									Game.cardsTmpForDestroy.div.setAlpha(1);
+									Game.cardsTmpForDestroy.add(selectedCard);
+									Game.cardsTmpForDestroy.div.show(true);
+									Game.cardsTmpForDestroy.div.setLayer(index+50);
+									Control.Animation.CardsDesTroy(Game.cardsTmpForDestroy, pos, function() {
+										Game.cardsTmpForDestroy.remove(selectedCard);
+										GameObject.HandsDiv.animateRemove2(index, function() {
+											if (j<3) _destroy(j+1);
+											else {
+												_clear();
+											}
+										});
+									});
+								} else {
+									if (j<3) _destroy(j+1);
+									else {
+										_clear();
+									}
+								}
+							}
+							_destroy(0);
+							
+						}
+						for (let i=0; i<Game.hands.length; i++) {
+							let hcard = Game.hands[i];
+							if (Game.hands.length-i > 3) {
+								hcard.div.selected(false);
+								hcard.div.div.onclick = null;
+								continue;
+							}
+							hcard.onSkillClickDown =  function() {
+								hcard.div.selected(true);
+								hcard.div.div.onclick = hcard.onSkillClickUp;
+								selected[i] = true;
+								CheckSkill();
+							}
+							hcard.onSkillClickUp = function() {
+								hcard.div.selected(false);
+								hcard.div.div.onclick = hcard.onSkillClickDown;
+								selected[i] = false;
+								CheckSkill();
+							}
+							hcard.div.div.onclick = hcard.onSkillClickDown;
+						}
+					});
+				});
+			}); */
+		} else {
+			Game.LoopCheckStates();
+		}
+	}
 	Game.LoopCheckStates();
+}
+function getCurrentAttackInHand(card) {
+	var attack = card.data.attack;
+	if (card.buff && card.buff.size()>0) {
+		if (card.buff.COPY) {
+			attack = card.buff.COPY.attack;
+			console.log('copy', attack);
+		}
+		if (card.buff.DOUBLE) {
+			attack *= 2;
+		}
+	}
+	return attack;
 }
 
 Game.DataUpdate = function() {
@@ -237,57 +491,88 @@ Game.DataUpdate = function() {
 	Game.DataShow.showStep(Game.Data.curStep);
 }
 
-Game.LoopCheckStates = function() {
-	
+Game.LoopCheckStates = function(blockSkill=false) {
+	console.log('loop check');
 	// 按钮处理
-	if (Game.selected){ //&& Game.selected.data.skill.size()>0) {
-		GameObject.Buttons.showSole(0, true);
-		var skill = Game.selected.data.skill;
-		var card = Game.selected;
-		GameObject.Buttons.onclick[0] = function() {
-			// 发动技能时
-			if (skill.LIFE) {
-				Game.Data.health += skill.LIFE;
-				if (Game.Data.health > Game.Data.healthMax)
-					Game.Data.health = Game.Data.healthMax;
-			}
-			if (skill.STEP) {
-				Game.Data.curStep--;
-				if (Game.Data.curStep<0) Game.Data.curStep=0;
-			}
-			card.div.canBeSelect(false);
-			card.div.used(true);
-			card.div.selected(false);
-			card.onclick = null;
-			Game.selected = null;
-			Game.LoopCheckStates();
+	GameObject.Buttons.showSole(1, true);
+	!function() {
+		if (!Game.selected){ //&& Game.selected.data.skill.size()>0) {
+			GameObject.Buttons.showSole(0, false);
+			return;
 		}
-	} else {
-		GameObject.Buttons.showSole(0, false);
-	}
+		GameObject.Buttons.showSole(0, true);
+	}();
 	
 	
 	
 	// 数值更新
-	var stepname = ['green', 'yellow', 'red'];
 	var hasFreeCard = true;
-	var attackCnt = 0;
-	Game.Data.aimAttack = Game.curHazardCard.data.aim[stepname[Game.Data.curStep]];
-	Game.hands.forEach(function(card) {
-		var tmp = card.data.attack;
-		card.buff.forEach(function() {});
-		if (card.data.skill['STOP']) hasFreeCard = false;
+	!function _LoopDataUpdata() {
+		var attackCnt = 0;
+		var stepname = Resources.StepName;
+		Game.Data.aimAttack = Game.curHazardCard.data.aim[stepname[Game.Data.curStep]];
+		var max = -10, max2zero = false;
+		Game.hands.forEach(function(card) {
+			var tmp = getCurrentAttackInHand(card);
+			if (tmp > max) max = tmp;
+			card.data.attack;
+			if (card.data.skill['STOP']) hasFreeCard = false;
+			if (card.data.skill.MAX2ZERO) max2zero = true;
+			
+			attackCnt += tmp;
+			// console.log(tmp);
+		});
+		if (max2zero && max != -10) attackCnt -= max;
+		if (Game.Data.freeChoosed >= Game.Data.freeChoose) hasFreeCard = false;
 		
-		attackCnt += tmp;
-	});
-	if (Game.Data.freeChoosed >= Game.Data.freeChoose) hasFreeCard = false;
+		Game.Data.curAttack = attackCnt;
+		Game.DataUpdate();
+	}();
 	
-	Game.Data.curAttack = attackCnt;
-	Game.DataUpdate();
+	// 给每张有技能的手牌添加点击事件
+	!function _AddClickForHands() {
+		for (let i=0; i<Game.hands.length; i++) {
+			let card = Game.hands[i];
+			if (card.div.div.onclick && (card.div.div.onclick === card.onclick ||
+				card.div.div.onclick === card.onclickUp)) {
+				continue;
+			}
+			if (card.used) console.log('used!!!');
+			if (!blockSkill && !card.used && card.data.skill.size()>0 && card.type!='agingCard') {
+				card.div.canBeSelect(true);
+				card.onclick = function () {
+					// console.log('click', card.toString());
+					if (Game.selected) {
+						Game.selected.div.div.onclick = Game.selected.onclick;
+						Game.selected.div.selected(false);
+					}
+					Game.selected = card;
+					card.div.selected(true);
+					card.div.div.onclick = card.onclickUp;
+					Game.LoopCheckStates();
+				}
+				card.onclickUp = function() {
+					// console.log('false click', card.toString());
+					if (Game.selected) {
+						Game.selected.div.selected(false);
+						Game.selected = null;
+					}
+					card.div.div.onclick = card.onclick;
+					Game.LoopCheckStates();
+				}
+				card.div.div.onclick = card.onclick;
+				card.div.canBeSelect(true);
+			} else {
+				card.div.div.onclick = null;
+				card.div.canBeSelect(false);
+			}
+		}
+	}();
 	
 	
-	function CardUnitClick() {
-		// 抽牌时
+	// 从牌堆抽牌时
+	//Game.DrawCard = Game.CardUnit.drawCard
+	function CardUnitClick(callback) {
 		Game.Data.freeChoosed++;
 		if (!hasFreeCard) Game.Data.health -= 1;
 		
@@ -299,6 +584,13 @@ Game.LoopCheckStates = function() {
 		Game.cardsTmp.div.setPos(Game.DrawPilePos[0],Game.DrawPilePos[1]);
 		Game.cardsTmp.div.show(true);
 		Game.cardsTmp.div.setLayer(80);
+					// 处理抽到的卡
+					card.buff = {};
+					card.used = false;
+					card.div.used(false);
+					card.div.canBeSelect(false);
+					card.div.div.onclick = null;
+					Game.newCard = card;
 		
 		
 		function MoveCard() {
@@ -309,43 +601,20 @@ Game.LoopCheckStates = function() {
 						
 					
 					// 处理抽到的卡
-					card.buff = [];
+					card.buff = {};
+					card.used = false;
 					card.div.used(false);
-					if (card.data.skill.size()>0) {
-						card.div.canBeSelect(true);
-						card.onclick = function () {
-							console.log('click');
-							if (Game.selected) {
-								Game.selected.div.div.onclick = Game.selected.onclick;
-								Game.selected.div.selected(false);
-							}
-							Game.selected = card;
-							card.div.selected(true);
-							card.div.div.onclick = function() {
-								console.log('false click');
-								if (Game.selected) {
-									Game.selected.div.selected(false);
-									Game.selected = null;
-								}
-								card.div.div.onclick = card.onclick;
-								Game.LoopCheckStates();
-							}
-							Game.LoopCheckStates();
-						}
-						card.div.div.onclick = card.onclick;
-						console.log('give click');
-						Game.card = card;
-					} else {
-						card.div.canBeSelect(false);
-						card.div.div.onclick = null;
-					}
+					card.div.canBeSelect(false);
+					card.div.div.onclick = null;
 					
 					Game.cardsTmp.remove(card);
 					Game.cardsTmp.div.show(false);
-					Game.hands.push(card);
 					GameObject.HandsDiv.push(card);
+					// console.log('add to hands',card.toString());
+					Game.hands.push(card);
 					
 					Game.LoopCheckStates();
+					if (callback) callback();
 				});
 			});
 		}
@@ -355,7 +624,7 @@ Game.LoopCheckStates = function() {
 			//card.div.setRotate(true);
 			//card.div.setLayer(90);
 			Control.Animation.CardDivFlip(card, true, function() {
-				console.log('animateRotate done!');
+				// console.log('animateRotate done!');
 				setTimeout(MoveCard,200);
 			});
 		} else {
@@ -363,6 +632,7 @@ Game.LoopCheckStates = function() {
 		}
 	}
 	
+	// 设置牌堆
 	Game.CardUnit.setTip(true, true, hasFreeCard?'免费':'生命值-1', null, CardUnitClick, Game.drawPile, function() {
 		//用完一次牌堆
 		console.log('aging....');

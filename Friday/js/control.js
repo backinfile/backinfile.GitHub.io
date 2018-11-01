@@ -19,6 +19,31 @@ var Control = {};
 	}
 })();
 
+
+(function NumKit() {
+	Math.randInt = function (min, max) {
+		return Math.floor(Math.random() * (max - min + 1) + min);
+	}
+	Math.distance = function (posa, posb) {
+		var dx = posa[0] - posb[0];
+		var dy = posa[1] - posb[1];
+		return Math.sqrt(dx * dx + dy * dy);
+	}
+	if (!Array.prototype.shuffle) {
+		Array.prototype.shuffle = function () {
+			for (var i = 0; i < this.length; i++) {
+				var rnd = Math.randInt(0, this.length - 1);
+				if (rnd == i)
+					continue;
+				var x = this[i];
+				this[i] = this[rnd];
+				this[rnd] = x;
+			}
+			return this;
+		}
+	}
+})();
+
 (function() {
 	function span(size, content,isbold=true, color=null){
 		var html = '<span style="font-size:'+size+'px;';
@@ -247,6 +272,9 @@ var Control = {};
 			} else {
 				this.div.style.visibility = 'hidden';
 			}
+		},
+		setAlpha: function(alpha) {
+			this.div.style.opacity = alpha;
 		}
 	}
 	Control.newCardsDiv = function() {
@@ -552,7 +580,10 @@ var Control = {};
 			this.data.loadFailCallback = loadFailCallback;
 			this.mask.innerHTML = tipText;
 		},
-		checkState: function(e) {
+		drawCard: function(callback=null) {
+			this.checkState('click', callback);
+		},
+		checkState: function(e, filpCallbackCallback=null) {
 			if (e == 'mouseover') {
 				if (this.data.isTip) {
 					this.mask.style.visibility = 'visible';
@@ -573,11 +604,17 @@ var Control = {};
 						}
 						if (card) {
 							//console.log('autoload', card);
+							card.div.used(false);
+							card.div.canBeSelect(false);
+							card.div.recover();
 							this.setFront(card);
 						}
 					}
 					this.mask.style.visibility = 'hidden';
-					this.animateFlip(this.data.filpCallback);
+					var my = this;
+					this.animateFlip(function() {
+						my.data.filpCallback(filpCallbackCallback);
+					});
 				}
 				this.data.isTip = false;
 				this.data.isFlip = false;
@@ -630,10 +667,10 @@ Control.Animation.CardsDivMove = function(cards, pos, aim, callback) {
 	var item = cards.div;
 	GameObject.Mask.show(false); 
 	//console.log(pos[0], pos[1], aim[0],aim[1]);
-	var speed = 40;
+	var speed = 50;
 	var pos = pos.slice();
 	var inter = setInterval(function() {
-		speed += 2;
+		speed += 1;
 		var r = Math.distance(pos, aim);
 		if (r < speed) {
 			item.setPos(aim[0], aim[1]);
@@ -654,7 +691,7 @@ Control.Animation.CardsDivMove = function(cards, pos, aim, callback) {
 	}, 1000/60);
 }
 Control.Animation.CardDivFlip = function(card, isRotate, callback) {
-	item = card.div;
+	var item = card.div;
 	var aim = 0, cur = item.rotate, speed=15;
 	if (isRotate === true) aim = 180;
 	else if (isRotate === false) aim = 360;
@@ -672,3 +709,27 @@ Control.Animation.CardDivFlip = function(card, isRotate, callback) {
 		}
 	}, 1000/60);
 }
+Control.Animation.CardsDesTroy = function(cards, pos, callback) {
+	var item = cards.div;
+	pos = pos.slice();
+	var step = 70;
+	var speed = 2;
+	var alphaSpeed = 1/step;
+	item.setAlpha(1);
+	item.setPos(pos[0], pos[1]);
+	var inter = setInterval(function() {
+		// speed *= 0.9;
+		pos[1] -= speed;
+		item.setPos(pos[0], pos[1]);
+		item.setAlpha(step*alphaSpeed);
+		step--;
+		if (step < 0) {
+			clearInterval(inter);
+			if (callback) callback();
+		}
+	}, 1000/60);
+}
+
+
+
+
