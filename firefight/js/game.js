@@ -66,7 +66,7 @@ class MultiCallback {
 
 class Card{
 	constructor(no, isShow=false) {
-		var frontImg = 'img/00'+(no<10?'0':'')+no+'.jpg';
+		var frontImg = 'img/'+(no<10?'000':(no<100?'00':(no<1000?'0':'')))+no+'.jpg'; 
 		var backImg = 'img/0001.jpg';
 		var height = 1075*0.14;
 		var width = 780*0.14;
@@ -341,6 +341,7 @@ class Card{
 					my.setZIndex();
 					$(document).off('mousemove');
 					$(my.warp).off('mousemove mouseup');
+					//$(my.warp).click();
 					my.warp.style.cursor = "grab";
 					if (callback) callback(my, ori_x,ori_y,my.x,my.y);
 				});
@@ -379,6 +380,8 @@ class Card{
 			this.warp.style.boxShadow = '0px 0px 10px 1px blue';
 		} else if (type == 2) {
 			this.warp.style.boxShadow = '0px 0px 10px 1px black';
+		} else if (type == 3) {
+			this.warp.style.boxShadow = '0px 0px 10px 1px red';
 		} else if (type == 0) {
 			this.warp.style.boxShadow = '';
 		}
@@ -415,12 +418,14 @@ class Hero extends Card {
 		} else {
 			this.data = [35,0,0, [],[],[],[]];
 		}
+		this.equipments = [];
 		this.activeDecorate();
 		this.castArea = [[280,220], [950,450]];
 		this.playPilePos = [[270,320], [450,320]];
 		this.handHeight = 560;
 	}
 	activeDecorate() {
+		var my = this;
 		var width = this.height/7;
 		var doms = new Array(7);
 		this.doms = doms;
@@ -443,6 +448,11 @@ class Hero extends Card {
 			this.warp.appendChild(show);
 			show.innerHTML = '0';
 			doms[i] = show;
+			if (i>2) {
+				$(show).on('click', function() {
+					my.gr.log(my.data[i]);
+				});
+			}
 		}
 	}
 	setDecorate(n, val) {
@@ -470,16 +480,41 @@ class Hero extends Card {
 		for (var j=0; j<8; j++) this.data[3].push(new Card(68));
 		for (var j=0; j<2; j++) this.data[3].push(new Card(67));
 		Math.shuffle(this.data[3]);
+		this.data[3].push(new Card(26));
+		this.data[3].push(new Card(69));
+		this.data[3].push(new Card(24));
+		this.data[3].push(new Card(15));
+		this.data[3].push(new Card(69));
+		this.data[3].push(new Card(69));
 		this.drawCard(5, callback);
+	}
+	_shuffle() {
+		for (var i=0; i<this.data[5].length; i++) {
+			this.data[3].push(this.data[5][i]);
+		}
+		this.data[5] = [];
+		// 肝脏打击
+		var cards = [];
+		for (let i=0; i<this.data[3].length; i++) {
+			if (this.data[3][i].no == 25) {
+				cards.push(this.data[3][i]);
+			}
+		}
+		for (let i=0; i<cards.length; i++) {
+			this.data[3].remove(cards[i]);
+		}
+		Math.shuffle(this.data[3]);
+		this.gr.log('洗牌');
+		if (cards.length)this.gr.log('将肝脏打击移到牌堆顶');
+		for (let i=0; i<cards.length; i++) {
+			this.data[3].push(cards[i]);
+		}
 	}
 	_getCard() {
 		if (this.data[3].length) return this.data[3].pop();
 		else {
 			if (this.data[5].length) {
-				this.data[3] = this.data[5];
-				Math.shuffle(this.data[3]);
-				this.data[5] = [];
-				this.gr.log('洗牌');
+				this._shuffle();
 				return this.data[3].pop();
 			} else {
 				this.gr.log('无牌可抽');
@@ -554,18 +589,29 @@ class Hero extends Card {
 		return lefts;
 	}
 	turnStart() {
+		this.turnBuff = {};
+		this.counter = [0,0,0];// card 武技 法术
 		this.interactive();
 		this.gr.turnOn();
 		var my = this;
 		if (!this.isMain) {
 			this.turnEnd(function() {
+				my.attack(3);
 				my.gr.heros[0].turnStart();
 			});
 		}
 	}
+	attack(n) {
+		this.opponent.data[0] -= n;
+	}
 	turnEnd(callback) {
 		this.interactive(false);
+		if (this.turnBuff['震空波动拳']) {
+			this.attack(this.data[2]);
+			this.opponent.updateData();
+		}
 		this.data[2] = 0;
+		this.turnBuff = {};
 		var my = this;
 		var pos = my.getDecoratePos(5, true);
 		let mc = new MultiCallback();
@@ -589,29 +635,57 @@ class Hero extends Card {
 			my.drawCard(5, callback);
 		});
 	}
+	_examHandCard(card, castFun=null) {
+		if (!castFun)castFun=this.castCard;
+		var my = this;
+		card.setBorder(2); 
+		if (Resources.CardData[card.no].ability['聚气']) {
+			if (my.data[2] >= Resources.CardData[card.no].ability['聚气']) {
+				card.setBorder(1);
+			}
+		} else if (Resources.CardData[card.no].ability['流放']) {
+			card.config = false;
+			card.setBorder(3);
+			card.onclick(function() {
+				card.config = !card.config;
+				card.setBorder(card.config?1:3);
+			});
+		} else if (Resources.CardData[card.no].ability['连击']) {
+			let tmp = my.isType(card, '武技')?1:2;
+			if (my.counter[tmp] >= Resources.CardData[card.no].ability['连击']) {
+				card.setBorder(1);
+			}
+		}
+		card.activeDarg(true, function(card,ox,oy,nx,ny) {
+			if (my.isIn(nx,ny, my.castArea[0], my.castArea[1])) {
+				card.setPos(nx,ny);
+				card.activeShowBig();
+				castFun.call(my, card);
+			} else {
+				card.setPos(ox,oy);
+				card.activeShowBig();
+			}
+		});
+	}
 	interactive(isOn=true) {
+		// 开关交互
 		if (!this.isMain) return;
 		if (isOn) {
+			this.updateData();
 			this.interactive(false);
 			var len = this.data[4].length;
 			var my = this;
+			// 手牌
 			for (let i=0; i<len; i++) {
 				let card = this.data[4][i];
-				card.activeDarg(true, function(card,ox,oy,nx,ny) {
-					if (my.isIn(nx,ny, my.castArea[0], my.castArea[1])) {
-						card.setPos(nx,ny);
-						card.activeShowBig();
-						my.castCard(card);
-					} else {
-						card.setPos(ox,oy);
-						card.activeShowBig();
-					}
-				});
+				my._examHandCard(card);
 			}
-			for (let i=0; i<this.gr.buyPile.length; i++) {
+			// 买牌
+			for (let i=0; i<5; i++) {
 				let card = this.gr.buyPile[i];
+				if (!card) continue;
 				if (my.data[2] >= Resources.CardData[card.no].cost) {
-					card.setBorder(1);
+					card.setBorder(2);
 				} else {
 					card.setBorder(0);
 				}
@@ -623,26 +697,35 @@ class Hero extends Card {
 					}
 				});
 			}
-			
-			let card = my.gr.firePile[my.gr.firePile.length-1];
-			if (my.data[2] >= Resources.CardData[card.no].cost) {
-				card.setBorder(1);
-			} else {
-				card.setBorder(0);
-			}
-			card.onclick(function() {
+			// 营火火牌 
+			if (my.gr.firePile.length) {
+				let card = my.gr.firePile[my.gr.firePile.length-1];
 				if (my.data[2] >= Resources.CardData[card.no].cost) {
-					my.data[2] -= Resources.CardData[card.no].cost;
-					my.gr.firePile.pop();
-					my.buyCard(card);
+					card.setBorder(1);
+				} else {
+					card.setBorder(0);
 				}
-			});
+				card.onclick(function() {
+					if (my.data[2] >= Resources.CardData[card.no].cost) {
+						my.data[2] -= Resources.CardData[card.no].cost;
+						my.gr.firePile.pop();
+						my.buyCard(card);
+					}
+				});
+			}
+			// 打出的牌
+			for (var i=0; i<my.gr.playPile.length; i++) {
+				let card = my.gr.playPile[i];
+				card.setBorder(0);
+				card.offclick();
+			}
 			
 		} else { // off interactive
 			for (let i=0; i<this.data[4].length; i++) {
 				let card = this.data[4][i];
 				card.activeDarg(false);
 				card.offclick();
+				card.setBorder(0);
 			}
 			for (let i=0; i<this.gr.buyPile.length; i++) {
 				if (this.gr.buyPile[i])this.gr.buyPile[i].offclick();
@@ -657,62 +740,504 @@ class Hero extends Card {
 		for (let i=0; i<len; i++) {
 			let card2 = my.data[4][i];
 			card2.setZIndex(i+1, true);
+			card2.offclick();
 			card2.move(lefts[i], my.handHeight).action(mc.pipe());
 		}
 		mc.all(function() {
 			setTimeout(callback,0);
 		});
 	}
-	castCard(card) {
+	castCard(card, callback) {
 		// todo
 		var my = this;
 		var mcb = new MultiCallback();
-		this.interactive(false);
+		my.interactive(false);
 		my.data[4].remove(card);
+		card.setBorder(0);
 		my.handRevise(mcb.pipe());
 		card.fadeOut(mcb.pipe());
-		mcb.all(function(){
+		mcb.all(function() {
 			my.gr.playPile.push(card);
-			var len = my.gr.playPile.length;
-			var lefts = my.getLefts(len, -45, my.playPilePos[0][0], my.playPilePos[1][0]);
-			
-			let mc = new MultiCallback();
-			for (let i=0; i<len; i++) {
-				let card2 = my.gr.playPile[i];
-				card2.setZIndex(i+1, true);
-				card2.setPos(lefts[i], my.playPilePos[0][1])
-				card2.fadeIn(mc.pipe(function() {
-					if (i+1 == len) card2.activeShowBig();
-				}));
-			}
-			mc.all(function() {
-				var data = Resources.CardData[card.no];
-				my.gr.log('打出'+data.name);
-				// cast a card //////// todo
-				var effect = $.extend({}, data.effect);
-				if (effect['营火']) {
-					my.data[2] += effect['营火'];
-					my.gr.log('--获得营火'+effect['营火']);
-				}
-				if (effect['战力']) {
-					my.opponent.data[0] -= effect['战力'];
-					my.gr.log('--获得战力'+effect['战力']);
-				}
-				if (effect['生命']) {
-					my.data[0] += effect['生命'];
-					my.gr.log('--获得生命'+effect['生命']);
-				}
-				
-				my.updateData();
-				my.opponent.updateData(); 
-				my.interactive();
-				//my.cover(true);
+			var data = Resources.CardData[card.no];
+			my.gr.log('打出'+data.name);
+			var effect = $.extend({}, data.effect);
+			my.playingCard(card, effect, function() {
+				my.countingCard(card, effect, callback);
 			});
+		});
+	}
+	isType(card, type) {
+		// type == 武技 || 法术
+		if (Resources.CardData[card.no].type==type) return true;
+		if (card.no == 69 && (type=='武技'||type=='法术')) return true;
+		return false;
+	}
+	isBase(card) {
+		return (card.no==67||card.no==68||card.no==69);
+	}
+	playingCard(card, effect, callback_t) {
+		let callback = function() {
+			if (my.turnBuff['起势'] && my.isType(card, '武技')) {
+				my.turnBuff['起势'] = false;
+				effect['战力'] += 1;
+			}
+			my.counter[0]++;
+			if (my.isType(card, '武技'))my.counter[1]++;
+			if (my.isType(card, '法术'))my.counter[2]++;
+			setTimeout(callback_t, 0);
+		}
+		var my = this;
+		if (card.no == 9) {
+			my.turnBuff['起势'] = true;
+		} else if (card.no == 10) {
+			if (my.data[2]>=5) {
+				effect['战力'] += 1;
+				my.drawCard(1, callback);
+				return;
+			}
+		} else if (card.no == 12) {
+			(function _no12() {
+				if (my.data[2]>=5) {
+					effect['战力'] = 1;
+				}
+				if (my.gr.playPile.length+my.data[5].length == 0) {
+					setTimeout(callback, 0);
+					return;
+				}
+				var mc = new MultiCallback();
+				let lefts = my.getLefts(my.gr.playPile.length, 5, 200, 1140);
+				for (let i=0; i<my.gr.playPile.length; i++) {
+					let card = my.gr.playPile[i];
+					card.setZIndex(800+i);
+					card.move(lefts[i], 220).action(mc.pipe(function() {
+						card.activeShowBig();
+					}));
+				}
+				let lefts2 = my.getLefts(my.data[5].length, 5, 200, 1140);
+				for (let i=0; i<my.data[5].length; i++) {
+					let card = my.data[5][i];
+					card.setBorder(0);
+					card.divShow();
+					card.setBack();
+					card.setShrink();
+					card.setZIndex(800+i);
+					card.expand().rotate().move(lefts2[i], 380).action(mc.pipe(function() {
+						card.activeShowBig();
+					}));
+				}
+				mc.all(function() {
+					for (let i=0; i<my.gr.playPile.length; i++) {
+						let card = my.gr.playPile[i];
+						card.setBorder(2);
+						card.onclick(function() {
+							my.gr.playPile.remove(card);
+							let mcb = new MultiCallback();
+							my.trashCard(card, mcb.pipe());
+							my.setAllBack(mcb.pipe());
+							mcb.all(callback);
+						});
+					}
+					for (let i=0; i<my.data[5].length; i++) {
+						let card = my.data[5][i];
+						card.setBorder(2);
+						card.onclick(function() {
+							my.data[5].remove(card);
+							let mcb = new MultiCallback();
+							my.trashCard(card, mcb.pipe());
+							my.setAllBack(mcb.pipe());
+							mcb.all(callback);
+						});
+					}
+				});
+			})();
+			return;
+		} else if (card.no == 13) {
+			if (my.data[2]>=5) {
+				effect['战力'] += 1;
+				// todo equipment
+			}
+		} else if (card.no == 14) {
+			if (my.data[2]>=8) {
+				my.turnBuff['震空波动拳'] = true;
+				my.drawCard(1, callback);
+				return;
+			}
+		} else if (card.no == 15) {
+			if (my.data[2]>=4) {
+				my.choose(900151, 900152, function() {
+					setTimeout(callback, 0);
+				}, function() {
+					if (my.data[4].length==0) {
+						setTimeout(callback, 0);
+						return;
+					}
+					var mc = new MultiCallback();
+					let lefts = my.getLefts(my.data[4].length, 5, 200, 1140);
+					for (let i=0; i<my.data[4].length; i++) {
+						let card = my.data[4][i];
+						card.setZIndex(800+i);
+						card.move(lefts[i], 280).action(mc.pipe(function() {
+							card.activeShowBig();
+						}));
+					}
+					mc.all(function() {
+						for (let i=0; i<my.data[4].length; i++) {
+							let card = my.data[4][i];
+							card.setBorder(2);
+							card.onclick(function() {
+								my.data[4].remove(card);
+								let mcb = new MultiCallback();
+								my.trashCard(card, mcb.pipe());
+								my.handRevise(mcb.pipe());
+								mcb.all(callback);
+							});
+						}
+					});
+				});
+				return;
+			}
+		} else if (card.no == 16) {
+			(function() {
+				let mc = new MultiCallback();
+				let cnt = 0;
+				for (let i=0; i<my.data[5].length; i++) {
+					if (my.isType(my.data[5][i], '武技')) cnt++;
+				}
+				if (!cnt) {
+					setTimeout(callback, 0);
+					return;
+				}
+				let lefts2 = my.getLefts(cnt, 5, 200, 1140);
+				let cnt2 = 0;
+				for (let i=0; i<my.data[5].length; i++) {
+					let card = my.data[5][i];
+					if (!my.isType(card, '武技')) continue;
+					card.setBorder(0);
+					card.divShow();
+					card.setBack();
+					card.setShrink();
+					card.setZIndex(800+i);
+					card.expand().rotate().move(lefts2[cnt2++], 280).action(mc.pipe(function() {
+						card.activeShowBig();
+					}));
+				}
+				mc.all(function() {
+					for (let i=0; i<my.data[5].length; i++) {
+						let card = my.data[5][i];
+						card.setBorder(2);
+						card.onclick(function() {
+							my.data[5].remove(card);
+							let mcb = new MultiCallback();
+							my.data[4].push(card);
+							my.setAllBack(mcb.pipe());
+							my.handRevise(mcb.pipe());
+							mcb.all(callback);
+						});
+					}
+				});
+			})();
+			return;
+		} else if (card.no == 17) {
+			if (my.data[2]>=4) {
+				effect['营火'] = 1;
+			}
+			my.drawCard(1, callback);
+			return;
+		} else if (card.no == 18) {
+			// todo
+		} else if (card.no == 19) {
+			// todo
+		} else if (card.no == 20) {
+			// todo
+		} else if (card.no == 21) {
+			if (card.config) {
+				effect['生命'] = 1;
+				my.gr.playPile.remove(card);
+				card.divShow();
+				my.trashCard(card, function() {
+					console.log('done');
+					my.drawCard(1, callback);
+				});
+			} else {
+				my.drawCard(1, callback);
+			}
+			return;
+		} else if (card.no == 22) {
+			if (my.counter[1] >= 1) {
+				my.drawCard(1, function() {
+					var mc = new MultiCallback();
+					let lefts = my.getLefts(my.data[4].length, 5, 200, 1140);
+					for (let i=0; i<my.data[4].length; i++) {
+						let card = my.data[4][i];
+						card.setZIndex(i+800);
+						card.move(lefts[i], 280).action(mc.pipe(function() {
+							card.activeShowBig();
+						}));
+					}
+					mc.all(function() {
+						for (let i=0; i<my.data[4].length; i++) {
+							let card = my.data[4][i];
+							card.setBorder(2);
+							card.onclick(function() {
+								my.data[4].remove(card);
+								my.data[5].push(card);
+								let mcb = new MultiCallback();
+								my.setAllBack(mcb.pipe());
+								my.handRevise(mcb.pipe());
+								mcb.all(callback);
+							});
+						}
+					});
+				});
+				return;
+			}
+		} else if (card.no == 23) {
+			if (my.counter[1] >= 2) {
+				my.choose(900321,900232, function() {
+					effect['战力'] = 1;
+					setTimeout(callback, 0);
+				}, function() {
+					my.drawCard(1, callback);
+				});
+				return;
+			}
+		} else if (card.no == 24) {
+			my.drawCard(1, function() {
+				my.choose(900151, 900152, function() {
+					if (my.counter[1]>=3) {
+						my.drawCard(1, callback);
+					} else {
+						setTimeout(callback, 0);
+					}
+				}, function() {
+					var mc = new MultiCallback();
+					let cnt = 0, cnt2=0;
+					for (let i=0; i<my.data[4].length; i++) {
+						let card = my.data[4][i];
+						if (my.isBase(card)) cnt++;
+					}
+					if (!cnt) {
+						if (my.counter[1]>=3) {
+							my.drawCard(1, callback);
+						} else {
+							setTimeout(callback, 0);
+						}
+						return;
+					}
+					let lefts = my.getLefts(cnt, 5, 200, 1140);
+					for (let i=0; i<my.data[4].length; i++) {
+						let card = my.data[4][i];
+						if (!my.isBase(card)) continue;
+						card.setZIndex(800+i);
+						card.move(lefts[cnt2++], 280).action(mc.pipe(function() {
+							card.activeShowBig();
+						}));
+					}
+					mc.all(function() {
+						for (let i=0; i<my.data[4].length; i++) {
+							let card = my.data[4][i];
+							if (!my.isBase(card)) continue;
+							card.setBorder(2);
+							card.onclick(function() {
+								my.data[4].remove(card);
+								let mcb = new MultiCallback();
+								my.trashCard(card, mcb.pipe());
+								my.handRevise(mcb.pipe());
+								mcb.all(function() {
+									if (my.counter[1]>=3) {
+										my.drawCard(1, callback);
+									} else {
+										setTimeout(callback, 0);
+									}
+								});
+							});
+						}
+					});
+				});
+			});
+			return;
+		} else if (card.no == 26) {
+			(function() {
+				my._shuffle();
+				var cards = [];
+				for (let i=0; i<7; i++) {
+					if (my.data[3].length-1-i>=0) {
+						cards.push(my.data[3][my.data[3].length-1-i]);
+					}
+				}
+				for (var i=0; i<cards.length; i++) my.data[3].pop();
+				var cnt=0, cnt2=0;
+				for (var i=0; i<cards.length; i++) {
+					let card = cards[i];
+					if (my.isType(card, '武器') || my.isType(card, '武技')) {
+						cnt++;
+					}
+				}
+				let lefts = my.getLefts(cnt, 5, 200, 1140);
+				let mc = new MultiCallback();
+				for (var i=0; i<cards.length; i++) {
+					let card = cards[i];
+					if (my.isType(card, '武器') || my.isType(card, '武技')) {
+						card.setBorder(0);
+						card.divShow();
+						card.setBack();
+						card.setShrink();
+						card.setZIndex(800+i, true);
+						card.expand().rotate().move(lefts[cnt2++], 480)
+							.action(mc.pipe(function() {
+							card.activeShowBig();
+						}));
+					}
+				}
+				mc.all(function() {
+					function _flush() {
+						my.interactive(false);
+						for (let j=0; j<cards.length; j++) {
+							let card = cards[j];
+							if (card && (my.isType(card, '武器') || my.isType(card, '武技'))){
+								card.divShow();
+							}
+						}
+						if (!cnt) {
+							for (var j=0; j<cards.length; j++) {
+								if (cards[j]) my.data[5].push(cards[j]);
+							}
+							my._shuffle();
+							setTimeout(callback, 0);
+						}
+						for (let i=0; i<cards.length; i++) {
+							let card = cards[i];
+							if (!card) continue;
+							if (my.isType(card, '武器') || my.isType(card, '武技')) {
+								my._examHandCard(card, function(ncard) {
+									cnt--;
+									cards[cards.indexOf(ncard)] = null;
+									for (let j=0; j<cards.length; j++) {
+										if (cards[j]) cards[j].divHide();
+									}
+									my.castCard(ncard, _flush);
+								});
+							}
+						}
+					}
+					_flush();
+				});
+			})();
+			return;
+		}
+		setTimeout(callback, 0);
+	}
+	choose(n1,n2,callback1, callback2) {
+		let card = new Card(n1, true);
+		let card2 = new Card(n2, true);
+		card.setZIndex(800);
+		card.setPos(540,290);
+		card.setBorder(2);
+		card.onclick(function() {
+			card2.destroy();
+			card.setBorder(1);
+			card.wait(500).action(function() {
+				card.destroy();
+				setTimeout(callback1, 0);
+			});
+		});
+		card2.setZIndex(800);
+		card2.setPos(680,290);
+		card2.setBorder(2);
+		card2.onclick(function() {
+			card.destroy();
+			card2.setBorder(1);
+			card2.wait(500).action(function() {
+				card2.destroy();
+				setTimeout(callback2, 0);
+			});
+		});
+	}
+	trashCard(card, callback) {
+		this.data[6].push(card);
+		let pos = this.getDecoratePos(6, true);
+		var my = this;
+		this.gr.log('--废弃'+Resources.CardData[card.no].name);
+		if ([67,68,69].indexOf(card.no)>=0) my.data[0]+=1;
+		my.updateData();
+		card.shrink().move(pos[0], pos[1]).action(function() {
+			card.divHide();
+			setTimeout(callback, 0);
+		});
+	}
+	setAllBack(callback) {
+		var my = this;
+		let lefts = my.getLefts(my.gr.playPile.length, -45, my.playPilePos[0][0], my.playPilePos[1][0]);
+		let mc = new MultiCallback();
+		for (let i=0; i<my.gr.playPile.length; i++) {
+			let card = my.gr.playPile[i];
+			card.offclick();
+			card.setZIndex(i+1, true);
+			card.setBorder(0);
+			card.move(lefts[i], my.playPilePos[0][1]).action(mc.pipe());
+		}
+		let pos = my.getDecoratePos(5, true);
+		for(let i=0; i<my.data[5].length; i++) {
+			let card = my.data[5][i];
+			card.offclick();
+			card.shrink().move(pos[0], pos[1]).action(mc.pipe(function() {
+				card.divHide();
+			}));
+		}
+		mc.all(callback);
+	}
+	countingCard(card, effect, callback){ 
+		// 结算
+		var my = this;
+		var len = my.gr.playPile.length;
+		var lefts = my.getLefts(len, -45, my.playPilePos[0][0], my.playPilePos[1][0]);
+		
+		let mc = new MultiCallback();
+		for (let i=0; i<len; i++) {
+			let card2 = my.gr.playPile[i];
+			card2.setZIndex(i+1, true);
+			card2.setPos(lefts[i], my.playPilePos[0][1])
+			card2.fadeIn(mc.pipe(function() {
+				if (i+1 == len) card2.activeShowBig();
+			}));
+		}
+		mc.all(function() {
+			if (effect['营火']) {
+				my.data[2] += effect['营火'];
+				my.gr.log('--获得营火'+effect['营火']);
+			}
+			if (effect['战力']) {
+				my.attack(effect['战力']);
+				my.gr.log('--获得战力'+effect['战力']);
+			}
+			if (effect['生命']) {
+				my.data[0] += effect['生命'];
+				my.gr.log('--获得生命'+effect['生命']);
+			}
+			
+			my.updateData();
+			my.opponent.updateData(); 
+			my.interactive();
+			setTimeout(callback, 0);
 		});
 	}
 	buyCard(card) {
 		var my = this;
+		this.interactive(true);
 		my.interactive(false);
+		// 获得时
+		if (card.no==25) {
+			let pos = my.getDecoratePos(3, true);
+			my.data[3].push(card);
+			card.shrink().move(pos[0], pos[1]).action(function() {
+				my.updateData();
+				card.divHide();
+				my.gr.fillCard(function() {
+					my.interactive();
+				});
+			});
+			return;
+		}
 		let pos = my.getDecoratePos(5, true);
 		my.data[5].push(card);
 		card.shrink().move(pos[0], pos[1]).action(function() {
@@ -841,6 +1366,7 @@ class GameRule {
 			this.firePile.push(card);
 		}
 		Math.shuffle(this.commonPile);
+		this.commonPile.push(new Card(25, true)); ////////
 		for (let i=0; i<this.commonPile.length; i++) {
 			this.commonPile[i].setZIndex(i);
 			this.commonPile[i].setBack();
@@ -856,6 +1382,7 @@ class GameRule {
 		for (let i=0; i<2; i++) {
 			heros[i].setPos(my.heroPos[i][0],my.heroPos[i][1]);
 			heros[i].gr = my;
+			heros[i].activeShowBig();
 			heros[i].opponent = heros[1-i];
 			heros[i].init(mc.pipe());
 		}
@@ -882,7 +1409,7 @@ $(function() {
 	// document.body.style.cursor = 'wait';
 	Resources.ready(function(){
 		var gr = new GameRule();
-		gr.init(5, [2,2]);
+		gr.init(101, [2,2]);
 		
 	});
 });

@@ -38,6 +38,8 @@ for (var i=10; i<=44; i++) {
 Resources.loadImage('img/0067.jpg');
 Resources.loadImage('img/0068.jpg');
 Resources.loadImage('img/0069.jpg');
+Resources.loadImage('img/900231.jpg');
+Resources.loadImage('img/900232.jpg');
 
 Resources.CardData = {
 	9: {name:'街斗',		type:'武技',style:'气功',number:2,cost:1,ability:{},effect:{'战力':1}},
@@ -70,7 +72,7 @@ Resources.CardData = {
 	34:{name:'断片涤净',	type:'武技',style:'聚流',number:2,cost:1,ability:{'不同风格':3},effect:{}},
 	35:{name:'分枝击',		type:'武技',style:'聚流',number:2,cost:2,ability:{'不同风格':2},effect:{'战力':1}},
 	36:{name:'艾思波赋力',	type:'法术',style:'聚流',number:2,cost:3,ability:{},effect:{}},
-	37:{name:'断片感应',	type:'法术',style:'聚流',number:2,cost:5,ability:{'获得时':true},effect:{'营火':1}},
+	37:{name:'断片感应',	type:'法术',style:'聚流',number:2,cost:2,ability:{'获得时':true},effect:{'营火':1}},
 	38:{name:'聚流',		type:'法术',style:'聚流',number:1,cost:7,ability:{},effect:{}},
 	39:{name:'斑特赋力',	type:'法术',style:'聚流',number:2,cost:3,ability:{},effect:{'生命':1}},
 	40:{name:'遗忘之轮',	type:'装备',style:'聚流',number:1,cost:3,ability:{'获得时':true},effect:{},durable:3},
