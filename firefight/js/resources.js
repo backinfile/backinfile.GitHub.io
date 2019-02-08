@@ -40,9 +40,25 @@ Resources.loadImage('img/0068.jpg');
 Resources.loadImage('img/0069.jpg');
 Resources.loadImage('img/900231.jpg');
 Resources.loadImage('img/900232.jpg');
+Resources.loadImage('img/900151.jpg');
+Resources.loadImage('img/900152.jpg');
+Resources.loadImage('img/900201.jpg');
+Resources.loadImage('img/900202.jpg');
+Resources.loadImage('img/900203.jpg');
+Resources.loadImage('img/900204.jpg');
+Resources.loadImage('img/900205.jpg');
+Resources.loadImage('img/900206.jpg');
+Resources.loadImage('img/900207.jpg');
+Resources.loadImage('img/900208.jpg');
+Resources.loadImage('img/900381.jpg');
+Resources.loadImage('img/900382.jpg');
+Resources.loadImage('img/900411.jpg');
+Resources.loadImage('img/900412.jpg');
+Resources.loadImage('img/900421.jpg');
+Resources.loadImage('img/900422.jpg');
 
 Resources.CardData = {
-	9: {name:'街斗',		type:'武技',style:'气功',number:2,cost:1,ability:{},effect:{'战力':1}},
+	9: {name:'起势',		type:'武技',style:'气功',number:2,cost:1,ability:{},effect:{'战力':1}},
 	10:{name:'龙头戏画',	type:'武技',style:'气功',number:2,cost:3,ability:{'聚气':5},effect:{'战力':1}},
 	11:{name:'真气贯通',	type:'武技',style:'气功',number:2,cost:4,ability:{},effect:{'生命':1,'营火':2}},
 	12:{name:'疾风迅雷',	type:'武技',style:'气功',number:2,cost:2,ability:{'聚气':5},effect:{}},
@@ -53,13 +69,13 @@ Resources.CardData = {
 	17:{name:'练气',		type:'法术',style:'气功',number:3,cost:2,ability:{'聚气':4},effect:{}},
 	18:{name:'念气手套',	type:'装备',style:'气功',number:2,cost:4,ability:{'流放':true},effect:{'营火':1},durable:2},
 	19:{name:'心源道服',	type:'装备',style:'气功',number:3,cost:8,ability:{'护卫':true,'获得时':true},effect:{},durable:3},
-	20:{name:'四大行',		type:'特殊',style:'气功',number:1,cost:0,ability:{'获得时':true},effect:{}},
+	20:{name:'四大行',		type:'特殊',style:'气功',number:1,cost:1,ability:{'获得时':true},effect:{}},
 	
 	21:{name:'直拳',		type:'武技',style:'连击',number:3,cost:1,ability:{'流放':true},effect:{}},
 	22:{name:'勾拳',		type:'武技',style:'连击',number:2,cost:2,ability:{'连击':1},effect:{'战力':1}},
 	23:{name:'摆拳',		type:'武技',style:'连击',number:2,cost:3,ability:{'连击':2},effect:{'战力':1}},
 	24:{name:'双重垫步',	type:'武技',style:'连击',number:2,cost:4,ability:{'连击':3},effect:{}},
-	25:{name:'肝脏打击',	type:'武技',style:'连击',number:2,cost:5,ability:{'获得时':true},effect:{'战力':1}},
+	25:{name:'肝脏打击',	type:'武技',style:'连击',number:2,cost:5,ability:{'获得时':true},effect:{'战力':2}},
 	26:{name:'轮摆式移位',	type:'武技',style:'连击',number:1,cost:8,ability:{},effect:{'战力':2}},
 	27:{name:'暗影步',		type:'法术',style:'连击',number:1,cost:4,ability:{},effect:{}},
 	28:{name:'四妖拳',		type:'法术',style:'连击',number:1,cost:6,ability:{},effect:{}},
