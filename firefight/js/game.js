@@ -2053,7 +2053,10 @@ class Hero extends Card {
 					var mc = new MultiCallback();
 					my.dropWeapon(no, mc.pipe());
 					my.trashCard(card, mc.pipe());
-					mc.all(callback);
+					mc.all(function() {
+						my.data[5].remove(card);
+						setTimeout(callback, 0);
+					});
 				}
 			});
 			return;
