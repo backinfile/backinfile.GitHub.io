@@ -606,10 +606,6 @@ class Hero extends Card {
 		for (var j=0; j<2; j++) this.data[3].push(new Card(67));
 		//this.data[3].push(new Card(34));
 		Math.shuffle(this.data[3]);
-		this.data[3].push(new Card(69));
-		this.data[3].push(new Card(69));
-		this.data[3].push(new Card(69));
-		this.data[3].push(new Card(55));
 		var pos = this.getDecoratePos(3, true);
 		for (var i=0; i<this.data[3].length; i++) {
 			let card = this.data[3][i];
@@ -760,6 +756,7 @@ class Hero extends Card {
 		function _end() {
 			my.turnBuff = {};
 			my.counter = [0,0,0,0,0,0,0,0,0,0,0];
+			my.cardnum = 0;
 			// 特殊 武技 法术 武器 基础 气功 连击 聚流 精神 街斗 充能
 			my.interactive();
 			my.gr.turnOn();
@@ -1063,6 +1060,7 @@ class Hero extends Card {
 	playingCard(card, effect, callback_t) {
 		var my = this;
 		let callback = function() {
+			my.cardnum++;
 			if (my.isType(card, '特殊'))my.counter[0]++;
 			if (my.isType(card, '武技'))my.counter[1]++;
 			if (my.isType(card, '法术'))my.counter[2]++;
@@ -1783,6 +1781,18 @@ class Hero extends Card {
 		var lefts = my.getLefts(len, -55, my.playPilePos[0][0], my.playPilePos[1][0]);
 		
 		let mc = new MultiCallback();
+		for (var i=0; i<2; i++) {
+			if (my.weapons[i] && my.weapons[i].no==32 &&my.weapons[i]!=card) {
+				let card = my.weapons[i];
+				if (!card.counter)card.counter=0;
+				card.counter++;
+				if (card.counter>=3) {
+					card.counter=0;
+					my.gr.log('--冠军腰带发动');
+					my.applyEffect({'生命':1}, mc.pipe());
+				}
+			}
+		}
 		for (let i=0; i<len; i++) {
 			let card2 = my.gr.playPile[i];
 			card2.setZIndex(i+1, true);
@@ -1790,10 +1800,10 @@ class Hero extends Card {
 			// card2.fadeIn(mc.pipe(function() {
 				// if (i+1 == len) card2.activeShowBig();
 			// }));
-			card2.move(lefts[i], my.playPilePos[0][1]).action(function() {
+			card2.move(lefts[i], my.playPilePos[0][1]).action(mc.pipe(function() {
 				card2.activeShowBig();
 				card2.divShow();
-			});
+			}));
 		}
 		mc.all(function() {
 			my.applyEffect(effect, function() {
@@ -1900,6 +1910,18 @@ class Hero extends Card {
 			return;
 		} else if (card.no == 19) {
 			my.equipWeapon(card, callback);
+			return;
+		} else if (card.no == 32) {
+			var cnt = 0;
+			for (var i=0; i<my.gr.playPile.length; i++) {
+				let card = my.gr.playPile[i];
+				if (my.isType(card, '武技')) cnt++;
+			}
+			if (cnt>5) cnt=5;
+			var effect = {'生命':cnt};
+			my.applyEffect(effect, function() {
+				my.discardCard(card, callback);
+			});
 			return;
 		} else if (card.no == 40) {
 			my.gr.log('--要从打出区放逐一张牌吗？');
@@ -2253,7 +2275,7 @@ class GameRule {
 			this.firePile.push(card);
 		}
 		Math.shuffle(this.commonPile);
-		this.commonPile.push(new Card(40, true)); ////////
+		//this.commonPile.push(new Card(31, true)); ////////
 		for (let i=0; i<this.commonPile.length; i++) {
 			this.commonPile[i].setZIndex(i);
 			this.commonPile[i].setBack();
