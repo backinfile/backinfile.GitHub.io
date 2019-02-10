@@ -604,7 +604,7 @@ class Hero extends Card {
 		this.activeWeapon();
 		for (var j=0; j<8; j++) this.data[3].push(new Card(68));
 		for (var j=0; j<2; j++) this.data[3].push(new Card(67));
-		//this.data[3].push(new Card(34));
+		//this.data[3].push(new Card(28));
 		Math.shuffle(this.data[3]);
 		var pos = this.getDecoratePos(3, true);
 		for (var i=0; i<this.data[3].length; i++) {
@@ -1351,6 +1351,7 @@ class Hero extends Card {
 				} else if (my.data[3].length==1) {
 					cards[0] = (my.data[3].pop());
 				} else {
+					my.gr.playPile.push(card);
 					setTimeout(callback, 0);
 					return;
 				}
