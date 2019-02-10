@@ -731,8 +731,12 @@ class Hero extends Card {
 		return true;
 	}
 	turnStart() {
-		if (this.isMain)this.gr.log('回合开始');
 		var my = this;
+		if (this.isMain) {
+			this.gr.log('回合开始');
+			my.gr.log('<span style="color:#BBB">营火火剩余'+my.gr.firePile.length+'张</span>');
+			my.gr.log('<span style="color:#BBB">中央牌库剩余'+my.gr.commonPile.length+'张</span>');
+		}
 		var i=-1;
 		function _loop() {
 			i++;
@@ -2275,7 +2279,7 @@ class GameRule {
 					this.commonPile.push(new Card(i, true));
 			}
 		}
-		for (let i=0; i<=10; i++) {
+		for (let i=0; i<10; i++) {
 			let card = new Card(69, true);
 			card.setPos(pos1[0], pos1[1]);
 			card.activeShowBig();
