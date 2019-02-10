@@ -395,11 +395,11 @@ class Card{
 	}
 	setBorder(type) {
 		if (type == 1) {
-			this.warp.style.boxShadow = '0px 0px 10px 2px blue';
+			this.warp.style.boxShadow = '0px 0px 10px 4px blue';
 		} else if (type == 2) {
-			this.warp.style.boxShadow = '0px 0px 10px 2px black';
+			this.warp.style.boxShadow = '0px 0px 10px 4px black';
 		} else if (type == 3) {
-			this.warp.style.boxShadow = '0px 0px 10px 2px red';
+			this.warp.style.boxShadow = '0px 0px 10px 4px red';
 		} else if (type == 0) {
 			this.warp.style.boxShadow = '';
 		}
@@ -605,7 +605,9 @@ class Hero extends Card {
 		for (var j=0; j<8; j++) this.data[3].push(new Card(68));
 		for (var j=0; j<2; j++) this.data[3].push(new Card(67));
 		//this.data[3].push(new Card(28));
+		//this.data[3].push(new Card(26));
 		Math.shuffle(this.data[3]);
+		//this.data[3].push(new Card(69));
 		var pos = this.getDecoratePos(3, true);
 		for (var i=0; i<this.data[3].length; i++) {
 			let card = this.data[3][i];
@@ -909,7 +911,7 @@ class Hero extends Card {
 			if (my.gr.firePile.length) {
 				let card = my.gr.firePile[my.gr.firePile.length-1];
 				if (my.data[2] >= Resources.CardData[card.no].cost) {
-					card.setBorder(1);
+					card.setBorder(2);
 				} else {
 					card.setBorder(0);
 				}
@@ -1242,7 +1244,7 @@ class Hero extends Card {
 				}
 			}
 			my.drawCard(1, function() {
-				my.gr.log('---从手牌中放逐一张基本牌吗?');
+				my.gr.log('--从手牌中放逐一张基本牌吗?');
 				my.nchoose(2, [900151, 900152], function(n) {
 					if (n == 0) {
 						_then();
@@ -1257,7 +1259,7 @@ class Hero extends Card {
 							setTimeout(_then, 0);
 							return;
 						}
-						my.gr.log('---选择一张<b>放逐</b>:');
+						my.gr.log('--选择一张<b>放逐</b>:');
 						my.select(cards, function(card) {
 							my.data[4].remove(card);
 							let mcb = new MultiCallback();
@@ -2124,7 +2126,7 @@ class Hero extends Card {
 	}
 }
 
-
+ 
 class GameRule {
 	constructor() {
 		var width = 1334;
@@ -2200,21 +2202,22 @@ class GameRule {
 		div.css('position', 'absolute');
 		div.css('overflow-y', 'scroll');
 		div.css('overflow-x', 'hidden');
-		div.css('left', 0);
+		div.css('left', 1130);
+		div.css('top', 340);
 		
-		var warp = $('<div>');
-		warp.css('width', 220);
-		warp.css('height', 320);
-		warp.css('left', 1130);
-		warp.css('top', 340);
-		warp.css('position', 'absolute');
-		warp.css('border-bottom', '1px black solid');
-		div.css('overflow', 'hidden');
-		warp.append(div);
+		// var warp = $('<div>');
+		// warp.css('width', 220);
+		// warp.css('height', 320);
+		// warp.css('left', 1130);
+		// warp.css('top', 340);
+		// warp.css('position', 'absolute');
+		// warp.css('border-bottom', '1px black solid');
+		// div.css('overflow', 'hidden');
+		// warp.append(div);
 		
-		$('#gamebody').append(warp);
+		$('#gamebody').append(div);
 		this.Log = div;
-		this.Log.html('<br><br><br><br><br><br><br><br><br><br><br><br><br><br>')
+		//this.Log.html('<br><br><br><br><br><br><br><br><br><br><br><br><br><br>')
 	}
 	fillCard(callback) {
 		var my = this;
