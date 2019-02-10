@@ -147,6 +147,10 @@ class Card{
 		if (!isShow) this.divHide();
 		
 	}
+	_getImgUrl() {
+		var no = this.no;
+		return 'img/'+(no<10?'000':(no<100?'00':(no<1000?'0':'')))+no+'.jpg'; 
+	}
 	rotate() {
 		this.ani.push('rotate');
 		return this;
@@ -391,11 +395,11 @@ class Card{
 	}
 	setBorder(type) {
 		if (type == 1) {
-			this.warp.style.boxShadow = '0px 0px 10px 1px blue';
+			this.warp.style.boxShadow = '0px 0px 10px 2px blue';
 		} else if (type == 2) {
-			this.warp.style.boxShadow = '0px 0px 10px 1px black';
+			this.warp.style.boxShadow = '0px 0px 10px 2px black';
 		} else if (type == 3) {
-			this.warp.style.boxShadow = '0px 0px 10px 1px red';
+			this.warp.style.boxShadow = '0px 0px 10px 2px red';
 		} else if (type == 0) {
 			this.warp.style.boxShadow = '';
 		}
@@ -434,7 +438,7 @@ class Hero extends Card {
 		}
 		this.equipments = [];
 		this.activeDecorate();
-		this.castArea = [[280,220], [950,450]];
+		this.castArea = [[280,220], [950,400]];
 		this.playPilePos = [[270,320], [450,320]];
 		this.handHeight = 560;
 	}
@@ -443,19 +447,20 @@ class Hero extends Card {
 		var width = this.height/7;
 		var doms = new Array(7);
 		this.doms = doms;
-		var titles = ['生命','技能次数','营火','牌库','手牌','弃牌','放逐'];
+		var titles = ['生命','技能','营火','牌库','手牌','弃牌','放逐'];
 		for (let i=0; i<7; i++) {
 			var show = document.createElement('div');
 			//show.style.backgroundImage = 'url('+frontImg+')';
 			//show.style.backgroundSize = '100% 100%';
-			show.style.width = width+'px';
+			show.style.width = '50px';
 			show.style.height = width+'px';
 			show.style.position = 'absolute';
 			show.style.borderRadius = '5px';
 			show.style.left = this.width+'px';
 			show.style.top = width*i+'px';
-			show.style.textAlign = 'center';
+			show.style.textAlign = 'left';
 			show.style.lineHeight = width+'px';
+			show.style.fontSize = '0.7em';
 			show.style.cursor = 'default';
 			//show.style.transform = 'translateX('+width+'px) translateY(-'+height*(bigsize+1)/2+'px)';
 			show.title = titles[i];
@@ -479,7 +484,8 @@ class Hero extends Card {
 		}
 	}
 	setDecorate(n, val) {
-		this.doms[n].innerHTML = val;
+		var titles = ['生命','技能','营火','牌库','手牌','弃牌','放逐'];
+		this.doms[n].innerHTML = titles[n]+':'+val;
 	}
 	getDecoratePos(n, isShrink=false) {
 		if (isShrink) {
@@ -498,13 +504,112 @@ class Hero extends Card {
 			this.setDecorate(6,this.data[6].length);
 		}
 	}
+	getWeaponPos(n, isShrink) {
+		n = 1-n;
+		if (isShrink) return [this.x, this.y+90+15*n-75];
+		else return [this.x, this.y+90+30*n];
+	}
+	activeWeapon() {
+		this.weapons = [null, null];
+		this._weaponDivs = [$('<div>'), $('<div>')];
+		this._shows = [null, null];
+		for (let i=0; i<2; i++) {
+			let pos = this.getWeaponPos(i);
+			let div = this._weaponDivs[i];
+			$('#gamebody').append(div);
+			div.css('height', 28);
+			div.css('width', 100);
+			div.css('position', 'absolute');
+			div.css('left', pos[0]+5);
+			div.css('top', pos[1]);
+			console.log();
+			//div.css('background-color', 'rgba(255,255,255,0.9)');
+			div.css('background-image', 'url(img/weapon.png)');
+			div.css('background-size', '100% 100%');
+			div.css('z-index', 999);
+			div.css('box-shadow','0px 0px 10px 1px blue');
+			div.hide();
+			var span = $('<div>');
+			span.css('height', 28);
+			span.css('width', 22);
+			span.css('float', 'left');
+			span.css('line-height', '28px');
+			span.css('text-align', 'center');
+			var text = $('<div>');
+			text.css('height', 28);
+			text.css('width', 100-22);
+			text.css('float', 'left');
+			text.css('line-height', '28px');
+			text.css('font-size', '0.6em');
+			text.css('text-align', 'left');
+			text.css('cursor', 'default');
+			div.append(span);
+			div.append(text);
+			
+			var show = document.createElement('div');
+			show.style.backgroundImage = 'url(img/0001.jpg)';
+			show.style.backgroundSize = '100% 100%';
+			show.style.width = 110*2.2+'px';
+			show.style.height = 150*2.2+'px';
+			show.style.position = 'absolute';
+			show.style.left = pos[0]+5+'px';
+			show.style.top = pos[1]+'px';
+			show.style.borderRadius = '5px';
+			show.style.zIndex = '1002';
+			show.style.transform = 'translateY(-'+150*2.2+'px)';
+			$(show).hide();
+			$('#gamebody').append(show);
+			this._shows[i] = $(show);
+		}
+	}
+	setWeaponBorder(n, type) {
+		if (type==0) {
+			this._weaponDivs[n].css('box-shadow','');
+		} else {
+			this._weaponDivs[n].css('box-shadow','0px 0px 10px 2px blue');
+		}
+	}
+	setWeaponClick(n, f=null) {
+		let div = this._weaponDivs[n];
+		div.off('click');
+		div.on('click', f);
+	}
+	resetWeapon(n) {
+		let card = this.weapons[n];
+		let div = this._weaponDivs[n];
+		$(div.children()[1]).off('mouseover mouseout');
+		if (!card)  return;
+		card.durable = Resources.CardData[card.no].durable;
+		card.skill = true;
+		this.setWeaponDurable(n, card.durable);
+		this.setWeaponName(n, this.getName(card));
+		let show = this._shows[n];
+		show.css('background-image','url('+card._getImgUrl()+')');
+		$(div.children()[1]).mouseover(function() {
+			show.show();
+		});
+		$(div.children()[1]).mouseout(function() {
+			show.hide();
+		});
+	}
+	setWeaponDurable(n, durable) {
+		this._weaponDivs[n].children()[0].innerHTML = durable;
+	}
+	setWeaponName(n, name) {
+		this._weaponDivs[n].children()[1].innerHTML = name;
+	}
+	
 	
 	init(callback) {
+		this.activeWeapon();
 		for (var j=0; j<8; j++) this.data[3].push(new Card(68));
 		for (var j=0; j<2; j++) this.data[3].push(new Card(67));
 		//this.data[3].push(new Card(34));
 		Math.shuffle(this.data[3]);
-		//this.data[3].push(new Card(38));
+		this.data[3].push(new Card(69));
+		this.data[3].push(new Card(69));
+		this.data[3].push(new Card(69));
+		this.data[3].push(new Card(55));
 		var pos = this.getDecoratePos(3, true);
 		for (var i=0; i<this.data[3].length; i++) {
 			let card = this.data[3][i];
@@ -618,19 +723,54 @@ class Hero extends Card {
 		}
 		return lefts;
 	}
+	getVoidEffect() {
+		return {'生命':0,'战力':0,'营火':0};
+	}
+	isEffectEmpty(effect) {
+		if (effect['生命']) return false;
+		if (effect['战力']) return false;
+		if (effect['营火']) return false;
+		return true;
+	}
 	turnStart() {
 		if (this.isMain)this.gr.log('回合开始');
-		this.turnBuff = {};
-		this.counter = [0,0,0,0,0,0,0,0];// card 武技 法术 武器 基础 气功 连击 聚流
-		this.interactive();
-		this.gr.turnOn();
 		var my = this;
-		if (!this.isMain) {
-			this.turnEnd(function() {
-				my.attack(3);
-				my.gr.heros[0].turnStart();
-			});
+		var i=-1;
+		function _loop() {
+			i++;
+			if (i>=2) {
+				_end();
+				return;
+			}
+			if (!my.weapons[i]) {
+				_loop();
+				return;
+			}
+			var effect = Resources.CardData[my.weapons[i].no].effect;
+			if (!my.isEffectEmpty(effect)) {
+				my.gr.log('装备'+my.getName(my.weapons[i])+'发动');
+				my.applyEffect(effect, function() {
+					_loop();
+				});
+			} else {
+				_loop();
+			}
 		}
+		
+		function _end() {
+			my.turnBuff = {};
+			my.counter = [0,0,0,0,0,0,0,0,0,0,0];
+			// 特殊 武技 法术 武器 基础 气功 连击 聚流 精神 街斗 充能
+			my.interactive();
+			my.gr.turnOn();
+			if (!my.isMain) {
+				my.turnEnd(function() {
+					my.attack(3);
+					my.gr.heros[0].turnStart();
+				});
+			}
+		}
+		_loop();
 	}
 	attack(n) {
 		this.opponent.data[0] -= n;
@@ -648,6 +788,7 @@ class Hero extends Card {
 		}
 		this.data[2] = 0;
 		this.turnBuff = {};
+		for (var i=0; i<2; i++) this.resetWeapon(i);
 		this.lastCard = null;
 		var my = this;
 		var pos = my.getDecoratePos(5, true);
@@ -675,21 +816,25 @@ class Hero extends Card {
 			});
 		});
 	}
+	_getFire(card) {
+		var fire = Resources.CardData[card.no].effect['营火'];
+		if (fire) return fire;
+		return 0;
+	}
 	_examHandCard(card, castFun=null) {
 		if (!castFun)castFun=this.castCard;
 		var my = this;
 		card.setBorder(2); 
-		if (Resources.CardData[card.no].ability['聚气']) {
-			if (my.data[2] >= Resources.CardData[card.no].ability['聚气']) {
+		if (Resources.CardData[card.no].ability['充能']) {
+			if (my.data[2] >= Resources.CardData[card.no].ability['充能']) {
+				card.setBorder(1);
+			}
+		} else if (Resources.CardData[card.no].ability['聚气']) {
+			if (my.data[2]+my._getFire(card) >= Resources.CardData[card.no].ability['聚气']) {
 				card.setBorder(1);
 			}
 		} else if (Resources.CardData[card.no].ability['流放']) {
 			card.config = false;
-			card.setBorder(3);
-			card.onclick(function() {
-				card.config = !card.config;
-				card.setBorder(card.config?1:3);
-			});
 		} else if (Resources.CardData[card.no].ability['连击']) {
 			let tmp = my.isType(card, '武技')?1:2;
 			if (my.counter[tmp] >= Resources.CardData[card.no].ability['连击']) {
@@ -711,6 +856,23 @@ class Hero extends Card {
 			}
 		});
 	}
+	_examWeapon(no, castFun=null) {
+		if (!castFun)castFun=this.useWeapon;
+		let card = this.weapons[no];
+		if (!card) return;
+		if (!card.skill) return;
+		var my = this;
+		if (Resources.CardData[card.no].ability['流放']) {
+		} else if (card.no==40) {
+		} else if (card.no==55) {
+		} else {
+			return;
+		}
+		my.setWeaponBorder(no, 1);
+		my.setWeaponClick(no, function() {
+			castFun.call(my, no);
+		});
+	}
 	interactive(isOn=true) {
 		// 开关交互
 		if (!this.isMain) return;
@@ -724,6 +886,10 @@ class Hero extends Card {
 			for (let i=0; i<len; i++) {
 				let card = this.data[4][i];
 				my._examHandCard(card);
+			}
+			// 武器
+			for (let i=0; i<2; i++) {
+				my._examWeapon(i);
 			}
 			// 买牌
 			for (let i=0; i<5; i++) {
@@ -787,6 +953,10 @@ class Hero extends Card {
 				card.offclick();
 				card.activeDarg(false);
 			}
+			for (let i=0; i<2;i++) {
+				my.setWeaponBorder(i, 0);
+				my.setWeaponClick(i);
+			}
 		}
 	}
 	handRevise(callback) {
@@ -807,25 +977,32 @@ class Hero extends Card {
 		});
 	}
 	castCard(card, callback) {
-		// todo
 		var my = this;
 		var mcb = new MultiCallback();
 		my.interactive(false);
 		my.data[4].remove(card);
 		card.setBorder(0);
 		my.handRevise(mcb.pipe());
-		card.fadeOut(mcb.pipe());
+		//card.fadeOut(mcb.pipe());
 		// card.move(1100, 260).action(mcb.pipe(function() {
 			// card.activeShowBig();
 		// }));
 		mcb.all(function() {
-			my.gr.playPile.push(card);
 			var data = Resources.CardData[card.no];
 			my.gr.log('打出'+data.name);
 			var effect = $.extend({}, data.effect);
-			my.playingCard(card, effect, function() {
-				my.countingCard(card, effect, callback);
-			});
+			
+			if (my.isType(card, '装备')) {
+				card.divShow();
+				my.playingCard(card, effect,function() {
+					my.countingCard(card, effect, callback);
+				});
+			} else {
+				my.gr.playPile.push(card);
+				my.playingCard(card, effect, function() {
+					my.countingCard(card, effect, callback);
+				});
+			}
 		});
 	}
 	isType(card, type) {
@@ -858,21 +1035,35 @@ class Hero extends Card {
 	}
 	getTypeNum() {
 		var cnt = 0;
-		for (var i=1; i<=3; i++) {
+		for (var i=0; i<=3; i++) {
 			if (this.counter[i]) cnt++;
 		}
 		return cnt;
 	}
 	getStyleNum() {
 		var cnt = 0;
-		for (var i=4; i<=7; i++) {
+		for (var i=4; i<=10; i++) {
 			if (this.counter[i]) cnt++;
 		}
 		return cnt;
 	}
+	getCost(card) {
+		if (card._cost) return card._cost;
+		return Resources.CardData[card.no].cost;
+	}
+	getName(card) {
+		return Resources.CardData[card.no].name;
+	}
+	isFillFire(card) {
+		var my = this;
+		if (!Resources.CardData[card.no].ability['聚气']) return false;
+		if (my.data[2]+my._getFire(card)>=Resources.CardData[card.no].ability['聚气']) return true;
+		return false;
+	}
 	playingCard(card, effect, callback_t) {
+		var my = this;
 		let callback = function() {
-			my.counter[0]++;
+			if (my.isType(card, '特殊'))my.counter[0]++;
 			if (my.isType(card, '武技'))my.counter[1]++;
 			if (my.isType(card, '法术'))my.counter[2]++;
 			if (my.isType(card, '武器'))my.counter[3]++;
@@ -880,27 +1071,32 @@ class Hero extends Card {
 			if (my.isStyle(card, '气功'))my.counter[5]++;
 			if (my.isStyle(card, '连击'))my.counter[6]++;
 			if (my.isStyle(card, '聚流'))my.counter[7]++;
+			if (my.isStyle(card, '精神'))my.counter[8]++;
+			if (my.isStyle(card, '街斗'))my.counter[9]++;
+			if (my.isStyle(card, '充能'))my.counter[10]++;
 			my.lastCard = card;
 			setTimeout(callback_t, 0);
 		}
-		var my = this;
 		if (!effect['战力']) effect['战力'] = 0;
 		if (!effect['营火']) effect['营火'] = 0;
 		if (!effect['生命']) effect['生命'] = 0;
 		if (my.turnBuff['起势'] && my.isType(card, '武技')) {
 			my.turnBuff['起势'] = false;
-			if (my.data[2]>=5)effect['战力'] += 1;
+			if (my.isFillFire(card)) effect['战力'] += 1;
 			my.gr.log('--起势发动');
 		}
-		if (my.turnBuff['断片感应']) {
-			my.turnBuff['断片感应'] = false;
-			if (!my.isStyle(card, '聚流')) effect['营火'] += 1;
-			my.gr.log('--断片感应发动');
+		
+		if (my.isType(card, '装备')) {
+			my.equipWeapon(card, function() {
+				setTimeout(callback, 0);
+			});
+			return;
 		}
+		
 		if (card.no == 9) {
 			my.turnBuff['起势'] = true;
 		} else if (card.no == 10) {
-			if (my.data[2]>=5) {
+			if (my.isFillFire(card)) {
 				effect['战力'] += 1;
 				my.drawCard(1, callback);
 				return;
@@ -908,77 +1104,45 @@ class Hero extends Card {
 		} else if (card.no == 12) {
 			(function _no12() {
 				var ori_card = card;
-				if (my.data[2]>=5) {
+				if (my.isFillFire(ori_card)) {
 					effect['战力'] += 1;
 				}
 				if (my.gr.playPile.length + my.data[5].length <= 1) {
 					setTimeout(callback, 0);
 					return;
 				}
-				my.gr.playPile.remove(card);
-				var mc = new MultiCallback();
-				let lefts = my.getLefts(my.gr.playPile.length, 5, 200, 1140);
-				for (let i=0; i<my.gr.playPile.length; i++) {
-					let card = my.gr.playPile[i];
-					card.setZIndex(800+i);
-					card.move(lefts[i], 220).action(mc.pipe(function() {
-						card.activeShowBig();
-					}));
-				}
-				let lefts2 = my.getLefts(my.data[5].length, 5, 200, 1140);
-				for (let i=0; i<my.data[5].length; i++) {
-					let card = my.data[5][i];
-					card.setBorder(0);
-					card.divShow();
-					card.setBack();
-					card.setShrink();
-					card.setZIndex(800+i);
-					card.expand().rotate().move(lefts2[i], 380).action(mc.pipe(function() {
-						card.activeShowBig();
-					}));
-				}
-				mc.all(function() {
-					for (let i=0; i<my.gr.playPile.length; i++) {
-						let card = my.gr.playPile[i];
-						card.setBorder(2);
-						card.onclick(function() {
-							my.gr.playPile.remove(card);
-							my.gr.playPile.push(ori_card);
-							let mcb = new MultiCallback();
-							my.trashCard(card, mcb.pipe());
-							my.setAllBack(mcb.pipe());
-							mcb.all(callback);
-						});
-					}
-					for (let i=0; i<my.data[5].length; i++) {
-						let card = my.data[5][i];
-						card.setBorder(2);
-						card.onclick(function() {
-							my.data[5].remove(card);
-							my.gr.playPile.push(ori_card);
-							let mcb = new MultiCallback();
-							my.trashCard(card, mcb.pipe());
-							my.setAllBack(mcb.pipe());
-							mcb.all(callback);
-						});
-					}
+				my.gr.playPile.remove(ori_card);
+				my.select2(my.gr.playPile, my.data[5], function(card) {
+					my.gr.playPile.remove(card);
+					my.gr.playPile.push(ori_card);
+					let mcb = new MultiCallback();
+					my.trashCard(card, mcb.pipe());
+					my.setAllBack(mcb.pipe());
+					mcb.all(callback);
+				}, function(card) {
+					my.data[5].remove(card);
+					my.gr.playPile.push(ori_card);
+					let mcb = new MultiCallback();
+					my.trashCard(card, mcb.pipe());
+					my.setAllBack(mcb.pipe());
+					mcb.all(callback);
 				});
 			})();
 			return;
 		} else if (card.no == 13) {
-			if (my.data[2]>=5) {
+			if (my.isFillFire(card)) {
 				effect['战力'] += 1;
 				// todo equipment
 			}
 		} else if (card.no == 14) {
-			if (my.data[2]>=8) {
+			if (my.isFillFire(card)) {
 				my.gr.log('--回合结束时,剩余的营火将转化成战力');
 				my.turnBuff['震空波动拳'] = true;
 				my.drawCard(1, callback);
 				return;
 			}
 		} else if (card.no == 15) {
-			if (my.data[2]>=4) {
+			if (my.isFillFire(card)) {
 				my.nchoose(2, [900151, 900152], function(n) {
 					if (n==0) {
 						setTimeout(callback, 0);
@@ -1021,22 +1185,24 @@ class Hero extends Card {
 			})();
 			return;
 		} else if (card.no == 17) {
-			if (my.data[2]>=4) effect['营火'] += 1;
+			if (my.isFillFire(card)) effect['营火'] += 1;
 			my.drawCard(1, callback);
 			return;
 		}
 		if (card.no == 21) {
-			if (card.config) {
-				effect['生命'] += 1;
-				my.gr.playPile.remove(card);
-				card.divShow();
-				my.trashCard(card, function() {
-					my.drawCard(1, callback);
+			my.drawCard(1, function() {
+				my.gr.log('--要<b>流放</b>吗?');
+				my.nchoose(2, [900151,900152], function(n) {
+					if (n==0) {
+						setTimeout(callback, 0);
+					} else {
+						effect['生命'] += 1;
+						my.gr.playPile.remove(card);
+						card.divShow();
+						my.trashCard(card, callback);
+					}
 				});
-			} else {
-				my.gr.log('--提示:打出前点击卡牌，可以将直拳激活成<b>流放</b>态');
-				my.drawCard(1, callback);
-			}
+			});
 			return;
 		} else if (card.no == 22) {
 			if (my.counter[1] >= 1) {
@@ -1107,74 +1273,53 @@ class Hero extends Card {
 			});
 			return;
 		} else if (card.no == 26) { 
-			my.gr.log('--你可以按任意顺序打出展示的武技牌');
+			my.gr.log('--你可以按任意顺序打出展示的装备和武技牌');
 			(function() {
+				var ori_card = card;
 				my.gr.playPile.remove(card);
 				my._shuffle();
 				var cards = [];
+				var discardCards = [];
 				for (let i=0; i<7; i++) {
-					if (my.data[3].length-1-i>=0) {
-						cards.push(my.data[3][my.data[3].length-1-i]);
+					let card = my._getCard();
+					if (!card) break;
+					if (my.isType(card, '装备') || my.isType(card, '武技')) {
+						cards.push(card);
+					} else {
+						discardCards.push(card);
 					}
 				}
-				for (var i=0; i<cards.length; i++) my.data[3].pop();
-				var cnt=0, cnt2=0;
-				for (var i=0; i<cards.length; i++) {
-					let card = cards[i];
-					if (my.isType(card, '武器') || my.isType(card, '武技')) {
-						cnt++;
-					}
-				}
-				let lefts = my.getLefts(cnt, 5, 200, 1140);
-				let mc = new MultiCallback();
-				for (var i=0; i<cards.length; i++) {
-					let card = cards[i];
-					if (my.isType(card, '武器') || my.isType(card, '武技')) {
-						card.setBorder(0);
-						card.divShow();
-						card.setBack();
-						card.setShrink();
-						card.setZIndex(800+i, true);
-						card.expand().rotate().move(lefts[cnt2++], 480)
-							.action(mc.pipe(function() {
-							card.activeShowBig();
-						}));
-					}
-				}
-				mc.all(function() {
-					function _flush() {
-						my.interactive(false);
-						for (let j=0; j<cards.length; j++) {
-							let card = cards[j];
-							if (card && (my.isType(card, '武器') || my.isType(card, '武技'))){
-								card.divShow();
-							}
+				my.updateData();
+				
+				function _flush() {
+					my.interactive(false);
+					if (!cards.length) {
+						var mc = new MultiCallback();
+						for (var j=0; j<discardCards.length; j++) {
+							my.discardCard(discardCards[j], mc.pipe());
 						}
-						if (!cnt) {
-							for (var j=0; j<cards.length; j++) {
-								if (cards[j]) my.data[5].push(cards[j]);
-							}
-							my._shuffle();
+						mc.all(function(){
+							my._shuffle(false);
 							my.gr.playPile.push(card);
 							setTimeout(callback, 0);
-						}
-						for (let i=0; i<cards.length; i++) {
-							let card = cards[i];
-							if (!card) continue;
-							if (my.isType(card, '武器') || my.isType(card, '武技')) {
-								my._examHandCard(card, function(ncard) {
-									cnt--;
-									cards[cards.indexOf(ncard)] = null;
-									for (let j=0; j<cards.length; j++) {
-										if (cards[j]) cards[j].divHide();
-									}
-									my.castCard(ncard, _flush);
-								});
-							}
-						}
+						});
+						return;
 					}
-					_flush();
-				});
+					for (let j=0; j<cards.length; j++) {
+						let card = cards[j];
+						card.divShow();
+					}
+					my.select3(cards, function(ncard) {
+						cards.remove(ncard);
+						ncard.activeDarg(false);
+						for (let j=0; j<cards.length; j++) {
+							cards[j].divHide();
+							cards[j].activeDarg(false);
+						}
+						my.castCard(ncard, _flush);
+					});
+				}
+				_flush();
 			})();
 			return;
 		} else if (card.no == 27) {
@@ -1185,8 +1330,16 @@ class Hero extends Card {
 				my.data[5].remove(card);
 				my.data[6].remove(card);
 				my.data[4].push(card);
-				my.gr.log('将'+Resources.CardData[card.no].name+'返回手牌');
-				my.handRevise(callback);
+				var index = my.weapons.indexOf(card);
+				if (index>=0) {
+					my.dropWeapon(index, function() {
+						my.gr.log('将'+Resources.CardData[card.no].name+'返回手牌');
+						my.handRevise(callback);
+					});
+				} else {
+					my.gr.log('将'+Resources.CardData[card.no].name+'返回手牌');
+					my.handRevise(callback);
+				}
 				return;
 			}
 		} else if (card.no == 28) {
@@ -1248,7 +1401,7 @@ class Hero extends Card {
 				function _end(card) {
 					my.gr.playPile.push(ori_card);
 					let mcb = new MultiCallback();
-					if (card) my.trashCard(card, mcb.pipe());
+					my.trashCard(card, mcb.pipe());
 					my.setAllBack(mcb.pipe());
 					mcb.all(function() {
 						if (my.counter[2]>=2) {
@@ -1258,49 +1411,17 @@ class Hero extends Card {
 						}
 					});
 				}
-				my.gr.playPile.remove(card);
-				if (my.gr.playPile.length + my.data[5].length <= 0) {
-					setTimeout(_end, 0);
+				if (my.gr.playPile.length + my.data[5].length <= 1) {
+					setTimeout(callback, 0);
 					return;
 				}
-				var mc = new MultiCallback();
-				let lefts = my.getLefts(my.gr.playPile.length, 5, 200, 1140);
-				for (let i=0; i<my.gr.playPile.length; i++) {
-					let card = my.gr.playPile[i];
-					card.setZIndex(800+i);
-					card.move(lefts[i], 220).action(mc.pipe(function() {
-						card.activeShowBig();
-					}));
-				}
-				let lefts2 = my.getLefts(my.data[5].length, 5, 200, 1140);
-				for (let i=0; i<my.data[5].length; i++) {
-					let card = my.data[5][i];
-					card.setBorder(0);
-					card.divShow();
-					card.setBack();
-					card.setShrink();
-					card.setZIndex(800+i);
-					card.expand().rotate().move(lefts2[i], 380).action(mc.pipe(function() {
-						card.activeShowBig();
-					}));
-				}
-				mc.all(function() {
-					for (let i=0; i<my.gr.playPile.length; i++) {
-						let card = my.gr.playPile[i];
-						card.setBorder(2);
-						card.onclick(function() {
-							my.gr.playPile.remove(card);
-							_end(card);
-						});
-					}
-					for (let i=0; i<my.data[5].length; i++) {
-						let card = my.data[5][i];
-						card.setBorder(2);
-						card.onclick(function() {
-							my.data[5].remove(card);
-							_end(card);
-						});
-					}
+				my.gr.playPile.remove(ori_card);
+				my.select2(my.gr.playPile, my.data[5], function(card) {
+					my.gr.playPile.remove(card);
+					_end(card);
+				}, function(card) {
+					my.data[5].remove(card);
+					_end(card);
 				});
 			})();
 			return;
@@ -1308,72 +1429,37 @@ class Hero extends Card {
 		if (card.no == 33) {
 			effect['战力'] += my.getStyleNum();
 		} else if (card.no == 34) {
-			my.gr.log('--你可以从打出区或弃牌区放逐一张牌');
 			my.drawCard(1, function() {
 				if (my.getStyleNum()>=3) {
-					my.gr.log('--要从打出区或弃牌区放逐一张牌吗?');
+					my.gr.log('--从打出区或弃牌区放逐一张牌吗?');
 					my.nchoose(2, [900151,900152], function(n) {
 						if (n==0) {
 							setTimeout(callback, 0);
-							return;
 						} else {
+							if (my.gr.playPile.length + my.data[5].length <= 1) {
+								setTimeout(callback, 0);
+								return;
+							}
 							var ori_card = card;
-							function _end(card0) {
+							my.gr.playPile.remove(ori_card);
+							function _end(card) {
 								my.gr.playPile.push(ori_card);
 								let mcb = new MultiCallback();
-								if (card0) my.trashCard(card0, mcb.pipe());
+								my.trashCard(card, mcb.pipe());
 								my.setAllBack(mcb.pipe());
 								mcb.all(callback);
 							}
-							my.gr.playPile.remove(card);
-							if (my.gr.playPile.length + my.data[5].length <= 0) {
-								setTimeout(_end, 0);
-								return;
-							}
-							var mc = new MultiCallback();
-							let lefts = my.getLefts(my.gr.playPile.length, 5, 200, 1140);
-							for (let i=0; i<my.gr.playPile.length; i++) {
-								let card = my.gr.playPile[i];
-								card.setZIndex(800+i);
-								card.move(lefts[i], 220).action(mc.pipe(function() {
-									card.activeShowBig();
-								}));
-							}
-							let lefts2 = my.getLefts(my.data[5].length, 5, 200, 1140);
-							for (let i=0; i<my.data[5].length; i++) {
-								let card = my.data[5][i];
-								card.setBorder(0);
-								card.divShow();
-								card.setBack();
-								card.setShrink();
-								card.setZIndex(800+i);
-								card.expand().rotate().move(lefts2[i], 380).action(mc.pipe(function() {
-									card.activeShowBig();
-								}));
-							}
-							mc.all(function() {
-								for (let i=0; i<my.gr.playPile.length; i++) {
-									let card = my.gr.playPile[i];
-									card.setBorder(2);
-									card.onclick(function() {
-										my.gr.playPile.remove(card);
-										_end(card);
-									});
-								}
-								for (let i=0; i<my.data[5].length; i++) {
-									let card = my.data[5][i];
-									card.setBorder(2);
-									card.onclick(function() {
-										my.data[5].remove(card);
-										_end(card);
-									});
-								}
+							my.select2(my.gr.playPile, my.data[5], function(card) {
+								my.gr.playPile.remove(card);
+								_end(card);
+							}, function(card) {
+								my.data[5].remove(card);
+								_end(card);
 							});
 						}
 					});
 				} else {
 					setTimeout(callback, 0);
-					return;
 				}
 			});
 			return;
@@ -1518,6 +1604,22 @@ class Hero extends Card {
 			effect['战力'] += my.getTypeNum();
 			effect['战力'] += my.getStyleNum();
 		}
+		if (card.no == 45) {
+			let card = my._getCard();
+			my.revealCard(card, function() {
+				let cost = my.getCost(card);
+				my.gr.log('--展示'+my.getName(card)+',费用为'+cost);
+				if (cost>=2) {
+					my.data[4].push(card);
+					my.handRevise(callback);
+				} else {
+					effect['营火'] += 1;
+					my.trashCard(card, callback);
+				}
+			});
+			return;
+		}
+		
 		setTimeout(callback, 0);
 	}
 	nchoose(n, nos, callback) {
@@ -1543,18 +1645,18 @@ class Hero extends Card {
 			});
 		}
 	}
-	select(cards, click) {
+	select(cards, click, height=280) {
 		// 挑选
 		var my = this;
 		var mc = new MultiCallback();
 		let lefts = my.getLefts(cards.length, 5, 200, 1140);
 		for (let i=0; i<cards.length; i++) {
 			let card = cards[i];
-			card.setZIndex(i+800, true);
+			card.setZIndex(i+801, true);
 			card.divShow();
 			card.setBorder(0);
 			card.offclick();
-			card.expand().move(lefts[i], 280).action(mc.pipe(function() {
+			card.expand().move(lefts[i], height).action(mc.pipe(function() {
 				card.activeShowBig();
 			}));
 		}
@@ -1564,6 +1666,34 @@ class Hero extends Card {
 				card.setBorder(2);
 				card.onclick(function() {
 					click.call(my, card);
+				});
+			}
+		});
+	}
+	select2(cards1,cards2, click1, click2) {
+		this.select(cards1, click1, 180);
+		this.select(cards2, click2, 380);
+	}
+	select3(cards, oncast, height=520) {
+		var my = this;
+		var mc = new MultiCallback();
+		let lefts = my.getLefts(cards.length, 5, 200, 1140);
+		for (let i=0; i<cards.length; i++) {
+			let card = cards[i];
+			card.setZIndex(i+800, true);
+			card.divShow();
+			card.setBorder(0);
+			card.offclick();
+			card.expand().move(lefts[i], height).action(mc.pipe(function() {
+				card.activeShowBig();
+			}));
+		}
+		mc.all(function() {
+			for (let i=0; i<cards.length; i++) {
+				let card = cards[i];
+				card.setBorder(2);
+				my._examHandCard(card, function() {
+					oncast(card);
 				});
 			}
 		});
@@ -1588,6 +1718,14 @@ class Hero extends Card {
 		my.updateData();
 		card.shrink().move(pos[0], pos[1]).action(function() {
 			card.divHide();
+			setTimeout(callback, 0);
+		});
+	}
+	revealCard(card, callback) {
+		card.setBorder(0);
+		card.divShow();
+		card.expand().move(600, 360).wait(500).action(function() {
+			card.activeShowBig();
 			setTimeout(callback, 0);
 		});
 	}
@@ -1620,6 +1758,24 @@ class Hero extends Card {
 		}
 		mc.all(callback);
 	}
+	applyEffect(effect,callback) {
+		var my = this;
+		if (effect['营火']) {
+			my.data[2] += effect['营火'];
+			my.gr.log('<span style="color:#BBB">--获得营火'+effect['营火']+'</span>');
+		}
+		if (effect['战力']) {
+			my.attack(effect['战力']);
+			my.gr.log('<span style="color:#BBB">--获得战力'+effect['战力']+'</span>');
+		}
+		if (effect['生命']) {
+			my.data[0] += effect['生命'];
+			my.gr.log('<span style="color:#BBB">--获得生命'+effect['生命']+'</span>');
+		}
+		my.updateData();
+		my.opponent.updateData(); 
+		setTimeout(callback, 0);
+	}
 	countingCard(card, effect, callback){ 
 		// 结算
 		var my = this;
@@ -1630,29 +1786,21 @@ class Hero extends Card {
 		for (let i=0; i<len; i++) {
 			let card2 = my.gr.playPile[i];
 			card2.setZIndex(i+1, true);
-			card2.setPos(lefts[i], my.playPilePos[0][1])
-			card2.fadeIn(mc.pipe(function() {
-				if (i+1 == len) card2.activeShowBig();
-			}));
+			// card2.setPos(lefts[i], my.playPilePos[0][1])
+			// card2.fadeIn(mc.pipe(function() {
+				// if (i+1 == len) card2.activeShowBig();
+			// }));
+			card2.move(lefts[i], my.playPilePos[0][1]).action(function() {
+				card2.activeShowBig();
+				card2.divShow();
+			});
 		}
 		mc.all(function() {
-			if (effect['营火']) {
-				my.data[2] += effect['营火'];
-				my.gr.log('--获得营火'+effect['营火']);
-			}
-			if (effect['战力']) {
-				my.attack(effect['战力']);
-				my.gr.log('--获得战力'+effect['战力']);
-			}
-			if (effect['生命']) {
-				my.data[0] += effect['生命'];
-				my.gr.log('--获得生命'+effect['生命']);
-			}
+			my.applyEffect(effect, function() {
+				my.interactive();
+				setTimeout(callback, 0);
+			});
 			
-			my.updateData();
-			my.opponent.updateData(); 
-			my.interactive();
-			setTimeout(callback, 0);
 		});
 	}
 	buyCard(card) {
@@ -1661,6 +1809,20 @@ class Hero extends Card {
 		this.interactive(false);
 		my.gr.buyPile[my.gr.buyPile.indexOf(card)] = null;
 		my.gr.log('购买'+Resources.CardData[card.no].name);
+		if (my.turnBuff['断片感应']) {
+			my.turnBuff['断片感应'] = false;
+			if (!my.isStyle(card, '聚流')) {
+				my.data[2] += 1;
+				my.gr.log('--断片感应发动');
+			}
+		}
+		
+		var callback = function() {
+			my.gr.fillCard(function() {
+				my.interactive();
+			});
+		}
+		
 		// 获得时
 		if (card.no==25) {
 			let pos = my.getDecoratePos(3, true);
@@ -1736,19 +1898,185 @@ class Hero extends Card {
 				});
 			})();
 			return;
-		} else {
-			let pos = my.getDecoratePos(5, true);
-			my.data[5].push(card);
-			card.shrink().move(pos[0], pos[1]).action(function() {
-				my.updateData();
-				card.divHide();
-				my.gr.fillCard(function() {
-					my.interactive();
-				});
+		} else if (card.no == 19) {
+			my.equipWeapon(card, callback);
+			return;
+		} else if (card.no == 40) {
+			my.gr.log('--要从打出区放逐一张牌吗？');
+			my.nchoose(2, [900151,900152], function(n) {
+				if (n==0) {
+					my.discardCard(card, callback);
+				} else {
+					var ori_card = card;
+					my.select(my.gr.playPile, function(card) {
+						var mc = new MultiCallback();
+						my.gr.playPile.remove(card);
+						my.trashCard(card, mc.pipe());
+						my.setAllBack(mc.pipe());
+						mc.all(function() {
+							my.discardCard(ori_card, callback);
+						});
+					});
+				}
 			});
+			return;
+		} else if (card.no == 31) {
+			my.gr.log('--要将弃牌区的一张费用不大于5的武技牌置入手牌吗？');
+			my.nchoose(2, [900151,900152], function(n) {
+				var ori_card = card;
+				if (n==0) {
+					setTimeout(callback, 0);
+				} else {
+					var cards = [];
+					for (let i=0; i<my.data[5].length; i++) {
+						let card = my.data[5][i];
+						if (my.getCost(card)<=5 && my.isType(card, '武技')) cards.push(card);
+					}
+					if (!cards.length) {
+						my.discardCard(ori_card, callback);
+						return;
+					}
+					my.select(cards, function(card) {
+						my.data[5].remove(card);
+						my.data[4].push(card);
+						var mc = new MultiCallback();
+						my.setAllBack(mc.pipe());
+						my.handRevise(mc.pipe());
+						mc.all(function() {
+							my.discardCard(ori_card, callback);
+						});
+					});
+				}
+			});
+			return;
+		} else {
+			my.discardCard(card, callback);
 		}
 	}
-	
+	equipWeapon(card, callback) {
+		var my = this;
+		var no = null;
+		//card.divHide();
+		function _end() {
+			card.divShow();
+			my.weapons[no] = card;
+			let pos = my.getWeaponPos(no, true);
+			my.gr.log('--装备'+Resources.CardData[card.no].name);
+			card.shrink().move(pos[0], pos[1]).action(function() {
+				card.divHide();
+				my._weaponDivs[no].show();
+				my.resetWeapon(no);
+				setTimeout(callback, 0);
+			});
+		}
+		if (!my.weapons[0]) no = 0;
+		else if (!my.weapons[1]) no = 1;
+		else {
+			this._weaponDivs[0].hide();
+			this._weaponDivs[1].hide();
+			my.gr.log('--选择一个装备弃置');
+			my.select(my.weapons, function(card) {
+				var mcb = new MultiCallback();
+				no = my.weapons.indexOf(card);
+				card = my.weapons[1-no];
+				let pos = my.getWeaponPos(no, true);
+				card.shrink().move(pos[0], pos[1]).action(mcb.pipe(function() {
+					card.divHide();
+					my._weaponDivs[1-no].show();
+				}));
+				my.dropWeapon(no, mcb.pipe());
+				mcb.all(function() {
+					card.wait(500).action(_end);
+				});
+			});
+			return;
+		}
+		_end();
+	}
+	dropWeapon(no, callback) {
+		let card = this.weapons[no];
+		if(card) {
+			this._weaponDivs[no].hide();
+			this.weapons[no] = null;
+			this.discardCard(card, callback);
+			return;
+		}
+		setTimeout(callback, 0);
+	}
+	useWeapon(no, callback_t) {
+		var my = this;
+		my.interactive(false);
+		var card = this.weapons[no];
+		var effect = {'战力':0, '生命':0, '营火':0};
+		var callback = function() {
+			my.applyEffect(effect, function() {
+				my.interactive(true);
+				setTimeout(callback_t);
+			});
+		}
+		if (!card || !card.skill) {
+			setTimeout(callback, 0);
+			return;
+		}
+		
+		my.gr.log('发动装备'+my.getName(card));
+		
+		if (card.no == 18) {
+			my.gr.log('--要流放吗?');
+			my.nchoose(2, [900151,900152], function(n) {
+				if (n==0) {
+					setTimeout(callback, 0);
+				} else {
+					effect['战力'] += 1;
+					var mc = new MultiCallback();
+					my.dropWeapon(no, mc.pipe());
+					my.trashCard(card, mc.pipe());
+					mc.all(callback);
+				}
+			});
+			return;
+		}
+		if (card.no == 40) {
+			my.gr.log('--要放逐中央牌列的一张牌吗?');
+			my.nchoose(2, [900151,900152], function(n) {
+				if (n==0) {
+					setTimeout(callback, 0);
+				} else {
+					card.skill = false;
+					var cards = [];
+					if (my.gr.firePile.length) cards.push(my.gr.firePile[my.gr.firePile.length-1]);
+					for (var i=0; i<my.gr.buyPile.length; i++) {
+						let card = my.gr.buyPile[i];
+						if (card) cards.push(card);
+					}
+					my.select(cards, function(card) {
+						var index = my.gr.buyPile.indexOf(card);
+						if (index>=0) my.gr.buyPile[index] = null;
+						else my.gr.firePile.pop();
+						my.gr.trashPile.push(card);
+						my.gr.setAllBack(function() {
+							my.gr.fillCard(callback);
+						});
+					});
+				}
+			});
+			return;
+		}
+		if (card.no == 55) {
+			card.skill = false;
+			my.gr.log('--造成3点伤害');
+			effect['战力']+=3;
+			if (my.data[3].length) {
+				let card = my.data[3][my.data[3].length-1];
+				my.revealCard(card, function() {
+					my.setAllBack(callback);
+				});
+				return;
+			}
+		}
+		
+		setTimeout(callback, 0);
+	}
 	isIn(x,y, lt, rd) {
 		if (x<=rd[0] && x>=lt[0] && y<=rd[1] && y>=lt[1]) return true;
 		return false;
@@ -1807,10 +2135,11 @@ class GameRule {
 		this.seed = 5;
 	}
 	log(text) {
-		console.log(text);
 		if (this.Log) {
 			this.Log.html(this.Log.html()+'<br>  '+text);
 			this.Log.scrollTop(this.Log.prop("scrollHeight"));
+		} else {
+			console.log(text);
 		}
 	}
 	setPos(x,y) {
@@ -1869,7 +2198,30 @@ class GameRule {
 				this.buyPile[i] = this.commonPile.pop();
 				var pos = my.getPos(i+2);
 				this.buyPile[i].rotate().move(pos[0], pos[1]).action(mc.pipe());
-			}
+			} 
+		}
+		mc.all(function() {
+			setTimeout(callback, 0);
+		});
+	}
+	setAllBack(callback) {
+		var my = this;
+		var mc = new MultiCallback();
+		for (let i=0; i<5; i++) {
+			var card = my.buyPile[i];
+			var pos = my.getPos(i+2);
+			if (card) card.move(pos[0], pos[1]).action(mc.pipe());
+		}
+		for (let i=0; i<my.trashPile.length; i++) {
+			var card = my.trashPile[i]
+			card.setZIndex(i+1, true);
+			var pos = my.getPos(7);
+			card.move(pos[0], pos[1]).action(mc.pipe());
+		}
+		if (my.firePile.length) {
+			var card = my.firePile[my.firePile.length-1]
+			var pos = my.getPos(1);
+			card.move(pos[0], pos[1]).action(mc.pipe());
 		}
 		mc.all(function() {
 			setTimeout(callback, 0);
@@ -1890,7 +2242,7 @@ class GameRule {
 		var pos1 = this.getPos(1);
 		for (let i=9; i<=44; i++) {
 			for (var j=0; j<Resources.CardData[i].number; j++) {
-				if (Resources.CardData[i].type != '装备')
+				//if (Resources.CardData[i].type != '装备')
 					this.commonPile.push(new Card(i, true));
 			}
 		}
@@ -1901,7 +2253,7 @@ class GameRule {
 			this.firePile.push(card);
 		}
 		Math.shuffle(this.commonPile);
-		//this.commonPile.push(new Card(20, true)); ////////
+		this.commonPile.push(new Card(40, true)); ////////
 		for (let i=0; i<this.commonPile.length; i++) {
 			this.commonPile[i].setZIndex(i);
 			this.commonPile[i].setBack();
