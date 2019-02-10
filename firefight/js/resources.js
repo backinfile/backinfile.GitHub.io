@@ -7,6 +7,7 @@ var Resources = (function() {
 			if (!isloaded) loadImageList.push(url);
 		},
 		ready: function(callback) {
+			var total = loadImageList.length;
 			isloaded = true;
 			var cnt = 0;
 			for (let i=0; i<loadImageList.length; i++) {
@@ -15,6 +16,8 @@ var Resources = (function() {
 					cnt++;
 					if (cnt >= loadImageList.length)  {
 						if (callback) callback();
+					} else {
+						$('#per').html(Math.floor(cnt/total*100)+'%');
 					}
 				}
 				img.src = loadImageList[i];
