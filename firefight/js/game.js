@@ -607,7 +607,7 @@ class Hero extends Card {
 		//this.data[3].push(new Card(28));
 		//this.data[3].push(new Card(26));
 		Math.shuffle(this.data[3]);
-		//this.data[3].push(new Card(69));
+		//this.data[3].push(new Card(40));
 		var pos = this.getDecoratePos(3, true);
 		for (var i=0; i<this.data[3].length; i++) {
 			let card = this.data[3][i];
@@ -2072,7 +2072,7 @@ class Hero extends Card {
 				} else {
 					card.skill = false;
 					var cards = [];
-					if (my.gr.firePile.length) cards.push(my.gr.firePile[my.gr.firePile.length-1]);
+					//if (my.gr.firePile.length) cards.push(my.gr.firePile[my.gr.firePile.length-1]);
 					for (var i=0; i<my.gr.buyPile.length; i++) {
 						let card = my.gr.buyPile[i];
 						if (card) cards.push(card);
