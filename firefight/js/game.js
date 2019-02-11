@@ -439,7 +439,7 @@ class Hero extends Card {
 		this.equipments = [];
 		this.activeDecorate();
 		this.castArea = [[280,220], [950,400]];
-		this.playPilePos = [[270,320], [450,320]];
+		this.playPilePos = [[270,290], [450,290]];
 		this.handHeight = 560;
 	}
 	activeDecorate() {
