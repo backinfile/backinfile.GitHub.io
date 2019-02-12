@@ -35,12 +35,9 @@ Resources.loadImage('img/0004.jpg');
 Resources.loadImage('img/0006.jpg');
 Resources.loadImage('img/0007.jpg');
 Resources.loadImage('img/0009.jpg');
-for (var i=10; i<=44; i++) {
+for (var i=10; i<=81; i++) {
 	Resources.loadImage('img/00'+i+'.jpg');
 }
-Resources.loadImage('img/0067.jpg');
-Resources.loadImage('img/0068.jpg');
-Resources.loadImage('img/0069.jpg');
 Resources.loadImage('img/900231.jpg');
 Resources.loadImage('img/900232.jpg');
 Resources.loadImage('img/900151.jpg');
@@ -59,6 +56,12 @@ Resources.loadImage('img/900411.jpg');
 Resources.loadImage('img/900412.jpg');
 Resources.loadImage('img/900421.jpg');
 Resources.loadImage('img/900422.jpg');
+Resources.loadImage('img/900531.jpg');
+Resources.loadImage('img/900532.jpg');
+Resources.loadImage('img/900533.jpg');
+Resources.loadImage('img/900722.jpg');
+Resources.loadImage('img/900771.jpg');
+Resources.loadImage('img/900772.jpg');
 
 Resources.CardData = {
 	9: {name:'起势',		type:'武技',style:'气功',number:2,cost:1,ability:{},effect:{'战力':1}},
@@ -105,6 +108,7 @@ Resources.CardData = {
 	47:{name:'力量鉴定',	type:'武技',style:'精神',number:3,cost:4,ability:{},effect:{}},
 	48:{name:'无形触手',	type:'法术',style:'精神',number:2,cost:1,ability:{},effect:{}},
 	49:{name:'心灵震爆',	type:'法术',style:'精神',number:2,cost:2,ability:{'探查':1},effect:{'战力':1}},
+	50:{name:'理智激荡',	type:'法术',style:'精神',number:2,cost:3,ability:{'探查':1},effect:{}},
 	51:{name:'暗夜呢喃',	type:'法术',style:'精神',number:2,cost:4,ability:{'获得时':true},effect:{'营火':2}},
 	52:{name:'噩梦化身',	type:'法术',style:'精神',number:1,cost:5,ability:{},effect:{}},
 	53:{name:'梦境回溯',	type:'法术',style:'精神',number:1,cost:6,ability:{'探查':3},effect:{'生命':1}},
@@ -138,7 +142,7 @@ Resources.CardData = {
 	78:{name:'谐振腔',		type:'装备',style:'充能',number:1,cost:5,ability:{},effect:{},durable:2},
 	79:{name:'红宝石激光器',type:'装备',style:'充能',number:1,cost:6,ability:{'充能':6},effect:{'营火':1},durable:2},
 	80:{name:'基态',		type:'特殊',style:'充能',number:3,cost:1,ability:{'充能':1},effect:{'营火':1}},
-	81:{name:'佩里夫特',	type:'特殊',style:'充能',number:1,cost:7,ability:{'获得时':true},effect:{}},
+	81:{name:'佩里夫特',	type:'特殊',style:'充能',number:1,cost:7,ability:{'获得时':true},effect:{},durable:0},
 };
 
 
