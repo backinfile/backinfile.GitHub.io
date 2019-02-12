@@ -627,10 +627,7 @@ class Hero extends Card {
 		//this.data[3].push(new Card(28));
 		//this.data[3].push(new Card(26));
 		Math.shuffle(this.data[3]);
-		// this.data[3].push(new Card(61));
-		// this.data[3].push(new Card(73));
-		// this.data[3].push(new Card(71));
-		// this.data[3].push(new Card(69));
+		//this.data[3].push(new Card(48));
 		var pos = this.getDecoratePos(3, true);
 		for (var i=0; i<this.data[3].length; i++) {
 			let card = this.data[3][i];
@@ -1261,7 +1258,9 @@ class Hero extends Card {
 			my.gr.log('--起势发动');
 		}
 		
-		if (my.cardnum==0) my.turnBuff['谐振腔'] = true;
+		if (my.cardnum==0) {
+			card.doubleCast = true;
+		}
 		
 		if (my.isType(card, '装备')) {
 			my.equipWeapon(card, function() {
@@ -1835,8 +1834,8 @@ class Hero extends Card {
 			if (card) {
 				my.revealCard(card, function() {
 					my.gr.log('--展示'+my.getName(card));
-					my.data[3].push(card);
-					my.setAllBack(function() {
+					my.data[4].push(card);
+					my.handRevise(function() {
 						if (!my.isType(card, '武技')) {
 							my.gr.log('--要放逐一张手牌吗？');
 							my.nchoose(2, [900151,900152], function(n) {
@@ -2648,8 +2647,8 @@ class Hero extends Card {
 		mc.all(function() {
 			my.applyEffect(effect, function() {
 				my.interactive();
-				if (my.turnBuff['谐振腔'] && my.isType(card, '法术')) {
-					my.turnBuff['谐振腔'] = false;
+				if (card.doubleCast && my.isType(card, '法术')) {
+					card.doubleCast = false;
 					var flag = false;
 					for (let i=0; i<2; i++) {
 						let card = my.weapons[i];
@@ -2666,6 +2665,7 @@ class Hero extends Card {
 						setTimeout(callback, 0);
 					}
 				} else {
+					//my.turnBuff['谐振腔'] = false;
 					setTimeout(callback, 0);
 				}
 			});
