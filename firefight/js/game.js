@@ -627,9 +627,9 @@ class Hero extends Card {
 		//this.data[3].push(new Card(28));
 		//this.data[3].push(new Card(26));
 		Math.shuffle(this.data[3]);
-		// this.data[3].push(new Card(45));
-		// this.data[3].push(new Card(28));
-		// this.data[3].push(new Card(69));
+		// this.data[3].push(new Card(61));
+		// this.data[3].push(new Card(73));
+		// this.data[3].push(new Card(71));
 		// this.data[3].push(new Card(69));
 		var pos = this.getDecoratePos(3, true);
 		for (var i=0; i<this.data[3].length; i++) {
@@ -2134,13 +2134,13 @@ class Hero extends Card {
 			if (true) {
 				var ori_card = card;
 				function _end(card) {
-					my.gr.playPile.push(ori_card);
 					let mcb = new MultiCallback();
 					my.trashCard(card, mcb.pipe());
 					my.setAllBack(mcb.pipe());
 					mcb.all(_end2);
 				}
 				function _end2() {
+					my.gr.playPile.push(ori_card);
 					if (my.data[0] < my.opponent.data[0]) {
 						my.nchoose(2, [900231,900201], function(n) {
 							if (n==0) {
@@ -2204,6 +2204,7 @@ class Hero extends Card {
 					});
 				});
 			}
+			return;
 		} else if (card.no == 74) {
 			if (my.data[2] >= 1) {
 				my.gr.log('--是否要充能');
@@ -2486,7 +2487,7 @@ class Hero extends Card {
 		let pos = this.getDecoratePos(6, true);
 		var my = this;
 		this.gr.log('--放逐'+Resources.CardData[card.no].name);
-		if (my.no==2 && [67,68,69].indexOf(card.no)>=0) my.data[0]+=1;
+		//if (my.no==2 && [67,68,69].indexOf(card.no)>=0) my.data[0]+=1;
 		my.updateData();
 		card.shrink().move(pos[0], pos[1]).action(function() {
 			card.divHide();
