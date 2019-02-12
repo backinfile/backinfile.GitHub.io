@@ -431,9 +431,8 @@ class Card{
 }
 
 class Hero extends Card {
-	constructor(no, isMain=false, isShow=true) {
+	constructor(no, isShow=true) {
 		super(no, isShow);
-		this.isMain = isMain;
 		this.isPlaying = false;
 		if (no == 2) {
 			this.data = [35,0,0, [],[],[],[]];
@@ -627,9 +626,7 @@ class Hero extends Card {
 		//this.data[3].push(new Card(28));
 		//this.data[3].push(new Card(26));
 		Math.shuffle(this.data[3]);
-		//this.data[3].push(new Card(71));
-		//this.data[3].push(new Card(71));
-		//this.data[3].push(new Card(71));
+		//this.data[3].push(new Card(48));
 		var pos = this.getDecoratePos(3, true);
 		for (var i=0; i<this.data[3].length; i++) {
 			let card = this.data[3][i];
@@ -679,54 +676,44 @@ class Hero extends Card {
 		}
 	}
 	drawCard(number=1, callback) {
-		if (this.isMain) {
-			var handHeight = this.handHeight;
-			var card =  this._getCard();// todo
-			if (!card) {
-				setTimeout(callback, 0);
-				return;
-			}
-			var pos = this.getDecoratePos(3, true);
-			var my = this;
-			card.divShow();
-			card.setBack();
-			card.setShrink();
-			card.setPos(pos[0], pos[1]);
-			card.setBorder(0);
-			card.expand();
-			this.data[4].push(card);
-			this.updateData();
-			var len = this.data[4].length;
-			var lefts = this.getLefts(len);
-			let mc = new MultiCallback();
-			for (let i=0; i<len; i++) {
-				let card2 = my.data[4][i];
-				card2.setZIndex(i+1, true);
-				if (Math.round(card2.rotateSave/180)%2) card2.rotate();
-				if (i+1 == len) card2.move(800,390).wait(300);
-				card2.move(lefts[i], handHeight).action(mc.pipe(function() {
-					if (i+1 == len) card2.activeShowBig();
-				}));
-			}
-			mc.all(function() {
-				number--;
-				setTimeout(function() {
-					if (number>0) {
-						my.drawCard(number, callback);
-					} else {
-						setTimeout(callback,0);
-					}
-				}, 0);
-			});
-		} else {
-			for(var i=0; i<number; i++) {
-				var card = this._getCard(); // todo
-				if (!card) break;
-				this.data[4].push(card);
-			}
-			this.updateData();
-			setTimeout(callback,0);
+		var handHeight = this.handHeight;
+		var card =  this._getCard();// todo
+		if (!card) {
+			setTimeout(callback, 0);
+			return;
 		}
+		var pos = this.getDecoratePos(3, true);
+		var my = this;
+		card.divShow();
+		card.setBack();
+		card.setShrink();
+		card.setPos(pos[0], pos[1]);
+		card.setBorder(0);
+		card.expand();
+		this.data[4].push(card);
+		this.updateData();
+		var len = this.data[4].length;
+		var lefts = this.getLefts(len);
+		let mc = new MultiCallback();
+		for (let i=0; i<len; i++) {
+			let card2 = my.data[4][i];
+			card2.setZIndex(i+1, true);
+			if (Math.round(card2.rotateSave/180)%2) card2.rotate();
+			if (i+1 == len) card2.move(800,390).wait(300);
+			card2.move(lefts[i], handHeight).action(mc.pipe(function() {
+				if (i+1 == len) card2.activeShowBig();
+			}));
+		}
+		mc.all(function() {
+			number--;
+			setTimeout(function() {
+				if (number>0) {
+					my.drawCard(number, callback);
+				} else {
+					setTimeout(callback,0);
+				}
+			}, 0);
+		});
 	}
 	getLefts(len, gap=5, handLeft=340, handRight=920) {
 		var width = handRight-handLeft;
@@ -760,11 +747,9 @@ class Hero extends Card {
 		// 特殊 武技 法术 武器 基础 气功 连击 聚流 精神 街斗 充能
 		my.power = 0; // 战力
 		my.cardnum = 0; // 已经打出的卡牌数
-		if (this.isMain) {
-			my.gr.log('<span style="color:#BBB">营火火剩余'+my.gr.firePile.length+'张</span>');
-			my.gr.log('<span style="color:#BBB">中央牌库剩余'+my.gr.commonPile.length+'张</span>');
-			this.gr.log('回合开始');
-		}
+		my.gr.log('<span style="color:#BBB">营火火剩余'+my.gr.firePile.length+'张</span>');
+		my.gr.log('<span style="color:#BBB">中央牌库剩余'+my.gr.commonPile.length+'张</span>');
+		this.gr.log('回合开始');
 		var i=-1;
 		function _loop() {
 			i++;
@@ -790,20 +775,12 @@ class Hero extends Card {
 		function _end() {
 			my.interactive();
 			my.gr.turnOn();
-			if (!my.isMain) {
-				my.turnEnd(function() {
-					my.attack(Math.seededRandom(1,5), function() {
-						my.gr.heros[0].turnStart();
-					});
-					
-				});
-			}
 		}
 		_loop();
 	}
 	attackSelf(n, callback) {
 		var my = this;
-		var character = my.isMain?'你':'对方';
+		var character = '你';
 		function _loop() {
 			my.select4(function(no) {
 				if (n<=0) {
@@ -842,30 +819,18 @@ class Hero extends Card {
 	attack(n, callback_t) {
 		var flag = false;
 		var my = this;
-		var character = my.isMain?'对方':'你';
+		var character = '对方';
 		var callback = function() {
 			if (!flag) {
 				my.opponent.data[0] -= n;
 				my.gr.log('<span style="color:#CCC">--'+character+'失去'+n+'点生命</span>');
 				if (my.opponent.data[0]<=0 && !my.gr._winflag) {
 					my.gr._winflag = true;
-					if (my.isMain) my.gr.log('你赢了！但游戏仍可以继续');
-					if (!my.isMain) my.gr.log('你输了！但游戏仍可以继续');
+					my.gr.log('你赢了！但游戏仍可以继续');
 				}
 				my.updateData();
 				my.opponent.updateData();
 				setTimeout(callback_t, 0);
-			}
-		}
-		if (!this.isMain) {
-			for (var i=0; i<2; i++) {
-				let card = this.opponent.weapons[i];
-				if (!card) continue;
-				if (card.no==19) {
-					this.opponent.dropWeapon(i, callback_t);
-					flag = true;
-					break;
-				}
 			}
 		}
 		callback();
@@ -905,10 +870,10 @@ class Hero extends Card {
 			my.data[4] = [];
 			mc.all(function() {
 				my.drawCard(5, function() {
-					if (my.isMain)my.gr.log('回合结束');
+					my.gr.log('回合结束');
 					if (!my.gr._winflag && my.data[4].length < 5) {
 						my.gr._winflag = true;
-						my.gr.log('--你'+(my.isMain?'输':'赢')+'了,但游戏仍可以继续');
+						my.gr.log('--你输了,但游戏仍可以继续');
 					}
 					setTimeout(callback, 0);
 				});
@@ -987,7 +952,6 @@ class Hero extends Card {
 	}
 	interactive(isOn=true) {
 		// 开关交互
-		if (!this.isMain) return;
 		if (isOn) {
 			this.updateData();
 			this.interactive(false);
@@ -2135,7 +2099,6 @@ class Hero extends Card {
 		} else if (card.no == 71) {
 			if (true) {
 				var ori_card = card;
-				my.gr.playPile.remove(ori_card);
 				function _end(card) {
 					let mcb = new MultiCallback();
 					my.trashCard(card, mcb.pipe());
@@ -2143,7 +2106,6 @@ class Hero extends Card {
 					mcb.all(_end2);
 				}
 				function _end2() {
-					console.log('inn');
 					my.gr.playPile.push(ori_card);
 					if (my.data[0] < my.opponent.data[0]) {
 						my.nchoose(2, [900231,900201], function(n) {
@@ -2164,18 +2126,18 @@ class Hero extends Card {
 						setTimeout(_end2, 0);
 						return;
 					} else {
-						if (my.gr.playPile.length + my.data[5].length <= 0) {
+						if (my.gr.playPile.length + my.data[5].length <= 1) {
 							setTimeout(_end2, 0);
 							return;
-						} else {
-							my.select2(my.gr.playPile, my.data[5], function(card) {
-								my.gr.playPile.remove(card);
-								_end(card);
-							}, function(card) {
-								my.data[5].remove(card);
-								_end(card);
-							});
 						}
+						my.gr.playPile.remove(ori_card);
+						my.select2(my.gr.playPile, my.data[5], function(card) {
+							my.gr.playPile.remove(card);
+							_end(card);
+						}, function(card) {
+							my.data[5].remove(card);
+							_end(card);
+						});
 					}
 				});
 			}
@@ -3116,6 +3078,59 @@ class Hero extends Card {
 	}
 }
 
+class Hero2 extends Hero {
+	constructor(no, isMain=false, isShow=true) {
+		super(no, isShow);
+	}
+	drawCard(number=1, callback) {
+		var card =  this._getCard();
+		if (!card) {
+			setTimeout(callback, 0);
+			return;
+		}
+		this.data[4].push(card);
+		this.updateData();
+		setTimeout(callback, 0);
+	}
+	turnStart() {
+		var my = this;
+		my.turnBuff = {};
+		my.counter = [0,0,0,0,0,0,0,0,0,0,0];
+		// 特殊 武技 法术 武器 基础 气功 连击 聚流 精神 街斗 充能
+		my.power = 0; // 战力
+		my.cardnum = 0; // 已经打出的卡牌数
+		my.gr.log('<span style="color:#BBB">营火火剩余'+my.gr.firePile.length+'张</span>');
+		my.gr.log('<span style="color:#BBB">中央牌库剩余'+my.gr.commonPile.length+'张</span>');
+		this.gr.log('回合开始');
+		var i=-1;
+		function _loop() {
+			i++;
+			if (i>=2) {
+				_end();
+				return;
+			}
+			if (!my.weapons[i]) {
+				_loop();
+				return;
+			}
+			var effect = Resources.CardData[my.weapons[i].no].effect;
+			if (!my.isEffectEmpty(effect)) {
+				my.gr.log('装备'+my.getName(my.weapons[i])+'发动');
+				my.applyEffect(effect, function() {
+					_loop();
+				});
+			} else {
+				_loop();
+			}
+		}
+		
+		function _end() {
+			my.interactive();
+			my.gr.turnOn();
+		}
+		_loop();
+	}
+}
  
 class GameRule {
 	constructor() {
@@ -3308,7 +3323,7 @@ class GameRule {
 		let mc = new MultiCallback();
 		my.fillCard(mc.pipe());
 		
-		var heros = [new Hero(herono[0], true), new Hero(herono[1])];
+		var heros = [new Hero(herono[0], true), new Hero2(herono[1])];
 		this.heros = heros;
 		for (let i=0; i<2; i++) {
 			heros[i].setPos(my.heroPos[i][0],my.heroPos[i][1]);
