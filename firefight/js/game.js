@@ -1899,6 +1899,7 @@ class Hero extends Card {
 								my.data[6].remove(card);
 								my.gr.trashPile.push(card);
 								card.divShow();
+								card.setExpand();
 								my.gr.log('--放逐'+my.getName(card));
 								my.gr.setAllBack(function() {
 									my.gr.playPile.push(ori_card);
