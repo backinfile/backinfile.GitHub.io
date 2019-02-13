@@ -628,7 +628,7 @@ class Hero extends Card {
 		//this.data[3].push(new Card(28));
 		//this.data[3].push(new Card(26));
 		Math.shuffle(this.data[3]);
-		this.data[3].push(new Card(18));
+		//this.data[3].push(new Card(18));
 		var pos = this.getDecoratePos(3, true);
 		for (var i=0; i<this.data[3].length; i++) {
 			let card = this.data[3][i];
@@ -3307,7 +3307,7 @@ class Hero2 extends Hero {
 		Math.shuffle(this.data[3]);
 		//this.data[3].push(new Card(24));
 		//this.data[3].push(new Card(69));
-		this.data[3].push(new Card(18));
+		//this.data[3].push(new Card(18));
 		var pos = this.getDecoratePos(3, true);
 		for (var i=0; i<this.data[3].length; i++) {
 			let card = this.data[3][i];
