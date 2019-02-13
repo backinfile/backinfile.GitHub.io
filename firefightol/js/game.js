@@ -3857,7 +3857,7 @@ $(function() {
 		gr = new GameRule();
 		gr.init(seed, isFirst);
 	}
-	ws = new WebSocket("ws://192.168.1.137:80/firefightol");
+	ws = new WebSocket("ws://118.190.96.152:8888/firefightol");
 	ws.onopen = function(evt) { 
 		console.log('open');
 		wsOk = true;
