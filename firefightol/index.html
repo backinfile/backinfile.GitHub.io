@@ -2,22 +2,33 @@
 <html>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>营火战争单机版</title>
+    <title>营火战争联机版</title>
     <script src="./js/jquery.min.js"></script>
     <script src="./js/jquery.cookie.js"></script>
     <script src="./js/resources.js"></script>
     <script src="./js/game.js"></script>
 	<style>
 		*{margin:0;padding:0}
-		body{overflow:hidden}
+		body{
+			overflow:hidden;
+			text-align:center;
+		}
+		#search {
+			display: inline-block;
+			width:100px;height:26px;
+		}
 	</style>
 </head>
 <body>
 	<div id='gamebody'>
-		<center>对手每回合造成随机伤害Σ(ﾟ∀ﾟﾉ)ﾉ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-		战力 -<span style='font-size:0.5em'>回合结束时</span>-> 伤害 --> 装备承受/失去生命<center/>
+		对手每回合造成随机伤害Σ(ﾟ∀ﾟﾉ)ﾉ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		战力 -<span style='font-size:0.5em'>回合结束时</span>-> 伤害 --> 装备承受/失去生命
 	</div>
-	<div id='loading'><center>（第一次加载可能需要较长时间）加载中。。<span id='per'>0%</span></center></div>
+	<br/>
+	<div id='loading'>游戏资源加载中(<span id='per'>0%</span>)</div><br/>
+	在线人数<span id='peopleNumber'>0</span>
+		<button id='search' disabled="disabled">寻找对手</button>
+	
 
 
 </body>
