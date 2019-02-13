@@ -628,7 +628,7 @@ class Hero extends Card {
 		//this.data[3].push(new Card(28));
 		//this.data[3].push(new Card(26));
 		Math.shuffle(this.data[3]);
-		//this.data[3].push(new Card(18));
+		//this.data[3].push(new Card(30));
 		var pos = this.getDecoratePos(3, true);
 		for (var i=0; i<this.data[3].length; i++) {
 			let card = this.data[3][i];
@@ -2400,7 +2400,7 @@ class Hero extends Card {
 				card.setBorder(2);
 				card.onclick(function() {
 					my.sendMessage({type:'select', location:i});
-					click.call(my, card);
+					click1.call(my, card);
 				});
 			}
 			for (let i=0; i<cards2.length; i++) {
@@ -2408,7 +2408,7 @@ class Hero extends Card {
 				card.setBorder(2);
 				card.onclick(function() {
 					my.sendMessage({type:'select', location:i+cards1.length});
-					click.call(my, card);
+					click2.call(my, card);
 				});
 			}
 		});
@@ -3308,6 +3308,7 @@ class Hero2 extends Hero {
 		//this.data[3].push(new Card(24));
 		//this.data[3].push(new Card(69));
 		//this.data[3].push(new Card(18));
+		//this.data[3].push(new Card(30));
 		var pos = this.getDecoratePos(3, true);
 		for (var i=0; i<this.data[3].length; i++) {
 			let card = this.data[3][i];
@@ -3689,8 +3690,8 @@ class Hero2 extends Hero {
 				if (action.type != 'select') {
 					my.gr.log('游戏出错');
 				}
-				if (action.location < cards1.length) click.call(my, cards[action.location]);
-				else click.call(my, cards[action.location-cards1.length]);
+				if (action.location < cards1.length) click1.call(my, cards1[action.location]);
+				else click2.call(my, cards2[action.location-cards1.length]);
 			} else setTimeout(_loop, 500);
 		}
 		_loop();
