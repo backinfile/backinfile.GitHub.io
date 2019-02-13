@@ -628,7 +628,11 @@ class Hero extends Card {
 		//this.data[3].push(new Card(28));
 		//this.data[3].push(new Card(26));
 		Math.shuffle(this.data[3]);
-		//this.data[3].push(new Card(30));
+		// this.data[3].push(new Card(67));
+		// this.data[3].push(new Card(69));
+		// this.data[3].push(new Card(69));
+		// this.data[3].push(new Card(69));
+		// this.data[3].push(new Card(69));
 		var pos = this.getDecoratePos(3, true);
 		for (var i=0; i<this.data[3].length; i++) {
 			let card = this.data[3][i];
@@ -1019,6 +1023,7 @@ class Hero extends Card {
 				}
 				card.onclick(function() {
 					if (card.no == 65) {
+						my.sendMessage({type:'buyCard', location: i});
 						if (my.data[2]) {
 							my.gr.log('选择要为超重量武器支付的营火(不足8将用战力补齐)');
 							my.nchoose(my.data[2]+1, [900151,900201,900202,900203,900204,900205,900206,900207,900208],
@@ -1031,7 +1036,6 @@ class Hero extends Card {
 										my.gr.log('支付'+(8-n)+'点战力');
 									} else card._switch = false;
 									my.updateData();
-									my.sendMessage({type:'buyCard', location: i});
 									my.buyCard(card);
 								} else {
 									my.gr.log('战力不够');
@@ -1042,7 +1046,6 @@ class Hero extends Card {
 							if (my.power >= cost) {
 								my.gr.log('支付8点战力');
 								my.power -= 8;
-								my.sendMessage({type:'buyCard', location: i});
 								my.buyCard(card);
 							}
 						}
@@ -1257,6 +1260,9 @@ class Hero extends Card {
 		
 		if (my.turnBuff['致盲射线']) {
 			my.turnBuff['致盲射线'] = false;
+			effect['战力'] = 0;
+			effect['营火'] = 0;
+			effect['生命'] = 0;
 			setTimeout(callback, 0);
 			return;
 		}
@@ -1266,6 +1272,9 @@ class Hero extends Card {
 		}
 		
 		if (my.isType(card, '装备')) {
+			effect['战力'] = 0;
+			effect['营火'] = 0;
+			effect['生命'] = 0;
 			my.equipWeapon(card, function() {
 				setTimeout(callback, 0);
 			});
@@ -2637,6 +2646,9 @@ class Hero extends Card {
 	}
 	applyEffect(effect,callback) {
 		var my = this;
+		if (!effect['营火'])effect['营火']=0;
+		if (!effect['战力'])effect['战力']=0;
+		if (!effect['生命'])effect['生命']=0;
 		if (my.turnBuff['电眼逼人']) {
 			var buff = my.turnBuff['电眼逼人'];
 			if (buff == '营火') {
@@ -2734,7 +2746,7 @@ class Hero extends Card {
 		if (my.turnBuff['断片感应']) {
 			my.turnBuff['断片感应'] = false;
 			if (!my.isStyle(card, '聚流')) {
-				my.data[2] += 1;
+				my.applyEffect({'营火':1});
 				my.gr.log('--断片感应发动');
 			}
 		}
@@ -2797,27 +2809,30 @@ class Hero extends Card {
 					for (let i=0; i<n; i++) {
 						if (my.data[3].length-1-i<0) break;
 						let card = my.data[3][my.data[3].length-1-i];
-						if (('营火' in Resources.CardData[card.no].effect) 
-							|| Resources.CardData[card.no].ability['聚气']) {
+						if (('营火' in Resources.CardData[card.no].effect) || Resources.CardData[card.no].ability['聚气']) {
 							cards.push(card);
 						} else {
 							discardCards.push(card);
 						}
+						my.data[3].remove(card);
 					}
-					for (var i=0; i<cards.length; i++) my.data[3].remove(cards[i]);
-					for (var i=0; i<discardCards.length; i++) my.data[3].remove(discardCards[i]);
 					my.updateData();
 					if (!cards.length) {
-						_end()
+						_end();
+						return;
 					}
+					console.log('select', cards.length);
 					my.select(cards, function(card) {
 						my.data[4].push(card);
 						my.handRevise(function() {
+							console.log('selectinnn');
 							cards.remove(card);
 							my.updateData();
 							if (!cards.length) {
-								_end()
+								_end();
+								return;
 							}
+							console.log('select', cards.length);
 							my.select(cards, function(card) {
 								cards.remove(card);
 								my.data[4].push(card);
@@ -2976,6 +2991,7 @@ class Hero extends Card {
 		var my = this;
 		var no = null;
 		//card.divHide();
+		my.applyEffect(Resources.CardData[card.no].effect);
 		function _end() {
 			card.divShow();
 			my.weapons[no] = card;
@@ -3165,7 +3181,7 @@ class Hero extends Card {
 		}
 	}
 	sendMessage(msg) {
-		console.log('send',msg);
+		//console.log('send',msg);
 		ws.send(JSON.stringify(msg));
 	}
 }
@@ -3432,6 +3448,7 @@ class Hero2 extends Hero {
 				if (card.no == 65) {
 					if (my.data[2]) {
 						my.gr.log('选择要为超重量武器支付的营火(不足8将用战力补齐)');
+						console.log('in buy 65');
 						my.nchoose(my.data[2]+1, [900151,900201,900202,900203,900204,900205,900206,900207,900208],
 							function(n) {
 							if (my.power+n >= 8) {
@@ -3653,6 +3670,7 @@ class Hero2 extends Hero {
 		// 抉择
 		var my = this;
 		function _loop() {
+			console.log('nchoose loop');
 			let action = my.actionList.shift();
 			if (action) {
 				if (action.type != 'select') {
@@ -3669,7 +3687,7 @@ class Hero2 extends Hero {
 		my.updateData();
 		
 		function _loop() {
-		console.log('select loop');
+			console.log('select loop');
 			let action = my.actionList.shift();
 			if (action) {
 				if (action.type != 'select') {
@@ -3697,6 +3715,259 @@ class Hero2 extends Hero {
 		_loop();
 	}
 	sendMessage(msg) {
+	}
+	buyCard(card, callback_t) {
+		var my = this;
+		//this.interactive(true);
+		this.interactive(false);
+		my.gr.buyPile[my.gr.buyPile.indexOf(card)] = null;
+		my.gr.log('购买'+Resources.CardData[card.no].name);
+		if (my.turnBuff['断片感应']) {
+			my.turnBuff['断片感应'] = false;
+			if (!my.isStyle(card, '聚流')) {
+				my.applyEffect({'营火':1});
+				my.gr.log('--断片感应发动');
+			}
+		}
+		
+		var callback = function() {
+			my.gr.fillCard(function() {
+				my.interactive();
+				setTimeout(callback_t, 0);
+			});
+		}
+		
+		if (my.turnBuff['粒子数反转']) {
+			my.turnBuff['粒子数反转'] = false;
+			if (my.isType(card, '法术')) {
+				my.gr.log('--粒子数反转触发');
+				my.applyEffect({'战力':2});
+			}
+		}
+		
+		// 获得时
+		if (card.no==25) {
+			my.data[3].push(card);
+			my.setPileBack(function() {
+				my.updateData();
+				card.divHide();
+				my.gr.fillCard(function() {
+					//my.interactive();
+					setTimeout(callback, 0);
+				});
+			});
+			return;
+		} else if (card.no == 20) {
+			my.gr.log('--至多将两张置入手牌');
+			(function() {
+				var ori_card = card;
+				my.data[2]+=Resources.CardData[20].cost;
+				my.updateData();
+				my.nchoose(my.data[2]>8?8:my.data[2], [900201, 900202, 900203,
+					900204, 900205, 900206, 900207, 900208], function(n) {
+					n++;
+					my.data[2] -= n;
+					let cards = [];
+					let discardCards = [];
+					function _end() {
+						let mc = new MultiCallback();
+						for (let i=0; i<cards.length; i++) {
+							my.discardCard(cards[i], mc.pipe());
+						}
+						for (let i=0; i<discardCards.length; i++) {
+							my.discardCard(discardCards[i], mc.pipe());
+						}
+						mc.all(function() {
+							var mcb = new MultiCallback();
+							my.trashCard(ori_card, mcb.pipe());
+							my.gr.fillCard(mcb.pipe());
+							mcb.all(function() {
+								//my.interactive();
+								setTimeout(callback, 0);
+							});
+						});
+					}
+					for (let i=0; i<n; i++) {
+						if (my.data[3].length-1-i<0) break;
+						let card = my.data[3][my.data[3].length-1-i];
+						if (('营火' in Resources.CardData[card.no].effect) || Resources.CardData[card.no].ability['聚气']) {
+							cards.push(card);
+						} else {
+							discardCards.push(card);
+						}
+						my.data[3].remove(card);
+					}
+					my.updateData();
+					if (!cards.length) {
+						_end();
+						return;
+					}
+					console.log('select', cards.length);
+					my.select(cards, function(card) {
+						my.data[4].push(card);
+						my.handRevise(function() {
+							console.log('selectinnn');
+							cards.remove(card);
+							my.updateData();
+							if (!cards.length) {
+								_end();
+								return;
+							}
+							console.log('select', cards.length);
+							my.select(cards, function(card) {
+								cards.remove(card);
+								my.data[4].push(card);
+								my.handRevise(_end);
+							});
+						});
+					});
+				});
+			})();
+			return;
+		} else if (card.no == 19) {
+			my.equipWeapon(card, callback);
+			return;
+		} else if (card.no == 32) {
+			var cnt = 0;
+			for (var i=0; i<my.gr.playPile.length; i++) {
+				let card = my.gr.playPile[i];
+				if (my.isType(card, '武技')) cnt++;
+			}
+			if (cnt>5) cnt=5;
+			var effect = {'生命':cnt};
+			my.applyEffect(effect, function() {
+				my.discardCard(card, callback);
+			});
+			return;
+		} else if (card.no == 40) {
+			my.gr.log('--要从打出区放逐一张牌吗？');
+			my.nchoose(2, [900151,900152], function(n) {
+				if (n==0) {
+					my.discardCard(card, callback);
+				} else {
+					var ori_card = card;
+					my.select(my.gr.playPile, function(card) {
+						var mc = new MultiCallback();
+						my.gr.playPile.remove(card);
+						my.trashCard(card, mc.pipe());
+						my.setAllBack(mc.pipe());
+						mc.all(function() {
+							my.discardCard(ori_card, callback);
+						});
+					});
+				}
+			});
+			return;
+		} else if (card.no == 31) {
+			my.gr.log('--要将弃牌区的一张费用不大于5的武技牌置入手牌吗？');
+			my.nchoose(2, [900151,900152], function(n) {
+				var ori_card = card;
+				if (n==0) {
+					my.discardCard(ori_card, callback);
+				} else {
+					var cards = [];
+					for (let i=0; i<my.data[5].length; i++) {
+						let card = my.data[5][i];
+						if (my.getCost(card)<=5 && my.isType(card, '武技')) cards.push(card);
+					}
+					if (!cards.length) {
+						my.discardCard(ori_card, callback);
+						return;
+					}
+					my.select(cards, function(card) {
+						my.data[5].remove(card);
+						my.data[4].push(card);
+						var mc = new MultiCallback();
+						my.setAllBack(mc.pipe());
+						my.handRevise(mc.pipe());
+						mc.all(function() {
+							my.discardCard(ori_card, callback);
+						});
+					});
+				}
+			});
+			return;
+		} else if (card.no == 51) {
+			my.data[3].push(card);
+			my.setPileBack(function() {
+				//my.updateData();
+				//card.divHide();
+				my.gr.fillCard(function() {
+					//my.interactive();
+					setTimeout(callback,0);
+				});
+			});
+			return;
+		} else if (card.no == 65) {
+			if (card._switch) {
+				card._switch = false;
+				my.equipWeapon(card, callback);
+				return;
+			} else {
+				my.discardCard(card, callback);
+			}
+		} else if (card.no == 66) {
+			var cnt = 1;
+			for (var i=0; i<my.data[6].length; i++) {
+				if (my.data[6][i].no == 66) {
+					cnt++;
+				}
+			}
+			my.trashCard(card, function() {
+				my.attack(cnt, callback);
+			});
+		} else if (card.no == 72 || card.no==76) {
+			my.isCharge(3, function(n) {
+				if (n) {
+					my.data[2] -= 3;
+					my.applyEffect({'战力':2});
+				}
+				my.discardCard(card, callback);
+			});
+		} else if (card.no == 79) {
+			my.isCharge(6, function(n) {
+				if (n) {
+					my.data[2] -= 6;
+					my.attack(4, function() {
+						my.discardCard(card, callback);
+					});
+					return;
+				}
+				my.discardCard(card, callback);
+			});
+		} else if (card.no == 80) {
+			if (my.data[2] >= 1) {
+				my.gr.log('--选择要充能的营火');
+				my.nchoose(my.data[2]>=2?3:2, [900151, 900201, 900202], function(n) {
+					if (n) {
+						my.data[2] -= n;
+						my.charging();
+						my.applyEffect({'生命':n});
+					}
+					my.discardCard(card, callback);
+				});
+				return;
+			} else {
+				my.discardCard(card, callback);
+			}
+		} else if (card.no == 74) {
+			my.isCharge(1, function(n) {
+				if (n) {
+					my.data[2] -= 1;
+					my.drawCard(1, function() {
+						my.discardCard(card, callback);
+					});
+					return;
+				}
+				my.discardCard(card, callback);
+			});
+		} else if (card.no == 81) {
+			my.applyEffect({'生命':3});
+			my.equipWeapon(card, callback);
+			return;
+		} else {
+			my.discardCard(card, callback);
+		}
 	}
 }
  
@@ -3790,6 +4061,7 @@ class GameRule {
 		div.css('position', 'absolute');
 		div.css('overflow-y', 'scroll');
 		div.css('overflow-x', 'hidden');
+		div.css('text-align', 'left');
 		div.css('left', 1130);
 		div.css('top', 340);
 		
@@ -3879,7 +4151,7 @@ class GameRule {
 			this.firePile.push(card);
 		}
 		Math.shuffle(this.commonPile);
-		//this.commonPile.push(new Card(31, true)); ////////
+		//this.commonPile.push(new Card(65, true)); ////////
 		//this.commonPile.push(new Card(81, true)); ////////
 		for (let i=0; i<this.commonPile.length; i++) {
 			this.commonPile[i].setZIndex(i);
@@ -3972,15 +4244,17 @@ $(function() {
 		$.cookie('name', $('#name').val());
 		if (wsOk) ws.send(JSON.stringify({type:'name',name:$('#name').val()}));
 	});
-	ws = new WebSocket("ws://118.190.96.152:8888/firefightol");// "ws://192.168.1.137:8888/firefightol"
+	let protocol = location.protocol=='https'?'wss://118.190.96.152:8888/firefightol':'ws://118.190.96.152:8888/firefightol';
+	ws = new WebSocket(protocol);// "ws://192.168.1.137:8888/firefightol"
 	ws.onopen = function(evt) { 
 		console.log('open');
 		wsOk = true;
+		ws.send(JSON.stringify({type:'name',name:$('#name').val()}));
 		_end();
     };
 	ws.onmessage = function(e) {
 		var msg = JSON.parse(e.data);
-		console.log(msg);
+		console.log(msg.type);
 		if (msg.type == 'peopleNumber') {
 			$('#peopleNumber').html(msg.number);
 		}
