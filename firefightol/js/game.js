@@ -631,6 +631,10 @@ class Hero extends Card {
 		// this.data[3].push(new Card(69));
 		// this.data[3].push(new Card(69));
 		// this.data[3].push(new Card(69));
+		// this.data[3].push(new Card(69));
+		// this.data[3].push(new Card(69));
+		// this.data[3].push(new Card(24));
+		// this.data[3].push(new Card(26));
 		var pos = this.getDecoratePos(3, true);
 		for (var i=0; i<this.data[3].length; i++) {
 			let card = this.data[3][i];
@@ -2593,8 +2597,10 @@ class Hero extends Card {
 		this.data[5].push(card);
 		let pos = this.getDecoratePos(5, true);
 		var my = this;
-		my.turnBuff['弃置过手牌'] = true;
-		this.gr.log('--丢弃'+Resources.CardData[card.no].name);
+		if (isDiscard) {
+			my.turnBuff['弃置过手牌'] = true;
+			this.gr.log('--丢弃'+Resources.CardData[card.no].name);
+		}
 		my.updateData();
 		card.shrink().move(pos[0], pos[1]).action(function() {
 			card.divHide();
@@ -2825,10 +2831,10 @@ class Hero extends Card {
 					function _end() {
 						let mc = new MultiCallback();
 						for (let i=0; i<cards.length; i++) {
-							my.discardCard(cards[i], mc.pipe());
+							my.discardCard(cards[i], mc.pipe(), false);
 						}
 						for (let i=0; i<discardCards.length; i++) {
-							my.discardCard(discardCards[i], mc.pipe());
+							my.discardCard(discardCards[i], mc.pipe(), false);
 						}
 						mc.all(function() {
 							var mcb = new MultiCallback();
@@ -2888,14 +2894,14 @@ class Hero extends Card {
 			if (cnt>5) cnt=5;
 			var effect = {'生命':cnt};
 			my.applyEffect(effect, function() {
-				my.discardCard(card, callback);
+				my.discardCard(card, callback, false);
 			});
 			return;
 		} else if (card.no == 40) {
 			my.gr.log('--要从打出区放逐一张牌吗？');
 			my.nchoose(2, [900151,900152], function(n) {
 				if (n==0) {
-					my.discardCard(card, callback);
+					my.discardCard(card, callback, false);
 				} else {
 					var ori_card = card;
 					my.select(my.gr.playPile, function(card) {
@@ -2904,7 +2910,7 @@ class Hero extends Card {
 						my.trashCard(card, mc.pipe());
 						my.setAllBack(mc.pipe());
 						mc.all(function() {
-							my.discardCard(ori_card, callback);
+							my.discardCard(ori_card, callback, false);
 						});
 					});
 				}
@@ -2915,7 +2921,7 @@ class Hero extends Card {
 			my.nchoose(2, [900151,900152], function(n) {
 				var ori_card = card;
 				if (n==0) {
-					my.discardCard(ori_card, callback);
+					my.discardCard(ori_card, callback, false);
 				} else {
 					var cards = [];
 					for (let i=0; i<my.data[5].length; i++) {
@@ -2923,7 +2929,7 @@ class Hero extends Card {
 						if (my.getCost(card)<=5 && my.isType(card, '武技')) cards.push(card);
 					}
 					if (!cards.length) {
-						my.discardCard(ori_card, callback);
+						my.discardCard(ori_card, callback, false);
 						return;
 					}
 					my.select(cards, function(card) {
@@ -2933,7 +2939,7 @@ class Hero extends Card {
 						my.setAllBack(mc.pipe());
 						my.handRevise(mc.pipe());
 						mc.all(function() {
-							my.discardCard(ori_card, callback);
+							my.discardCard(ori_card, callback, false);
 						});
 					});
 				}
@@ -2955,7 +2961,7 @@ class Hero extends Card {
 				my.equipWeapon(card, callback);
 				return;
 			} else {
-				my.discardCard(card, callback);
+				my.discardCard(card, callback, false);
 			}
 		} else if (card.no == 66) {
 			var cnt = 1;
@@ -2973,18 +2979,18 @@ class Hero extends Card {
 					my.data[2] -= 3;
 					my.applyEffect({'战力':2});
 				}
-				my.discardCard(card, callback);
+				my.discardCard(card, callback, false);
 			});
 		} else if (card.no == 79) {
 			my.isCharge(6, function(n) {
 				if (n) {
 					my.data[2] -= 6;
 					my.attack(4, function() {
-						my.discardCard(card, callback);
+						my.discardCard(card, callback,false);
 					});
 					return;
 				}
-				my.discardCard(card, callback);
+				my.discardCard(card, callback,false);
 			});
 		} else if (card.no == 80) {
 			if (my.data[2] >= 1) {
@@ -2995,29 +3001,29 @@ class Hero extends Card {
 						my.charging();
 						my.applyEffect({'生命':n});
 					}
-					my.discardCard(card, callback);
+					my.discardCard(card, callback,false);
 				});
 				return;
 			} else {
-				my.discardCard(card, callback);
+				my.discardCard(card, callback,false);
 			}
 		} else if (card.no == 74) {
 			my.isCharge(1, function(n) {
 				if (n) {
 					my.data[2] -= 1;
 					my.drawCard(1, function() {
-						my.discardCard(card, callback);
+						my.discardCard(card, callback,false);
 					});
 					return;
 				}
-				my.discardCard(card, callback);
+				my.discardCard(card, callback,false);
 			});
 		} else if (card.no == 81) {
 			my.applyEffect({'生命':3});
 			my.equipWeapon(card, callback);
 			return;
 		} else {
-			my.discardCard(card, callback);
+			my.discardCard(card, callback,false);
 		}
 	}
 	equipWeapon(card, callback) {
@@ -3066,7 +3072,7 @@ class Hero extends Card {
 		if(card) {
 			this._weaponDivs[no].hide();
 			this.weapons[no] = null;
-			this.discardCard(card, callback);
+			this.discardCard(card, callback,false);
 			return;
 		}
 		setTimeout(callback, 0);
@@ -3354,7 +3360,13 @@ class Hero2 extends Hero {
 		for (var j=0; j<8; j++) this.data[3].push(new Card(68));
 		for (var j=0; j<2; j++) this.data[3].push(new Card(67));
 		Math.shuffle(this.data[3]);
-		//this.data[3].push(new Card(24));
+		// this.data[3].push(new Card(69));
+		// this.data[3].push(new Card(69));
+		// this.data[3].push(new Card(69));
+		// this.data[3].push(new Card(69));
+		// this.data[3].push(new Card(69));
+		// this.data[3].push(new Card(24));
+		// this.data[3].push(new Card(26));
 		//this.data[3].push(new Card(69));
 		//this.data[3].push(new Card(18));
 		//this.data[3].push(new Card(30));
@@ -3747,6 +3759,40 @@ class Hero2 extends Hero {
 		}
 		_loop();
 	}
+	select3(cards, oncast, height=520) {
+		// 轮摆式移位
+		var my = this;
+		var mc = new MultiCallback();
+		let lefts = my.getLefts(cards.length, 5, 200, 1140);
+		for (let i=0; i<cards.length; i++) {
+			let card = cards[i];
+			card.setZIndex(i+800+2, true);
+			card.divShow();
+			card.setBorder(0);
+			card.offclick();
+			card.expand().move(lefts[i], height).action(mc.pipe(function() {
+				card.activeShowBig();
+			}));
+		}
+		mc.all(function() {
+			for (let i=0; i<cards.length; i++) {
+				let card = cards[i];
+				card.setBorder(2);
+				my._examHandCard(card, function() {
+					oncast(card);
+				}, false, i);
+			}
+			function _loop() {
+				let action = my.actionList.shift();
+				if (action && action.type=='castCard') {
+					oncast(cards[action.location]);
+				} else {
+					setTimeout(_loop, 500);
+				}
+			}
+			_loop();
+		});
+	}
 	sendMessage(msg) {
 	}
 	buyCard(card, callback_t) {
@@ -3805,10 +3851,10 @@ class Hero2 extends Hero {
 					function _end() {
 						let mc = new MultiCallback();
 						for (let i=0; i<cards.length; i++) {
-							my.discardCard(cards[i], mc.pipe());
+							my.discardCard(cards[i], mc.pipe(),false);
 						}
 						for (let i=0; i<discardCards.length; i++) {
-							my.discardCard(discardCards[i], mc.pipe());
+							my.discardCard(discardCards[i], mc.pipe(),false);
 						}
 						mc.all(function() {
 							var mcb = new MultiCallback();
@@ -3869,14 +3915,14 @@ class Hero2 extends Hero {
 			if (cnt>5) cnt=5;
 			var effect = {'生命':cnt};
 			my.applyEffect(effect, function() {
-				my.discardCard(card, callback);
+				my.discardCard(card, callback,false);
 			});
 			return;
 		} else if (card.no == 40) {
 			my.gr.log('--要从打出区放逐一张牌吗？');
 			my.nchoose(2, [900151,900152], function(n) {
 				if (n==0) {
-					my.discardCard(card, callback);
+					my.discardCard(card, callback,false);
 				} else {
 					var ori_card = card;
 					my.select(my.gr.playPile, function(card) {
@@ -3885,7 +3931,7 @@ class Hero2 extends Hero {
 						my.trashCard(card, mc.pipe());
 						my.setAllBack(mc.pipe());
 						mc.all(function() {
-							my.discardCard(ori_card, callback);
+							my.discardCard(ori_card, callback,false);
 						});
 					});
 				}
@@ -3896,7 +3942,7 @@ class Hero2 extends Hero {
 			my.nchoose(2, [900151,900152], function(n) {
 				var ori_card = card;
 				if (n==0) {
-					my.discardCard(ori_card, callback);
+					my.discardCard(ori_card, callback,false);
 				} else {
 					var cards = [];
 					for (let i=0; i<my.data[5].length; i++) {
@@ -3904,7 +3950,7 @@ class Hero2 extends Hero {
 						if (my.getCost(card)<=5 && my.isType(card, '武技')) cards.push(card);
 					}
 					if (!cards.length) {
-						my.discardCard(ori_card, callback);
+						my.discardCard(ori_card, callback,false);
 						return;
 					}
 					my.select(cards, function(card) {
@@ -3914,7 +3960,7 @@ class Hero2 extends Hero {
 						my.setAllBack(mc.pipe());
 						my.handRevise(mc.pipe());
 						mc.all(function() {
-							my.discardCard(ori_card, callback);
+							my.discardCard(ori_card, callback,false);
 						});
 					});
 				}
@@ -3937,7 +3983,7 @@ class Hero2 extends Hero {
 				my.equipWeapon(card, callback);
 				return;
 			} else {
-				my.discardCard(card, callback);
+				my.discardCard(card, callback,false);
 			}
 		} else if (card.no == 66) {
 			var cnt = 1;
@@ -3955,18 +4001,18 @@ class Hero2 extends Hero {
 					my.data[2] -= 3;
 					my.applyEffect({'战力':2});
 				}
-				my.discardCard(card, callback);
+				my.discardCard(card, callback,false);
 			});
 		} else if (card.no == 79) {
 			my.isCharge(6, function(n) {
 				if (n) {
 					my.data[2] -= 6;
 					my.attack(4, function() {
-						my.discardCard(card, callback);
+						my.discardCard(card, callback,false);
 					});
 					return;
 				}
-				my.discardCard(card, callback);
+				my.discardCard(card, callback,false);
 			});
 		} else if (card.no == 80) {
 			if (my.data[2] >= 1) {
@@ -3977,29 +4023,29 @@ class Hero2 extends Hero {
 						my.charging();
 						my.applyEffect({'生命':n});
 					}
-					my.discardCard(card, callback);
+					my.discardCard(card, callback,false);
 				});
 				return;
 			} else {
-				my.discardCard(card, callback);
+				my.discardCard(card, callback,false);
 			}
 		} else if (card.no == 74) {
 			my.isCharge(1, function(n) {
 				if (n) {
 					my.data[2] -= 1;
 					my.drawCard(1, function() {
-						my.discardCard(card, callback);
+						my.discardCard(card, callback,false);
 					});
 					return;
 				}
-				my.discardCard(card, callback);
+				my.discardCard(card, callback,false);
 			});
 		} else if (card.no == 81) {
 			my.applyEffect({'生命':3});
 			my.equipWeapon(card, callback);
 			return;
 		} else {
-			my.discardCard(card, callback);
+			my.discardCard(card, callback,false);
 		}
 	}
 	activeDecorate() {
@@ -4039,6 +4085,7 @@ class Hero2 extends Hero {
 			}
 		}
 	}
+	
 }
  
 class GameRule {
@@ -4258,7 +4305,7 @@ class GameRule {
 			this.firePile.push(card);
 		}
 		Math.shuffle(this.commonPile);
-		//this.commonPile.push(new Card(65, true)); ////////
+		// this.commonPile.push(new Card(63, true)); ////////
 		//this.commonPile.push(new Card(81, true)); ////////
 		for (let i=0; i<this.commonPile.length; i++) {
 			this.commonPile[i].setZIndex(i);
