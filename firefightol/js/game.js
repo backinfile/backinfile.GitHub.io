@@ -1849,6 +1849,7 @@ class Hero extends Card {
 					my.gr.log('--展示'+my.getName(card)+',费用为'+cost);
 					if (cost<2) {
 						my.data[0]-=2;
+						my.gr.log('--失去2点生命');
 					}
 					my.data[3].push(card);
 					my.setAllBack(function() {
@@ -4359,7 +4360,8 @@ $(function() {
 	ws.onopen = function(evt) { 
 		console.log('open');
 		wsOk = true;
-		ws.send(JSON.stringify({type:'name',name:$('#name').val()}));
+		let name = delHtmlTag($('#name').val());
+		ws.send(JSON.stringify({'type':'name','name':name}));
 		_end();
     };
 	ws.onmessage = function(e) {
@@ -4367,6 +4369,9 @@ $(function() {
 		console.log(msg.type);
 		if (msg.type == 'peopleNumber') {
 			$('#peopleNumber').html(msg.number);
+		}
+		if (msg.type == 'match') {
+			console.log(e.data);
 		}
 		if (eventList[0]) eventList[0](e);
 		if (msg.type == 'chat' && msg.position == 'opponent') {
