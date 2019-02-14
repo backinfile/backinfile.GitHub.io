@@ -2593,7 +2593,7 @@ class Hero extends Card {
 			setTimeout(callback, 0);
 		});
 	}
-	discardCard(card, callback) {
+	discardCard(card, callback,isDiscard=true) {
 		this.data[5].push(card);
 		let pos = this.getDecoratePos(5, true);
 		var my = this;
