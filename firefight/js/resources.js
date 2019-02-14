@@ -74,7 +74,7 @@ Resources.CardData = {
 	16:{name:'念气流转',	type:'法术',style:'气功',number:1,cost:6,ability:{},effect:{'营火':2}},
 	17:{name:'练气',		type:'法术',style:'气功',number:3,cost:2,ability:{'聚气':4},effect:{}},
 	18:{name:'念气手套',	type:'装备',style:'气功',number:2,cost:4,ability:{'流放':true},effect:{'营火':1},durable:2},
-	19:{name:'心源道服',	type:'装备',style:'气功',number:3,cost:8,ability:{'护卫':true,'获得时':true},effect:{},durable:3},
+	19:{name:'心源道服',	type:'装备',style:'气功',number:1,cost:8,ability:{'护卫':true,'获得时':true},effect:{},durable:3},
 	20:{name:'四大行',		type:'特殊',style:'气功',number:1,cost:1,ability:{'获得时':true},effect:{}},
 	
 	21:{name:'直拳',		type:'武技',style:'连击',number:3,cost:1,ability:{'流放':true},effect:{}},

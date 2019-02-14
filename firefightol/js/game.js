@@ -47,6 +47,10 @@
 	};
 })();
 
+function delHtmlTag(str){
+	return str.replace(/<[^>]+>/g,"");
+}
+
 class MultiCallback {
 	constructor() {
 		this.cnt = 0;
@@ -483,10 +487,6 @@ class Hero extends Card {
 					}
 					my.gr.log(str);
 				});
-			} else {
-				$(show).on('click', function() {
-					my.gr.log(['生命','技能次数','营火'][i]+':'+my.data[i]);
-				});
 			}
 		}
 	}
@@ -628,8 +628,6 @@ class Hero extends Card {
 		//this.data[3].push(new Card(28));
 		//this.data[3].push(new Card(26));
 		Math.shuffle(this.data[3]);
-		// this.data[3].push(new Card(67));
-		// this.data[3].push(new Card(69));
 		// this.data[3].push(new Card(69));
 		// this.data[3].push(new Card(69));
 		// this.data[3].push(new Card(69));
@@ -983,16 +981,47 @@ class Hero extends Card {
 	}
 	interactive(isOn=true) {
 		// 开关交互
-		if (isOn) {
+		var my = this;
+		if (!my.isPlayAll && isOn) {
 			this.updateData();
 			this.interactive(false);
 			this.gr.btnInteractive(true);
 			var len = this.data[4].length;
-			var my = this;
 			// 手牌
+			var baseCards = [];
 			for (let i=0; i<len; i++) {
 				let card = this.data[4][i];
+				if (my.isBase(card)) baseCards.push(card);
 				my._examHandCard(card);
+			}
+			if (baseCards.length) {
+				my.gr.playAllbtn.show();
+				my.gr.playAllbtn.off('click');
+				my.gr.playAllbtn.on('click', function() {
+					my.interactive(false);
+					my.isPlayAll = true;
+					my.gr.log('一键打出所有基本卡');
+					function _loop() {
+						if (baseCards.length) {
+							let card = baseCards.pop();
+							let index = my.data[4].indexOf(card);
+							if (index >= 0) {
+								my.data[4].remove(card);
+								my.sendMessage({type:'castCard', position:'hand', location:index});
+								my.revealCard(card, function() {
+									my.castCard(card, _loop);
+								},0,0);
+							} else {
+								my.isPlayAll = false;
+								my.interactive(true);
+							}
+						} else {
+							my.isPlayAll = false;
+							my.interactive(true);
+						}
+					}
+					_loop();
+				});
 			}
 			// 武器
 			for (let i=0; i<2; i++) {
@@ -1086,7 +1115,8 @@ class Hero extends Card {
 			}
 			
 		} else { // off interactive
-			var my = this;
+			my.gr.playAllbtn.hide();
+			my.gr.playAllbtn.off('click');
 			this.gr.btnInteractive(false);
 			for (let i=0; i<this.data[4].length; i++) {
 				let card = this.data[4][i];
@@ -1259,10 +1289,12 @@ class Hero extends Card {
 		}
 		
 		if (my.turnBuff['致盲射线']) {
+			if (my.isType(card, '装备')) my.gr.playPile.push(card);
 			my.turnBuff['致盲射线'] = false;
 			effect['战力'] = 0;
 			effect['营火'] = 0;
 			effect['生命'] = 0;
+			my.gr.log('--致盲射线生效');
 			setTimeout(callback, 0);
 			return;
 		}
@@ -2568,11 +2600,11 @@ class Hero extends Card {
 			setTimeout(callback, 0);
 		});
 	}
-	revealCard(card, callback, zIndexAdd=0) {
+	revealCard(card, callback, zIndexAdd=0, wait=500) {
 		card.setBorder(0);
 		card.divShow();
 		card.setZIndex(802+zIndexAdd, true);
-		card.expand().move(600, 360).wait(500).action(function() {
+		card.expand().move(600, 360).wait(wait).action(function() {
 			card.activeShowBig();
 			setTimeout(callback, 0);
 		});
@@ -3969,6 +4001,43 @@ class Hero2 extends Hero {
 			my.discardCard(card, callback);
 		}
 	}
+	activeDecorate() {
+		var my = this;
+		var width = this.height/7;
+		var doms = new Array(7);
+		this.doms = doms;
+		var titles = ['生命','技能','营火','牌库','手牌','弃牌','放逐'];
+		for (let i=0; i<7; i++) {
+			var show = document.createElement('div');
+			//show.style.backgroundImage = 'url('+frontImg+')';
+			//show.style.backgroundSize = '100% 100%';
+			show.style.width = '50px';
+			show.style.height = width+'px';
+			show.style.position = 'absolute';
+			show.style.borderRadius = '5px';
+			show.style.left = this.width+'px';
+			show.style.top = width*i+'px';
+			show.style.textAlign = 'left';
+			show.style.lineHeight = width+'px';
+			show.style.fontSize = '0.7em';
+			show.style.cursor = 'default';
+			//show.style.transform = 'translateX('+width+'px) translateY(-'+height*(bigsize+1)/2+'px)';
+			show.title = titles[i];
+			this.warp.appendChild(show);
+			show.innerHTML = '0';
+			doms[i] = show;
+			if (i>4) {
+				$(show).on('click', function() {
+					my.gr.log('---'+[0,0,0,'牌库','手牌','弃牌堆','放逐牌堆'][i]+'---');
+					var str = ' ';
+					for(var j=0; j<my.data[i].length; j++) {
+						str += Resources.CardData[my.data[i][j].no].name+'; ';
+					}
+					my.gr.log(str);
+				});
+			}
+		}
+	}
 }
  
 class GameRule {
@@ -3999,6 +4068,18 @@ class GameRule {
 		this.btn = btn;
 		btn.hide();
 		
+		var playAllbtn = $('<button>Play Base</button>');
+		playAllbtn.css('position', 'absolute');
+		playAllbtn.css('border-radius', '5px');
+		playAllbtn.css('font-size', '1.5em');
+		playAllbtn.css('width', 120);
+		playAllbtn.css('height', 60);
+		playAllbtn.css('left', 980);
+		playAllbtn.css('top', 450);
+		$('#gamebody').append(playAllbtn);
+		this.playAllbtn = playAllbtn;
+		playAllbtn.hide();
+		
 		var powerDiv = document.createElement('div');
 		powerDiv.style.width = '50px';
 		powerDiv.style.height = '23px';
@@ -4023,7 +4104,15 @@ class GameRule {
 	}
 	log(text) {
 		if (this.Log) {
-			this.Log.html(this.Log.html()+'<br>  '+text);
+			this.Log.html(this.Log.html()+'<br>'+text);
+			this.Log.scrollTop(this.Log.prop("scrollHeight"));
+		} else {
+			console.log(text);
+		}
+	}
+	chat(text) {
+		if (this.Log) {
+			this.Log.html(this.Log.html()+'<br><b>[聊天]'+text+'</b>');
 			this.Log.scrollTop(this.Log.prop("scrollHeight"));
 		} else {
 			console.log(text);
@@ -4055,6 +4144,7 @@ class GameRule {
 		this.btn.html(this.btn.data.off);
 	}
 	activeLog() {
+		var my = this;
 		var div = $('<div>');
 		div.css('width', 245);
 		div.css('height', 320);
@@ -4065,16 +4155,32 @@ class GameRule {
 		div.css('left', 1130);
 		div.css('top', 340);
 		
-		// var warp = $('<div>');
-		// warp.css('width', 220);
-		// warp.css('height', 320);
-		// warp.css('left', 1130);
-		// warp.css('top', 340);
-		// warp.css('position', 'absolute');
-		// warp.css('border-bottom', '1px black solid');
-		// div.css('overflow', 'hidden');
-		// warp.append(div);
-		
+		var warp = $('<div>');
+		//warp.css('width', 250);
+		//warp.css('height', 30);
+		warp.css('left', 1130);
+		warp.css('top', 670);
+		warp.css('position', 'absolute');
+		//div.css('overflow', 'hidden');
+		let chat = $('<input id="chat">');
+		let send = $('<button id="sendChat">发送</button>');
+		warp.append(chat);
+		warp.append(' ');
+		warp.append(send);
+		send.on('click', function() {
+			var msg = delHtmlTag(chat.val());
+			chat.val('');
+			ws.send(JSON.stringify({'type':'chat','position':'opponent','content':msg}));
+			my.chat('我:'+msg);
+		});
+		document.onkeydown = function(e) {
+			e = e || window.event;
+			if(e.keyCode == 13) {
+				if (chat.val()) send.click();
+				else chat.focus();
+			}
+        }
+		$('#gamebody').append(warp);
 		$('#gamebody').append(div);
 		this.Log = div;
 		//this.Log.html('<br><br><br><br><br><br><br><br><br><br><br><br><br><br>')
@@ -4205,6 +4311,7 @@ $(function() {
 	document.onselectstart = function(){return false;};
 	// document.body.style.cursor = 'wait';
 	var defaultName = '营地老哥';
+	var opponentName = '营地老哥';
 	if ($.cookie('name')) {
 		defaultName = $.cookie('name');
 	}
@@ -4233,16 +4340,19 @@ $(function() {
 			});
 		}
 	}
-	function start(opponentName, isFirst, seed) {
+	function start(_opponentName, isFirst, seed) {
+		opponentName = delHtmlTag(_opponentName);
 		isGaming = true;
 		$('#showOpponent').html('正在与'+opponentName+'对战');
 		gr = new GameRule();
 		gr.init(seed, isFirst);
 	}
 	$('#changeName').on('click', function() {
+		let name = delHtmlTag($('#name').val());
+		$('#name').val(name);
 		$.cookie('name', null);
-		$.cookie('name', $('#name').val());
-		if (wsOk) ws.send(JSON.stringify({type:'name',name:$('#name').val()}));
+		$.cookie('name', name, { expires: 7 });
+		if (wsOk) ws.send(JSON.stringify({'type':'name','name':name}));
 	});
 	let protocol = location.protocol=='https'?'wss://118.190.96.152:8888/firefightol':'ws://118.190.96.152:8888/firefightol';
 	ws = new WebSocket(protocol);// "ws://192.168.1.137:8888/firefightol"
@@ -4259,7 +4369,11 @@ $(function() {
 			$('#peopleNumber').html(msg.number);
 		}
 		if (eventList[0]) eventList[0](e);
-		if (isGaming && eventList[1]) eventList[1](e);
+		if (msg.type == 'chat' && msg.position == 'opponent') {
+			gr.chat(opponentName+':'+delHtmlTag(msg.content));
+		} else {
+			if (isGaming && eventList[1]) eventList[1](e);
+		}
 	}
 	Resources.ready(function(){
 		$('#loading').remove();
