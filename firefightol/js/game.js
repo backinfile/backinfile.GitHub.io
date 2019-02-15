@@ -448,9 +448,11 @@ class Hero extends Card {
 		}
 		this.equipments = [];
 		this.activeDecorate();
-		this.castArea = [[280,220], [950,400]];
-		this.playPilePos = [[270,290], [450,290]];
-		this.handHeight = 560;
+		var height = 1075*0.14;
+		var width = 780*0.14;
+		this.castArea = [[242-width,300-height], [1466-width,610-height]];
+		this.playPilePos = [[300,320], [450,320]];
+		this.handHeight = 637;
 		this.isPlaying = false;
 	}
 	activeDecorate() {
@@ -503,6 +505,7 @@ class Hero extends Card {
 	updateData() {
 		var my = this;
 		my.gr.setPower(my.power);
+		my.gr.setFire(my.data[2]);
 		if (this.data) {
 			this.setDecorate(0,this.data[0]);
 			this.setDecorate(1,this.data[1]);
@@ -628,7 +631,8 @@ class Hero extends Card {
 		//this.data[3].push(new Card(28));
 		//this.data[3].push(new Card(26));
 		Math.shuffle(this.data[3]);
-		// this.data[3].push(new Card(69));
+		this.data[3].push(new Card(78));
+		this.data[3].push(new Card(77));
 		// this.data[3].push(new Card(69));
 		// this.data[3].push(new Card(69));
 		// this.data[3].push(new Card(69));
@@ -723,7 +727,7 @@ class Hero extends Card {
 			}, 0);
 		});
 	}
-	getLefts(len, gap=5, handLeft=340, handRight=920) {
+	getLefts(len, gap=5, handLeft=242, handRight=1466) {
 		var width = handRight-handLeft;
 		var cardWidth = this.width;
 		var usedWidth = (cardWidth+gap)*len-gap;
@@ -868,7 +872,8 @@ class Hero extends Card {
 		if (my.turnBuff['震空波动拳']) {
 			my.gr.log('震空波动拳发动');
 			my.gr.log('将'+my.data[2]+'点营火转化为战力');
-			my.power += my.data[2];
+			// my.power += my.data[2];
+			my.applyEffect({'战力':my.data[2]});
 			my.data[2] = 0;
 			my.updateData();
 		}
@@ -1006,6 +1011,7 @@ class Hero extends Card {
 					my.isPlayAll = true;
 					my.gr.log('一键打出所有基本卡');
 					function _loop() {
+						my.updateData();
 						if (baseCards.length) {
 							let card = baseCards.pop();
 							let index = my.data[4].indexOf(card);
@@ -2028,7 +2034,7 @@ class Hero extends Card {
 							_end();
 							return;
 						}
-						cnt += cost;
+						cnt += 1;
 						indexCnt++;
 						_loop();
 					},indexCnt);
@@ -2308,10 +2314,11 @@ class Hero extends Card {
 				my.handRevise(function() {
 					my.gr.log('--声明一种资源');
 					my.nchoose(2, [900771,900772], function(n) {
+						if(!my.turnBuff['电眼逼人']) my.turnBuff['电眼逼人'] = [];
 						if (n==0) {
-							my.turnBuff['电眼逼人'] = '战力';
+							my.turnBuff['电眼逼人'].push('战力');
 						} else {
-							my.turnBuff['电眼逼人'] = '营火';
+							my.turnBuff['电眼逼人'].push('营火');
 						}
 						setTimeout(callback, 0);
 					});
@@ -2364,7 +2371,7 @@ class Hero extends Card {
 		let cards = new Array(n);
 		var my = this;
 		my.updateData();
-		let lefts = my.getLefts(n, 10, 200, 1100);
+		let lefts = my.getLefts(n, 10);
 		for (let i=0; i<n; i++) {
 			let card = new Card(nos[i], true);
 			cards[i] = card;
@@ -2389,7 +2396,7 @@ class Hero extends Card {
 		var my = this;
 		my.updateData();
 		var mc = new MultiCallback();
-		let lefts = my.getLefts(cards.length, 5, 200, 1140);
+		let lefts = my.getLefts(cards.length, 5);
 		for (let i=0; i<cards.length; i++) {
 			let card = cards[i];
 			card.setZIndex(i+801+zIndexAdd, true);
@@ -2416,7 +2423,7 @@ class Hero extends Card {
 		var my = this;
 		my.updateData();
 		var mc = new MultiCallback();
-		let lefts = my.getLefts(cards1.length, 5, 200, 1140);
+		let lefts = my.getLefts(cards1.length, 5);
 		for (let i=0; i<cards1.length; i++) {
 			let card = cards1[i];
 			card.setZIndex(i+801, true);
@@ -2428,7 +2435,7 @@ class Hero extends Card {
 				card.activeShowBig();
 			}));
 		}
-		lefts = my.getLefts(cards2.length, 5, 200, 1140);
+		lefts = my.getLefts(cards2.length, 5);
 		for (let i=0; i<cards2.length; i++) {
 			let card = cards2[i];
 			card.setZIndex(i+801, true);
@@ -2465,7 +2472,7 @@ class Hero extends Card {
 		// 轮摆式移位
 		var my = this;
 		var mc = new MultiCallback();
-		let lefts = my.getLefts(cards.length, 5, 200, 1140);
+		let lefts = my.getLefts(cards.length, 5);
 		for (let i=0; i<cards.length; i++) {
 			let card = cards[i];
 			card.setZIndex(i+800+2, true);
@@ -2611,7 +2618,7 @@ class Hero extends Card {
 		card.setBorder(0);
 		card.divShow();
 		card.setZIndex(802+zIndexAdd, true);
-		card.expand().move(600, 360).wait(wait).action(function() {
+		card.expand().move(798, 422).wait(wait).action(function() {
 			card.activeShowBig();
 			setTimeout(callback, 0);
 		});
@@ -2690,11 +2697,11 @@ class Hero extends Card {
 		if (!effect['生命'])effect['生命']=0;
 		if (my.turnBuff['电眼逼人']) {
 			var buff = my.turnBuff['电眼逼人'];
-			if (buff == '营火') {
+			if (buff.indexOf('营火')>=0) {
 				if (effect['营火']) my.gr.log('--电眼逼人生效');
 				effect['营火'] *= 2;
 			}
-			if (buff == '战力') {
+			if (buff.indexOf('战力')>=0) {
 				if (effect['战力']) my.gr.log('--电眼逼人生效');
 				effect['战力'] *= 2;
 			}
@@ -3360,12 +3367,8 @@ class Hero2 extends Hero {
 		for (var j=0; j<8; j++) this.data[3].push(new Card(68));
 		for (var j=0; j<2; j++) this.data[3].push(new Card(67));
 		Math.shuffle(this.data[3]);
-		// this.data[3].push(new Card(69));
-		// this.data[3].push(new Card(69));
-		// this.data[3].push(new Card(69));
-		// this.data[3].push(new Card(69));
-		// this.data[3].push(new Card(69));
-		// this.data[3].push(new Card(24));
+		this.data[3].push(new Card(78));
+		this.data[3].push(new Card(77));
 		// this.data[3].push(new Card(26));
 		//this.data[3].push(new Card(69));
 		//this.data[3].push(new Card(18));
@@ -4092,14 +4095,14 @@ class GameRule {
 	constructor() {
 		var width = 1334;
 		var height = 198;
-		var $div = $('<div>');
-		$div.css('width', width+'px');
-		$div.css('height', height+'px');
-		$div.css('background-image', 'url(img/cardspos.png');
-		$div.css('background-size', '100% 100%');
-		$div.css('position', 'absolute');
-		//$div.css('z-index', '-100');
-		this.$div = $div;
+		// var $div = $('<div>');
+		// $div.css('width', width+'px');
+		// $div.css('height', height+'px');
+		// $div.css('background-image', 'url(img/cardspos.png');
+		// $div.css('background-size', '100% 100%');
+		// $div.css('position', 'absolute');
+		// $div.css('z-index', '-100');
+		// this.$div = $div;
 		
 		var btn = $('<button>');
 		btn.data = {'on':'回合结束', 'off':'对手回合'};
@@ -4110,8 +4113,8 @@ class GameRule {
 		btn.css('font-size', '1.5em');
 		btn.css('width', 120);
 		btn.css('height', 60);
-		btn.css('left', 45);
-		btn.css('top', 450);
+		btn.css('left', 1318);
+		btn.css('top', 588);
 		$('#gamebody').append(btn);
 		this.btn = btn;
 		btn.hide();
@@ -4119,11 +4122,11 @@ class GameRule {
 		var playAllbtn = $('<button>Play Base</button>');
 		playAllbtn.css('position', 'absolute');
 		playAllbtn.css('border-radius', '5px');
-		playAllbtn.css('font-size', '1.5em');
-		playAllbtn.css('width', 120);
-		playAllbtn.css('height', 60);
-		playAllbtn.css('left', 980);
-		playAllbtn.css('top', 450);
+		playAllbtn.css('font-size', '0.9em');
+		playAllbtn.css('width', 95);
+		playAllbtn.css('height', 42);
+		playAllbtn.css('left', 1342);
+		playAllbtn.css('top', 650);
 		$('#gamebody').append(playAllbtn);
 		this.playAllbtn = playAllbtn;
 		playAllbtn.hide();
@@ -4133,8 +4136,8 @@ class GameRule {
 		powerDiv.style.height = '23px';
 		powerDiv.style.position = 'absolute';
 		//powerDiv.style.borderRadius = '5px';
-		powerDiv.style.left = '180px';
-		powerDiv.style.top = '470px';
+		powerDiv.style.left = '804px';
+		powerDiv.style.top = '247px';
 		powerDiv.style.textAlign = 'left';
 		powerDiv.style.lineHeight = '23px';
 		powerDiv.style.fontSize = '0.7em';
@@ -4142,12 +4145,22 @@ class GameRule {
 		$('#gamebody').append(powerDiv);
 		this.powerDiv = $(powerDiv);
 		
-		$('#gamebody').append($div);
-		this.setPos(40,20);
-		this.poses = [[19,24],[239,24],[409,24],[552,24],[698,24],[843,24],[988,24],[1206,24]];
-		this.heroPos = [[50,530],[50,280]];
-		this.castArea = [[280,220], [950,500]];
-		this.playPilePos = [[270,320], [450,320]];
+		var fireDiv = document.createElement('div');
+		fireDiv.style.width = '50px';
+		fireDiv.style.height = '23px';
+		fireDiv.style.position = 'absolute';
+		fireDiv.style.left = '873px';
+		fireDiv.style.top = '247px';
+		fireDiv.style.textAlign = 'left';
+		fireDiv.style.lineHeight = '23px';
+		fireDiv.style.fontSize = '0.7em';
+		fireDiv.style.cursor = 'default';
+		$('#gamebody').append(fireDiv);
+		this.fireDiv = $(fireDiv);
+		
+		// $('#gamebody').append($div);
+		this.poses = [[74,45],[319,44],[529,45],[715,45],[903,45],[1091,45],[1278,45],[1529,45]];
+		this.heroPos = [[41,564],[41,265]];
 		this.seed = 5;
 	}
 	log(text) {
@@ -4166,14 +4179,9 @@ class GameRule {
 			console.log(text);
 		}
 	}
-	setPos(x,y) {
-		this.x = x;
-		this.y = y;
-		this.$div.css('left', this.x);
-		this.$div.css('top', this.y);
-	}
+	
 	getPos(n) {
-		return [this.x+this.poses[n][0], this.y+this.poses[n][1]];
+		return [this.poses[n][0], this.poses[n][1]];
 	}
 	getHeroPos(isMe=true) {
 		if (isMe) return [50,530];
@@ -4194,24 +4202,31 @@ class GameRule {
 	activeLog() {
 		var my = this;
 		var div = $('<div>');
-		div.css('width', 245);
-		div.css('height', 320);
+		div.css('width', 205);
+		div.css('height', 521);
 		div.css('position', 'absolute');
 		div.css('overflow-y', 'scroll');
 		div.css('overflow-x', 'hidden');
 		div.css('text-align', 'left');
-		div.css('left', 1130);
-		div.css('top', 340);
+		div.css('left', 1480);
+		div.css('top', 240);
+		div.css('font-size', '0.8em');
 		
 		var warp = $('<div>');
 		//warp.css('width', 250);
 		//warp.css('height', 30);
-		warp.css('left', 1130);
-		warp.css('top', 670);
+		warp.css('left', 1480);
+		warp.css('top', 770);
 		warp.css('position', 'absolute');
 		//div.css('overflow', 'hidden');
-		let chat = $('<input id="chat">');
-		let send = $('<button id="sendChat">发送</button>');
+		let chat = $('<input>');
+		let send = $('<button>发送</button>');
+		chat.css('width', 120);
+		chat.css('height', 26);
+		chat.css('display', 'inline-block');
+		send.css('width', 70);
+		send.css('height', 26);
+		send.css('display', 'inline-block');
 		warp.append(chat);
 		warp.append(' ');
 		warp.append(send);
@@ -4272,6 +4287,9 @@ class GameRule {
 	}
 	setPower(n) {
 		this.powerDiv.html('战力:'+n);
+	}
+	setFire(n) {
+		this.fireDiv.html('营火:'+n);
 	}
 	init(seed, isFirst=false, callback) {
 		var my = this;
@@ -4392,6 +4410,7 @@ $(function() {
 		opponentName = delHtmlTag(_opponentName);
 		isGaming = true;
 		$('#showOpponent').html('正在与'+opponentName+'对战');
+		$('#gameintro').hide();
 		gr = new GameRule();
 		gr.init(seed, isFirst);
 	}

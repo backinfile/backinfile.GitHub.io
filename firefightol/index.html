@@ -10,30 +10,33 @@
 	<style>
 		*{margin:0;padding:0}
 		body{
+			background-image: url(img/bg.jpg);
 			overflow:hidden;
-			text-align:center;
 		}
-		#search, #name, #changeName, #sendChat{
+		#search, #name, #changeName{
 			display: inline-block;
 			width:100px;height:26px;
 		}
-		#chat {
-			display: inline-block;
-			width:130px;height:26px;
+		#gameintro {
+			position:absolute;
+			left:1169px;
+			top:289px;
+			text-align:center
 		}
 	</style>
 </head>
 <body>
 	<div id='gamebody'>
-		<div id='showOpponent'></div>
 	</div>
-	<br/>
-	<div id='loading'>游戏资源加载中...<span id='per'>0%</span></div><br/>
-	<div>推荐使用chrome浏览器打开</div><br/>
-	在线人数<span id='peopleNumber'>0</span>
+	<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+	<div id='gameintro'>
+		<div id='showOpponent'></div>
+		<div id='loading'>游戏资源加载中...<span id='per'>0%</span></div><br/>
+		<!-- <div>推荐使用chrome浏览器打开</div><br/> -->
+		在线人数<span id='peopleNumber'>0</span>
 		<button id='search' disabled="disabled">寻找对手</button><br/><br/>
 		<input value='营地老哥' id='name'/> <button id='changeName' disabled="disabled">更改昵称</button><br/>
-	
+	</div>
 
 
 </body>
