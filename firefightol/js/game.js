@@ -45,10 +45,178 @@
 			this.splice(index, 1);
 		}
 	};
+	String.prototype.startWith=function(str){     
+	  var reg=new RegExp("^"+str);     
+	  return reg.test(this);
+	}  
 })();
 
 function delHtmlTag(str){
 	return str.replace(/<[^>]+>/g,"");
+}
+
+class DigitShow {
+	constructor(type='英雄') {
+		this.type = type;
+		if (type == '英雄') {
+			this.url = 'img/healthDigit.png';
+			this.backgroundurl = 'img/healthbg.png';
+			var div = $('<div>');
+			div.css('position', 'absolute');
+			var warp = $('<div>');
+			warp.css('position', 'absolute');
+			var img = $('<img src="'+this.backgroundurl+'"/>');
+			img.css('position', 'absolute');
+			img.css('top', -20.5);
+			img.css('left', -20.5);
+		} else {
+			this.url = 'img/cost.png';
+			this.backgroundurl = 'img/'+type+'.png';
+			var div = $('<div>');
+			div.css('position', 'absolute');
+			var warp = $('<div>');
+			warp.css('position', 'absolute');
+			var img = $('<img src="'+this.backgroundurl+'"/>');
+			img.css('position', 'absolute');
+			img.css('top', -16.5);
+			img.css('left', -14.5);
+		}
+		
+		
+		
+		div.append(img);
+		div.append(warp);
+		//$('#gamebody').append(div);
+		this.div = div;
+		this.warp = warp;
+		this.digitDivs = [];
+		this.set();
+		this.setPos(16,16);
+	}
+	newdigitDiv() {
+		var digitDiv = $('<div>');
+		digitDiv.css('width', 19);
+		digitDiv.css('height', 22);
+		digitDiv.css('overflow', 'hidden');
+		digitDiv.css('position', 'absolute');
+		digitDiv.css('background-image', 'url('+this.url+')');
+		this.warp.append(digitDiv);
+		return digitDiv;
+	}
+	setDivNumber(i, n) {
+		if (!this.digitDivs[i]) this.digitDivs[i] = this.newdigitDiv();
+		this.digitDivs[i].css('left', 15*i);
+		this.digitDivs[i].css('top', -11);
+		this.digitDivs[i].css('background-position', -19*n+'px 0px');
+		this.digitDivs[i].css('background-image', 'url('+this.url+')');
+	}
+	divideNumber(n=0) {
+		if (n<0) n=0;
+		let numbers = [];
+		while(n>0) {
+			numbers.push(n%10);
+			n = Math.floor(n/10);
+		}
+		if (!numbers.length) numbers.push(0);
+		return numbers;
+	}
+	setPos(x,y) {
+		this.div.css('left', x);
+		this.div.css('top', y);
+	}
+	set(n=0, isOri=false) {
+		if (isOri) {
+			this.url = 'img/healthDigit.png';
+		} else {
+			this.url = 'img/cost.png';
+		}
+		let numbers = this.divideNumber(n);
+		var len = numbers.length;
+		this.warp.css('left', -(2+15*len/2));
+		for (let i=0; (i<len) || (i<this.digitDivs.length); i++) {
+			if (numbers.length) {
+				let num = numbers.pop();
+				this.setDivNumber(i, num);
+			} else {
+				if (this.digitDivs[i]) {
+					this.digitDivs[i].remove();
+					this.digitDivs[i] = null;
+				}
+			}
+		}
+	}
+}
+
+class DataShow {
+	constructor(type) {
+		this.type = type;
+		if (type == '营火') {
+			this.url = 'img/fireNumber.png';
+		} else if (type == '战力') {
+			this.url = 'img/attackNumber.png';
+		} else {
+			this.url = 'img/durable.png';
+		}
+		var div = $('<div>');
+		div.css('position', 'absolute');
+		var warp = $('<div>');
+		warp.css('position', 'absolute');
+		
+		div.append(warp);
+		$('#gamebody').append(div);
+		this.div = div;
+		this.warp = warp;
+		this.digitDivs = [];
+		this.set();
+		// this.setPos(16,16);
+	}
+	newdigitDiv() {
+		var digitDiv = $('<div>');
+		digitDiv.css('width', 15);
+		digitDiv.css('height', 19);
+		digitDiv.css('overflow', 'hidden');
+		digitDiv.css('position', 'absolute');
+		digitDiv.css('background-image', 'url('+this.url+')');
+		this.warp.append(digitDiv);
+		return digitDiv;
+	}
+	setDivNumber(i, n) {
+		if (!this.digitDivs[i]) this.digitDivs[i] = this.newdigitDiv();
+		this.digitDivs[i].css('left', 15*i);
+		this.digitDivs[i].css('top', -11);
+		this.digitDivs[i].css('background-position', -15*n+'px 0px');
+		this.digitDivs[i].css('background-image', 'url('+this.url+')');
+	}
+	divideNumber(n=0) {
+		if (n<0) n=0;
+		let numbers = [];
+		while(n>0) {
+			numbers.push(n%10);
+			n = Math.floor(n/10);
+		}
+		if (!numbers.length) numbers.push(0);
+		return numbers;
+	}
+	setPos(x,y) {
+		this.div.css('left', x);
+		this.div.css('top', y);
+	}
+	set(n=0) {
+		if (n<0) n = 0;
+		let numbers = this.divideNumber(n);
+		var len = numbers.length;
+		for (let i=0; (i<len) || (i<this.digitDivs.length); i++) {
+			if (numbers.length) {
+				let num = numbers.pop();
+				this.setDivNumber(i, num);
+			} else {
+				if (this.digitDivs[i]) {
+					this.digitDivs[i].remove();
+					this.digitDivs[i] = null;
+				}
+			}
+		}
+	}
 }
 
 class MultiCallback {
@@ -81,8 +249,8 @@ class Card{
 	constructor(no, isShow=false) {
 		var frontImg = 'img/'+(no<10?'000':(no<100?'00':(no<1000?'0':'')))+no+'.jpg'; 
 		var backImg = 'img/0001.jpg';
-		var height = 1075*0.14;
-		var width = 780*0.14;
+		var height = gc.cardHeight;//1075*0.14;
+		var width = gc.cardWidth;
 		this.width = width;
 		this.height = height;
 		this.ani = []; // animation list
@@ -93,7 +261,7 @@ class Card{
 		warp.style.perspective = '1000px';
 		warp.style.left = '100px';
 		warp.style.top = '50px';
-		warp.style.position = 'fixed';
+		warp.style.position = 'absolute';
 		warp.style.borderRadius = '5px';
 		warp.style.zIndex = '0';
 		
@@ -125,6 +293,7 @@ class Card{
 		front.style.position = 'absolute';
 		front.style.borderRadius = '5px';
 		front.style.transform = ' translateZ(1px)';
+		this.front = front;
 		
 		let bigsize = 2.2;
 		this.bigsize = bigsize;
@@ -154,7 +323,88 @@ class Card{
 		this.no = no;
 		$(show).hide();
 		if (!isShow) this.divHide();
+		if (no>=9 && no<=81) {
+			this.buildDecorateDiv();
+			this.setCost(Resources.CardData[no].cost);
+		}
+	}
+	
+	buildDecorateDiv() {
+		var url = 'img/'+Resources.CardData[this.no].type+'.png';
+		let digitBack = $('<image src="'+url+'">');
+		digitBack.css('position', 'absolute');
+		digitBack.css('transform', 'translateZ(2px)');
+		digitBack.css('width', gc.flagWidth);
+		digitBack.css('height', gc.flagHeight);
+		digitBack.appendTo(this.div);
 		
+		
+		var digitDiv = $('<div>');
+		digitDiv.css('width', gc.numberWidth);
+		digitDiv.css('height', gc.numberHeight);
+		digitDiv.css('top', (gc.flagHeight-gc.numberHeight)/4);
+		digitDiv.css('left', (gc.flagWidth-gc.numberWidth)/2);
+		digitDiv.css('overflow', 'hidden');
+		digitDiv.css('position', 'absolute');
+		digitDiv.css('transform', 'translateZ(2px)');
+		digitDiv.css('background-size', gc.numberWidth*10+'px '+gc.numberHeight+'px');
+		digitDiv.appendTo(this.div);
+		this.digitDiv = digitDiv;
+	}
+	buildDurableDiv() {
+		var url = 'img/durablebg.png';
+		let digitBack = $('<image src="'+url+'">');
+		digitBack.css('position', 'absolute');
+		digitBack.css('transform', 'translateZ(2px)');
+		digitBack.css('width', gc.durableWidth);
+		digitBack.css('height', gc.durableHeight);
+		digitBack.css('top', gc.cardHeight-gc.durableWidth/2);
+		digitBack.css('left', gc.cardWidth-gc.durableHeight/2);
+		digitBack.appendTo(this.div);
+		digitBack.on('mouseover', function(ev) {
+			ev.stopPropagation();
+		});
+		digitBack.on('mouseout', function(ev) {
+			ev.stopPropagation();
+		});
+		this.DurableDigitBackDiv = digitBack;
+		
+		
+		var digitDiv = $('<div>');
+		digitDiv.css('width', gc.durablenumberWidth);
+		digitDiv.css('height', gc.durablenumberHeight);
+		digitDiv.css('top', gc.cardHeight-gc.durableWidth/2+(gc.durableWidth-gc.durablenumberWidth)/2);
+		digitDiv.css('left', gc.cardWidth-gc.durableHeight/2+(gc.durableHeight-gc.durablenumberHeight)/2);
+		digitDiv.css('overflow', 'hidden');
+		digitDiv.css('position', 'absolute');
+		digitDiv.css('transform', 'translateZ(2px)');
+		digitDiv.css('background-size', gc.durablenumberWidth*10+'px '+gc.durablenumberHeight+'px');
+		digitDiv.appendTo(this.div);
+		digitDiv.on('mouseover', function(ev) {
+			ev.stopPropagation();
+		});
+		digitDiv.on('mouseout', function(ev) {
+			ev.stopPropagation();
+		});
+		this.DurableDigitDiv = digitDiv;
+		digitDiv.css('background-image', 'url(img/durable.png)');
+	}
+	activeDurable(isTrue=true) {
+		if (!this.durableDiv) {
+			this.buildDurableDiv();
+		}
+		if (isTrue) {
+			//this.DurableDigitDiv.css('background-position', (-gc.numberWidth*n)+'px 0px');
+			this.DurableDigitDiv.show();
+			this.DurableDigitBackDiv.show();
+		} else {
+			this.DurableDigitDiv.hide();
+			this.DurableDigitBackDiv.hide();
+		}
+	}
+	updateDurable() {
+		var n = this.durable;
+		this.DurableDigitDiv.css('background-position', (-gc.durablenumberWidth*n)+'px 0px');
 	}
 	_getImgUrl() {
 		var no = this.no;
@@ -184,6 +434,10 @@ class Card{
 	}
 	shrink() {
 		this.ani.push('shrink');
+		return this;
+	}
+	weaponshrink() {
+		this.ani.push('weaponshrink');
 		return this;
 	}
 	expand() {
@@ -223,6 +477,11 @@ class Card{
 				my.acShrink(function() {
 					checkFinish(1);
 				});
+			} else if (my.ani2[i] == 'weaponshrink') {
+				setTimeout(ac, 0);
+				my.acWeaponShrink(function() {
+					checkFinish(1);
+				});
 			} else if (my.ani2[i] == 'expand') {
 				setTimeout(ac, 0);
 				my.acExpand(function() {
@@ -260,6 +519,22 @@ class Card{
 		var my = this;
 		var sc = my.scaleSave;
 		var scMin = 0.1;
+		function loop() {
+			sc *= 0.8;
+			if (sc < scMin) sc = scMin;
+			my.warp.style.transform = 'scale('+sc+')';
+			if (sc > scMin) setTimeout(loop, 1000/60);
+			else {
+				my.scaleSave = 0.1;
+				setTimeout(callback, 0);
+			}
+		}
+		loop();
+	}
+	acWeaponShrink(callback) {
+		var my = this;
+		var sc = my.scaleSave;
+		var scMin = 0.55;
 		function loop() {
 			sc *= 0.8;
 			if (sc < scMin) sc = scMin;
@@ -404,13 +679,13 @@ class Card{
 	}
 	setBorder(type) {
 		if (type == 1) {
-			this.warp.style.boxShadow = '0px 0px 10px 4px blue';
+			this.front.style.boxShadow = '0px 0px 10px 4px blue';
 		} else if (type == 2) {
-			this.warp.style.boxShadow = '0px 0px 10px 4px black';
+			this.front.style.boxShadow = '0px 0px 10px 4px black';
 		} else if (type == 3) {
-			this.warp.style.boxShadow = '0px 0px 10px 4px red';
+			this.front.style.boxShadow = '0px 0px 10px 4px red';
 		} else if (type == 0) {
-			this.warp.style.boxShadow = '';
+			this.front.style.boxShadow = '';
 		}
 	}
 	divHide() {
@@ -432,6 +707,17 @@ class Card{
 	offclick() {
 		$(this.warp).off('click');
 	}
+	setCost(n) {
+		this.cost = n;
+		if (n<0) n = 0;
+		if (n == Resources.CardData[this.no].cost) {
+			this.url = 'img/healthDigit.png';
+		} else {
+			this.url = 'img/cost.png';
+		}
+		this.digitDiv.css('background-image', 'url('+this.url+')');
+		this.digitDiv.css('background-position', (-gc.numberWidth*n)+'px 0px');
+	}
 }
 
 class Hero extends Card {
@@ -448,11 +734,12 @@ class Hero extends Card {
 		}
 		this.equipments = [];
 		this.activeDecorate();
-		var height = 1075*0.14;
-		var width = 780*0.14;
-		this.castArea = [[242-width,300-height], [1466-width,610-height]];
-		this.playPilePos = [[300,320], [450,320]];
-		this.handHeight = 637;
+		var height = gc.cardHeight;
+		var width = gc.cardWidth;
+		this.castArea = [[gc.castLeft-width,gc.castTop-height], [gc.castRight-width,gc.castBottom-height]];
+		// console.log(this.castArea);
+		this.playPilePos = [[gc.playLeft,gc.playTop], [gc.playRight,gc.playTop]];
+		this.handHeight = gc.handTop;
 		this.isPlaying = false;
 	}
 	activeDecorate() {
@@ -461,16 +748,15 @@ class Hero extends Card {
 		var doms = new Array(7);
 		this.doms = doms;
 		var titles = ['生命','技能','营火','牌库','手牌','弃牌','放逐'];
-		for (let i=0; i<7; i++) {
+		for (let i=0; i<4; i++) {
 			var show = document.createElement('div');
-			//show.style.backgroundImage = 'url('+frontImg+')';
-			//show.style.backgroundSize = '100% 100%';
+			let pos = this.getDecoratePos(i);
 			show.style.width = '50px';
 			show.style.height = width+'px';
 			show.style.position = 'absolute';
 			show.style.borderRadius = '5px';
-			show.style.left = this.width+'px';
-			show.style.top = width*i+'px';
+			show.style.left = pos[0]+'px';
+			show.style.top = pos[1]+'px';
 			show.style.textAlign = 'left';
 			show.style.lineHeight = width+'px';
 			show.style.fontSize = '0.7em';
@@ -480,40 +766,43 @@ class Hero extends Card {
 			this.warp.appendChild(show);
 			show.innerHTML = '0';
 			doms[i] = show;
-			if (i>2) {
-				$(show).on('click', function() {
-					my.gr.log('---'+[0,0,0,'牌库','手牌','弃牌堆','放逐牌堆'][i]+'---');
-					var str = ' ';
-					for(var j=0; j<my.data[i].length; j++) {
-						str += Resources.CardData[my.data[i][j].no].name+'; ';
-					}
-					my.gr.log(str);
-				});
-			}
+			$(show).on('click', function() {
+				my.gr.log('---'+['牌库','手牌','弃牌堆','放逐牌堆'][i]+'---');
+				var str = ' ';
+				for(var j=0; j<my.data[i+3].length; j++) {
+					str += Resources.CardData[my.data[i+3][j].no].name+'; ';
+				}
+				my.gr.log(str);
+			});
 		}
+		this.digitShow = new DigitShow();
+		$(this.warp).append(this.digitShow.div);
 	}
+
 	setDecorate(n, val) {
-		var titles = ['生命','技能','营火','牌库','手牌','弃牌','放逐'];
-		this.doms[n].innerHTML = titles[n]+':'+val;
+		var titles = ['牌库','手牌','弃牌','放逐'];
+		this.doms[n].innerHTML = '<span style="color:white;text-align:right;width:12px;display:inline-block">'+val+'</span>';
 	}
 	getDecoratePos(n, isShrink=false) {
+		if (n>3) n -= 3;
+		var poses = [[gc.selfPileLeft, gc.selfPileTop1],[gc.selfPileLeft, gc.selfPileTop2],[gc.selfPileLeft, gc.selfPileTop3],[gc.selfPileLeft, gc.selfPileTop4]];
+		var pos = poses[n];
 		if (isShrink) {
-			return [this.x+this.width+this.height/14-this.width/2, this.y+this.height/7*n+this.height/14-this.height/2];
+			pos[0] += this.x-gc.cardWidth/2;
+			pos[1] += this.y-gc.cardHeight/2;
 		}
-		return [this.x+this.width+this.height/14, this.y+this.height/7*n+this.height/14];
+		return poses[n];
 	}
 	updateData() {
 		var my = this;
 		my.gr.setPower(my.power);
 		my.gr.setFire(my.data[2]);
 		if (this.data) {
-			this.setDecorate(0,this.data[0]);
-			this.setDecorate(1,this.data[1]);
-			this.setDecorate(2,this.data[2]);
-			this.setDecorate(3,this.data[3].length);
-			this.setDecorate(4,this.data[4].length);
-			this.setDecorate(5,this.data[5].length);
-			this.setDecorate(6,this.data[6].length);
+			this.digitShow.set(this.data[0]);
+			this.setDecorate(0,this.data[3].length);
+			this.setDecorate(1,this.data[4].length);
+			this.setDecorate(2,this.data[5].length);
+			this.setDecorate(3,this.data[6].length);
 			for(var i=0; i<2; i++) {
 				let card = this.weapons[i];
 				if (card) {
@@ -523,9 +812,13 @@ class Hero extends Card {
 		}
 	}
 	getWeaponPos(n, isShrink) {
-		n = 1-n;
-		if (isShrink) return [this.x, this.y+90+15*n-75];
-		else return [this.x, this.y+90+30*n];
+		// n = 1-n;
+		// if (isShrink) return [this.x, this.y+90+15*n-75];
+		// else return [this.x, this.y+90+30*n];
+		var pos = [[gc.weaponLeft, gc.weaponTop1],[gc.weaponLeft, gc.weaponTop2]][n];
+		pos[0] += this.x-gc.cardWidth*0.45/2;
+		pos[1] += this.y-gc.cardHeight*0.45/2;
+		return pos;
 	}
 	activeWeapon() {
 		this.weapons = [null, null];
@@ -614,13 +907,21 @@ class Hero extends Card {
 		});
 	}
 	setWeaponDurable(n, durable) {
-		this._weaponDivs[n].children()[0].innerHTML = durable;
+		// this._weaponDivs[n].children()[0].innerHTML = durable;
+		var card = this.weapons[n];
+		if (card) {
+			card.durable = durable;
+			card.activeDurable();
+			card.updateDurable();
+		}
 	}
 	setWeaponName(n, name) {
-		this._weaponDivs[n].children()[1].innerHTML = name;
+		//this._weaponDivs[n].children()[1].innerHTML = name;
 	}
 	
-	
+	setCost(n) {
+		
+	}
 	init(callback) {
 		var my = this;
 		my.power = 0;
@@ -631,9 +932,9 @@ class Hero extends Card {
 		//this.data[3].push(new Card(28));
 		//this.data[3].push(new Card(26));
 		Math.shuffle(this.data[3]);
-		this.data[3].push(new Card(78));
-		this.data[3].push(new Card(77));
-		// this.data[3].push(new Card(69));
+		this.data[3].push(new Card(31));
+		this.data[3].push(new Card(31));
+		this.data[3].push(new Card(31));
 		// this.data[3].push(new Card(69));
 		// this.data[3].push(new Card(69));
 		// this.data[3].push(new Card(69));
@@ -711,7 +1012,7 @@ class Hero extends Card {
 			let card2 = my.data[4][i];
 			card2.setZIndex(i+1, true);
 			if (Math.round(card2.rotateSave/180)%2) card2.rotate();
-			if (i+1 == len) card2.move(800,390).wait(300);
+			if (i+1 == len) card2.move(gc.revealLeft,gc.revealTop).wait(300);
 			card2.move(lefts[i], handHeight).action(mc.pipe(function() {
 				if (i+1 == len) card2.activeShowBig();
 			}));
@@ -727,7 +1028,11 @@ class Hero extends Card {
 			}, 0);
 		});
 	}
-	getLefts(len, gap=5, handLeft=242, handRight=1466) {
+	getLefts(len, gap=5, handLeft=-1, handRight=-1) {
+		if (handLeft<0) {
+			handLeft = gc.handLeft;
+			handRight = gc.handRight;
+		}
 		var width = handRight-handLeft;
 		var cardWidth = this.width;
 		var usedWidth = (cardWidth+gap)*len-gap;
@@ -759,8 +1064,18 @@ class Hero extends Card {
 		// 特殊 武技 法术 武器 基础 气功 连击 聚流 精神 街斗 充能
 		my.power = 0; // 战力
 		my.cardnum = 0; // 已经打出的卡牌数
-		my.gr.log('<span style="color:#BBB">营火火剩余'+my.gr.firePile.length+'张</span>');
-		my.gr.log('<span style="color:#BBB">中央牌库剩余'+my.gr.commonPile.length+'张</span>');
+		my.gr.log('<span class="tip">营火火剩余'+my.gr.firePile.length+'张</span>');
+		my.gr.log('<span class="tip">中央牌库剩余'+my.gr.commonPile.length+'张</span>');
+		var timerCnt = 30;
+		my.gr.setTimer(timerCnt--);
+		var timer = setInterval(function() {
+			my.gr.setTimer(timerCnt--);
+			if (timerCnt<0) {
+				clearInterval(timer);
+				my.interactive(false);
+				my.gr.btn.click();
+			}
+		}, 1000);
 		this.gr.log('回合开始');
 		var i=-1;
 		function _loop() {
@@ -800,9 +1115,9 @@ class Hero extends Card {
 					setTimeout(callback, 0);
 					return;
 				}
-				my.gr.log('<span style="color:#CCC">--对自己造成'+n+'点伤害</span>');
+				my.gr.log('<span class="play">--对自己造成'+n+'点伤害</span>');
 				if (no==0) {
-					my.gr.log('<span style="color:#CCC">--'+character+'失去'+n+'点生命</span>');
+					my.gr.log('<span class="play">--'+character+'失去'+n+'点生命</span>');
 					my.turnBuff['受到过伤害'] = true;
 					my.data[0] -= n;
 					if (my.data[0]<=0) {
@@ -838,9 +1153,9 @@ class Hero extends Card {
 					setTimeout(callback, 0);
 					return;
 				}
-				my.gr.log('<span style="color:#CCC">--对对方造成'+n+'点伤害</span>');
+				my.gr.log('<span class="attack">--对对方造成'+n+'点伤害</span>');
 				if (no==0) {
-					my.gr.log('<span style="color:#CCC">--对方失去'+n+'点生命</span>');
+					my.gr.log('<span class="attack">--对方失去'+n+'点生命</span>');
 					my.opponent.data[0] -= n;
 					if (my.opponent.data[0]<=0) {
 						my.gr._winflag = true;
@@ -851,10 +1166,10 @@ class Hero extends Card {
 					var durable = my.opponent.weapons[no].durable;
 					if (durable > n) {
 						my.opponent.weapons[no].durable -= n;
-						my.gr.log('<span style="color:#CCC">--'+my.getName(my.opponent.weapons[no])+'承受'+n+'点伤害</span>');
+						my.gr.log('<span class="attack">--'+my.getName(my.opponent.weapons[no])+'承受'+n+'点伤害</span>');
 					} else {
 						n -= durable;
-						my.gr.log('<span style="color:#CCC">--'+my.getName(my.opponent.weapons[no])+'承受'+durable+'点伤害</span>');
+						my.gr.log('<span class="attack">--'+my.getName(my.opponent.weapons[no])+'承受'+durable+'点伤害</span>');
 						my.opponent.dropWeapon(no, _loop);
 						return;
 					}
@@ -1003,7 +1318,7 @@ class Hero extends Card {
 				if (my.isBase(card)) baseCards.push(card);
 				my._examHandCard(card);
 			}
-			if (baseCards.length) {
+			if (false && baseCards.length) {
 				my.gr.playAllbtn.show();
 				my.gr.playAllbtn.off('click');
 				my.gr.playAllbtn.on('click', function() {
@@ -1060,6 +1375,7 @@ class Hero extends Card {
 				if (card.no == 65) {
 					if (my.data[2]+my.power >= cost) card.setBorder(2);
 				}
+				card.setCost(cost);
 				card.onclick(function() {
 					if (card.no == 65) {
 						my.sendMessage({type:'buyCard', location: i});
@@ -1108,6 +1424,7 @@ class Hero extends Card {
 				} else {
 					card.setBorder(0);
 				}
+				card.setCost(cost);
 				card.onclick(function() {
 					if (my.data[2] >= Resources.CardData[card.no].cost) {
 						my.data[2] -= Resources.CardData[card.no].cost;
@@ -1140,12 +1457,14 @@ class Hero extends Card {
 				card.offclick();
 				card.setBorder(0);
 				card.activeDarg(false);
+				//card.setCost(-1);
 			}
 			if (my.gr.firePile.length) {
 				let card = my.gr.firePile[my.gr.firePile.length-1];
 				card.setBorder(0);
 				card.offclick();
 				card.activeDarg(false);
+				//card.setCost(-1);
 			}
 			for (let i=0; i<2;i++) {
 				my.setWeaponBorder(i, 0);
@@ -1932,7 +2251,7 @@ class Hero extends Card {
 				var cards = [];
 				for (var i=0; i<my.gr.buyPile.length; i++) {
 					let card = my.gr.buyPile[i];
-					if (card && my.getCost(card)<=5 && !my.isType(card, '装备')) cards.push(card);
+					if (card && card.cost<=5 && !my.isType(card, '装备')) cards.push(card);
 				}
 				if (!cards.length) {
 					my.gr.playPile.push(card);
@@ -1940,7 +2259,7 @@ class Hero extends Card {
 					return;
 				}
 				my.select(cards, function(card) {
-					my.turnBuff['噩梦化身'] = [my.getCost(card)];
+					my.turnBuff['噩梦化身'] = [card.cost];
 					var index = my.gr.buyPile.indexOf(card);
 					my.gr.buyPile[index] = null;
 					my.gr.setAllBack(function() {
@@ -2376,7 +2695,7 @@ class Hero extends Card {
 			let card = new Card(nos[i], true);
 			cards[i] = card;
 			card.setZIndex(1100, true);
-			card.setPos(lefts[i],290);
+			card.setPos(lefts[i],gc.chooseTop);
 			card.setBorder(2);
 			card.onclick(function() {
 				my.sendMessage({type:'select', location:i});
@@ -2431,7 +2750,7 @@ class Hero extends Card {
 			card.setBorder(0);
 			card.offclick();
 			card.activeDarg(false);
-			card.expand().move(lefts[i], 180).action(mc.pipe(function() {
+			card.expand().move(lefts[i], gc.chooseTop-5-gc.cardHeight/2).action(mc.pipe(function() {
 				card.activeShowBig();
 			}));
 		}
@@ -2443,7 +2762,7 @@ class Hero extends Card {
 			card.setBorder(0);
 			card.offclick();
 			card.activeDarg(false);
-			card.expand().move(lefts[i], 380).action(mc.pipe(function() {
+			card.expand().move(lefts[i], gc.chooseTop+5+gc.cardHeight/2).action(mc.pipe(function() {
 				card.activeShowBig();
 			}));
 		}
@@ -2505,9 +2824,9 @@ class Hero extends Card {
 				let card = weapons[i];
 				if (card) {
 					let pos = my.getWeaponPos(i, true);
-					card.shrink().move(pos[0], pos[1]).action(mcb.pipe(function() {
-						card.divHide();
-						my._weaponDivs[i].show();
+					card.weaponshrink().move(pos[0], pos[1]).action(mcb.pipe(function() {
+						// card.divHide();
+						// my._weaponDivs[i].show();
 					}));
 				}
 			}
@@ -2525,7 +2844,7 @@ class Hero extends Card {
 					_end(i+1);
 					return;
 				}
-				my._weaponDivs[i].hide();
+				//my._weaponDivs[i].hide();
 				cards.push(card);
 			}
 		}
@@ -2617,8 +2936,8 @@ class Hero extends Card {
 	revealCard(card, callback, zIndexAdd=0, wait=500) {
 		card.setBorder(0);
 		card.divShow();
-		card.setZIndex(802+zIndexAdd, true);
-		card.expand().move(798, 422).wait(wait).action(function() {
+		card.setZIndex(802+zIndexAdd, true);////////////////////////
+		card.expand().move(gc.revealLeft, gc.revealTop).wait(wait).action(function() {
 			card.activeShowBig();
 			setTimeout(callback, 0);
 		});
@@ -2709,16 +3028,16 @@ class Hero extends Card {
 		if (effect['营火']) {
 			my.charging(effect['营火']);
 			my.data[2] += effect['营火'];
-			my.gr.log('<span style="color:#BBB">--获得营火'+effect['营火']+'</span>');
+			my.gr.log('<span class="gain">--获得营火'+effect['营火']+'</span>');
 		}
 		if (effect['战力']) {
-			my.gr.log('<span style="color:#BBB">--获得战力'+effect['战力']+'</span>');
+			my.gr.log('<span class="gain">--获得战力'+effect['战力']+'</span>');
 			//my.attack(effect['战力']);
 			my.power += effect['战力'];
 		}
 		if (effect['生命']) {
 			my.data[0] += effect['生命'];
-			my.gr.log('<span style="color:#BBB">--获得生命'+effect['生命']+'</span>');
+			my.gr.log('<span class="gain">--获得生命'+effect['生命']+'</span>');
 		}
 		my.updateData();
 		my.opponent.updateData(); 
@@ -2787,6 +3106,7 @@ class Hero extends Card {
 		var my = this;
 		//this.interactive(true);
 		this.interactive(false);
+		card.setCost(Resources.CardData[card.no].cost);
 		my.gr.buyPile[my.gr.buyPile.indexOf(card)] = null;
 		my.gr.log('购买'+Resources.CardData[card.no].name);
 		if (my.turnBuff['断片感应']) {
@@ -3039,13 +3359,14 @@ class Hero extends Card {
 		//card.divHide();
 		my.applyEffect(Resources.CardData[card.no].effect);
 		function _end() {
+			console.log('no',no);
 			card.divShow();
 			my.weapons[no] = card;
 			let pos = my.getWeaponPos(no, true);
 			my.gr.log('--装备'+Resources.CardData[card.no].name);
-			card.shrink().move(pos[0], pos[1]).action(function() {
-				card.divHide();
-				my._weaponDivs[no].show();
+			card.weaponshrink().move(pos[0], pos[1]).action(function() {
+				//card.divHide();
+				//my._weaponDivs[no].show();
 				my.resetWeapon(no);
 				setTimeout(callback, 0);
 			});
@@ -3053,17 +3374,17 @@ class Hero extends Card {
 		if (!my.weapons[0]) no = 0;
 		else if (!my.weapons[1]) no = 1;
 		else {
-			this._weaponDivs[0].hide();
-			this._weaponDivs[1].hide();
+			//this._weaponDivs[0].hide();
+			//this._weaponDivs[1].hide();
 			my.gr.log('--选择一个装备弃置');
 			my.select(my.weapons, function(card) {
 				var mcb = new MultiCallback();
 				no = my.weapons.indexOf(card);
 				card = my.weapons[1-no];
-				let pos = my.getWeaponPos(no, true);
-				card.shrink().move(pos[0], pos[1]).action(mcb.pipe(function() {
-					card.divHide();
-					my._weaponDivs[1-no].show();
+				let pos = my.getWeaponPos(1-no, true);
+				card.weaponshrink().move(pos[0], pos[1]).action(mcb.pipe(function() {
+					//card.divHide();
+					//my._weaponDivs[1-no].show();
 				}));
 				my.dropWeapon(no, mcb.pipe());
 				mcb.all(function() {
@@ -3077,8 +3398,9 @@ class Hero extends Card {
 	dropWeapon(no, callback) {
 		let card = this.weapons[no];
 		if(card) {
-			this._weaponDivs[no].hide();
+			//this._weaponDivs[no].hide();
 			this.weapons[no] = null;
+			card.activeDurable(false);
 			this.discardCard(card, callback,false);
 			return;
 		}
@@ -3166,7 +3488,7 @@ class Hero extends Card {
 		}
 		if (card.no == 55) {
 			card.skill = false;
-			my.gr.log('--造成3点伤害');
+			// my.gr.log('--造成3点伤害');
 			effect['战力']+=3;
 			if (my.data[3].length) {
 				let card = my.data[3][my.data[3].length-1];
@@ -3267,6 +3589,13 @@ class Hero2 extends Hero {
 		my.counter = [0,0,0,0,0,0,0,0,0,0,0];
 		my.power = 0; // 战力
 		my.cardnum = 0; // 已经打出的卡牌数
+		var timerCnt = 30;
+		var timer = setInterval(function() {
+			my.gr.setTimer(timerCnt--);
+			if (timerCnt<0) {
+				clearInterval(timer);
+			}
+		}, 1000);
 		var i=-1;
 		function _loop() {
 			i++;
@@ -3367,8 +3696,9 @@ class Hero2 extends Hero {
 		for (var j=0; j<8; j++) this.data[3].push(new Card(68));
 		for (var j=0; j<2; j++) this.data[3].push(new Card(67));
 		Math.shuffle(this.data[3]);
-		this.data[3].push(new Card(78));
-		this.data[3].push(new Card(77));
+		this.data[3].push(new Card(31));
+		this.data[3].push(new Card(31));
+		this.data[3].push(new Card(31));
 		// this.data[3].push(new Card(26));
 		//this.data[3].push(new Card(69));
 		//this.data[3].push(new Card(18));
@@ -3425,7 +3755,7 @@ class Hero2 extends Hero {
 		card.setBorder(0);
 		card.setShrink(0);
 		card.divShow();
-		card.expand().move(660, 360).wait(500).action(callback);
+		card.expand().move(gc.revealLeft, gc.revealTop).wait(500).action(callback);
 	}
 	attack(n, callback) {
 		var flag = false;
@@ -3437,9 +3767,9 @@ class Hero2 extends Hero {
 					setTimeout(callback, 0);
 					return;
 				}
-				my.gr.log('<span style="color:#CCC">--对方对你造成'+n+'点伤害</span>');
+				my.gr.log('<span class="attack">--对方对你造成'+n+'点伤害</span>');
 				if (no==0) {
-					my.gr.log('<span style="color:#CCC">--你失去'+n+'点生命</span>');
+					my.gr.log('<span class="attack">--你失去'+n+'点生命</span>');
 					my.opponent.data[0] -= n;
 					if (my.opponent.data[0]<=0) {
 						my.gr._winflag = true;
@@ -3450,10 +3780,10 @@ class Hero2 extends Hero {
 					var durable = my.opponent.weapons[no].durable;
 					if (durable > n) {
 						my.opponent.weapons[no].durable -= n;
-						my.gr.log('<span style="color:#CCC">--'+my.getName(my.opponent.weapons[no])+'承受'+n+'点伤害</span>');
+						my.gr.log('<span class="attack">--'+my.getName(my.opponent.weapons[no])+'承受'+n+'点伤害</span>');
 					} else {
 						n -= durable;
-						my.gr.log('<span style="color:#CCC">--'+my.getName(my.opponent.weapons[no])+'承受'+durable+'点伤害</span>');
+						my.gr.log('<span class="attack">--'+my.getName(my.opponent.weapons[no])+'承受'+durable+'点伤害</span>');
 						my.opponent.dropWeapon(no, _loop);
 						return;
 					}
@@ -3638,6 +3968,7 @@ class Hero2 extends Hero {
 					if (my.data[2]+my.power >= cost) card.setBorder(2);
 				}
 				card._buyCost = cost;
+				card.setCost(cost);
 				/* card.onclick(function() {
 					if (card.no == 65) {
 						if (my.data[2]) {
@@ -3685,6 +4016,7 @@ class Hero2 extends Hero {
 					card.setBorder(0);
 				}
 				card._buyCost = cost;
+				card.setCost(cost);
 			}
 			// 打出的牌
 			for (var i=0; i<my.gr.playPile.length; i++) {
@@ -3800,6 +4132,7 @@ class Hero2 extends Hero {
 	}
 	buyCard(card, callback_t) {
 		var my = this;
+		card.setCost(Resources.CardData[card.no].cost);
 		//this.interactive(true);
 		this.interactive(false);
 		my.gr.buyPile[my.gr.buyPile.indexOf(card)] = null;
@@ -4056,17 +4389,16 @@ class Hero2 extends Hero {
 		var width = this.height/7;
 		var doms = new Array(7);
 		this.doms = doms;
-		var titles = ['生命','技能','营火','牌库','手牌','弃牌','放逐'];
-		for (let i=0; i<7; i++) {
+		var titles = ['牌库','手牌','弃牌','放逐'];
+		for (let i=0; i<4; i++) {
 			var show = document.createElement('div');
-			//show.style.backgroundImage = 'url('+frontImg+')';
-			//show.style.backgroundSize = '100% 100%';
+			let pos = this.getDecoratePos(i);
 			show.style.width = '50px';
 			show.style.height = width+'px';
 			show.style.position = 'absolute';
 			show.style.borderRadius = '5px';
-			show.style.left = this.width+'px';
-			show.style.top = width*i+'px';
+			show.style.left = pos[0]+'px';
+			show.style.top = pos[1]+'px';
 			show.style.textAlign = 'left';
 			show.style.lineHeight = width+'px';
 			show.style.fontSize = '0.7em';
@@ -4076,45 +4408,42 @@ class Hero2 extends Hero {
 			this.warp.appendChild(show);
 			show.innerHTML = '0';
 			doms[i] = show;
-			if (i>4) {
+			if (i>1) {
 				$(show).on('click', function() {
-					my.gr.log('---'+[0,0,0,'牌库','手牌','弃牌堆','放逐牌堆'][i]+'---');
+					my.gr.log('---'+['牌库','手牌','弃牌堆','放逐牌堆'][i]+'---');
 					var str = ' ';
-					for(var j=0; j<my.data[i].length; j++) {
-						str += Resources.CardData[my.data[i][j].no].name+'; ';
+					for(var j=0; j<my.data[i+3].length; j++) {
+						str += Resources.CardData[my.data[i+3][j].no].name+'; ';
 					}
 					my.gr.log(str);
 				});
 			}
 		}
+		this.digitShow = new DigitShow();
+		$(this.warp).append(this.digitShow.div);
 	}
 	
 }
  
 class GameRule {
 	constructor() {
-		var width = 1334;
-		var height = 198;
-		// var $div = $('<div>');
-		// $div.css('width', width+'px');
-		// $div.css('height', height+'px');
-		// $div.css('background-image', 'url(img/cardspos.png');
-		// $div.css('background-size', '100% 100%');
-		// $div.css('position', 'absolute');
-		// $div.css('z-index', '-100');
-		// this.$div = $div;
 		
-		var btn = $('<button>');
+		var btn = $('<div>');
 		btn.data = {'on':'回合结束', 'off':'对手回合'};
 		btn.html(btn.data.off);
 		btn.attr("disabled",true);
 		btn.css('position', 'absolute');
 		btn.css('border-radius', '5px');
-		btn.css('font-size', '1.5em');
-		btn.css('width', 120);
-		btn.css('height', 60);
-		btn.css('left', 1318);
-		btn.css('top', 588);
+		btn.css('font-size', gc.btnHeight*2/6+'px');
+		btn.css('color', 'white');
+		btn.css('text-align', 'center');
+		btn.css('width', gc.btnWidth);
+		btn.css('height', gc.btnHeight);
+		btn.css('line-height', gc.btnHeight);
+		btn.css('left', gc.buttonLeft);
+		btn.css('top', gc.buttonTop);
+		btn.css('background-image', 'url(img/btn.png)');
+		btn.css('background-size', '100%');
 		$('#gamebody').append(btn);
 		this.btn = btn;
 		btn.hide();
@@ -4122,11 +4451,11 @@ class GameRule {
 		var playAllbtn = $('<button>Play Base</button>');
 		playAllbtn.css('position', 'absolute');
 		playAllbtn.css('border-radius', '5px');
-		playAllbtn.css('font-size', '0.9em');
-		playAllbtn.css('width', 95);
-		playAllbtn.css('height', 42);
-		playAllbtn.css('left', 1342);
-		playAllbtn.css('top', 650);
+		playAllbtn.css('font-size', gc.btnHeight*4/9/2+'px');
+		playAllbtn.css('width', gc.btnWidth*2/3);
+		playAllbtn.css('height', gc.btnHeight*2/3);
+		playAllbtn.css('left', gc.buttonLeft);
+		playAllbtn.css('top', gc.buttonTop+gc.btnHeight+4);
 		$('#gamebody').append(playAllbtn);
 		this.playAllbtn = playAllbtn;
 		playAllbtn.hide();
@@ -4136,8 +4465,8 @@ class GameRule {
 		powerDiv.style.height = '23px';
 		powerDiv.style.position = 'absolute';
 		//powerDiv.style.borderRadius = '5px';
-		powerDiv.style.left = '804px';
-		powerDiv.style.top = '247px';
+		powerDiv.style.left = gc.showLeft1+'px';
+		powerDiv.style.top = gc.showTop+'px';
 		powerDiv.style.textAlign = 'left';
 		powerDiv.style.lineHeight = '23px';
 		powerDiv.style.fontSize = '0.7em';
@@ -4149,8 +4478,8 @@ class GameRule {
 		fireDiv.style.width = '50px';
 		fireDiv.style.height = '23px';
 		fireDiv.style.position = 'absolute';
-		fireDiv.style.left = '873px';
-		fireDiv.style.top = '247px';
+		fireDiv.style.left = gc.showLeft2+'px';
+		fireDiv.style.top = gc.showTop+'px';
 		fireDiv.style.textAlign = 'left';
 		fireDiv.style.lineHeight = '23px';
 		fireDiv.style.fontSize = '0.7em';
@@ -4159,12 +4488,15 @@ class GameRule {
 		this.fireDiv = $(fireDiv);
 		
 		// $('#gamebody').append($div);
-		this.poses = [[74,45],[319,44],[529,45],[715,45],[903,45],[1091,45],[1278,45],[1529,45]];
-		this.heroPos = [[41,564],[41,265]];
+		this.poses = [[gc.cardLeft1,gc.cardTop],[gc.cardLeft2,gc.cardTop],[gc.cardLeft3,gc.cardTop],
+					[gc.cardLeft4,gc.cardTop],[gc.cardLeft5,gc.cardTop],[gc.cardLeft6,gc.cardTop],
+					[gc.cardLeft7,gc.cardTop],[gc.cardLeft8,gc.cardTop]];
+		this.heroPos = [[gc.heroLeft,gc.heroTop1],[gc.heroLeft,gc.heroTop2]];
 		this.seed = 5;
 	}
 	log(text) {
 		if (this.Log) {
+			if (!text.startWith('<span')) text = '<span class="play">'+text+'</span>';
 			this.Log.html(this.Log.html()+'<br>'+text);
 			this.Log.scrollTop(this.Log.prop("scrollHeight"));
 		} else {
@@ -4173,7 +4505,7 @@ class GameRule {
 	}
 	chat(text) {
 		if (this.Log) {
-			this.Log.html(this.Log.html()+'<br><b>[聊天]'+text+'</b>');
+			this.Log.html(this.Log.html()+'<br><span class="talk">'+text+'</span>');
 			this.Log.scrollTop(this.Log.prop("scrollHeight"));
 		} else {
 			console.log(text);
@@ -4184,49 +4516,52 @@ class GameRule {
 		return [this.poses[n][0], this.poses[n][1]];
 	}
 	getHeroPos(isMe=true) {
-		if (isMe) return [50,530];
-		else return [50,280];
+		if (isMe) return [gc.heroLeft,gc.heroTop1];
+		else return [gc.heroLeft,gc.heroTop2];
 	}
 	turnOn() {
-		this.btn.attr("disabled",false);
-		this.btn.html(this.btn.data.on);
+		//this.btn.attr("disabled",false);
+		//this.btn.html(this.btn.data.on);
+		this.btn.show();
 	}
 	btnInteractive(isTrue=true) {
 		if (isTrue) this.btn.attr("disabled",false);
 		else this.btn.attr("disabled",true);
 	}
 	turnOff() {
-		this.btn.attr("disabled",true);
-		this.btn.html(this.btn.data.off);
+		//this.btn.attr("disabled",true);
+		//this.btn.html(this.btn.data.off);
+		this.btn.hide();
 	}
 	activeLog() {
 		var my = this;
 		var div = $('<div>');
-		div.css('width', 205);
-		div.css('height', 521);
+		div.css('width', gc.messageRight-gc.messageLeft);
+		div.css('height', gc.messageBottom-gc.messageTop);
 		div.css('position', 'absolute');
 		div.css('overflow-y', 'scroll');
 		div.css('overflow-x', 'hidden');
 		div.css('text-align', 'left');
-		div.css('left', 1480);
-		div.css('top', 240);
+		div.css('left', gc.messageLeft);
+		div.css('top', gc.messageTop);
 		div.css('font-size', '0.8em');
 		
 		var warp = $('<div>');
-		//warp.css('width', 250);
-		//warp.css('height', 30);
-		warp.css('left', 1480);
-		warp.css('top', 770);
+		warp.css('left', gc.messageLeft);
+		warp.css('top', gc.messageBottom+7);
 		warp.css('position', 'absolute');
 		//div.css('overflow', 'hidden');
 		let chat = $('<input>');
 		let send = $('<button>发送</button>');
-		chat.css('width', 120);
-		chat.css('height', 26);
+		chat.css('width', gc.messageRight-gc.messageLeft-55);
+		chat.css('height', 18);
 		chat.css('display', 'inline-block');
-		send.css('width', 70);
-		send.css('height', 26);
+		chat.css('box-radius', '5px');
+		send.css('width', 50);
+		send.css('height', 22);
 		send.css('display', 'inline-block');
+		send.css('box-radius', '5px');
+		send.hide();
 		warp.append(chat);
 		warp.append(' ');
 		warp.append(send);
@@ -4286,10 +4621,28 @@ class GameRule {
 		});
 	}
 	setPower(n) {
-		this.powerDiv.html('战力:'+n);
+		//this.powerDiv.html('战力:'+n);
+		
+		if (!this.attackShow) {
+			this.attackShow = new DataShow('战力');
+			this.attackShow.setPos(gc.attackShowLeft,gc.attackShowTop);
+		}
+		this.attackShow.set(n);
+	}
+	setTimer(n) {
+		if (!this.timerShow) {
+			this.timerShow = new DataShow('计时');
+			this.timerShow.setPos(gc.timerShowLeft,gc.timerShowTop);
+		}
+		this.timerShow.set(n);
 	}
 	setFire(n) {
-		this.fireDiv.html('营火:'+n);
+		//this.fireDiv.html('营火:'+n);
+		if (!this.fireShow) {
+			this.fireShow = new DataShow('营火');
+			this.fireShow.setPos(gc.fireShowLeft,gc.fireShowTop);
+		}
+		this.fireShow.set(n);
 	}
 	init(seed, isFirst=false, callback) {
 		var my = this;
@@ -4301,13 +4654,13 @@ class GameRule {
 		this.buyPile = new Array(5);
 		this.activeLog();
 		this.btn.show();
-		my.log('初始化种子'+seed+'.....');
+		// my.log('初始化种子'+seed+'.....');
 		
 		
 		var styles = ['气功', '街斗', '连击', '聚流', '精神', '充能'];
 		for (var i=0; i<3; i++) {
 			var index = Math.seededRandom(0,styles.length-1);
-			my.log('选择风格'+styles[index]);
+			// my.log('选择风格'+styles[index]);
 			my.loadStyle(styles[index]);
 			styles.remove(styles[index]);
 		}
@@ -4348,6 +4701,8 @@ class GameRule {
 		}
 		my.turnOff();
 		my.btn.on('click', function() {
+			if (me.timer) clearInterval(me.timer);
+			if (me.opponent.timer) clearInterval(me.opponent.timer);
 			my.turnOff();
 			me.turnEnd(function() {
 				me.opponent.turnStart();
@@ -4370,11 +4725,88 @@ class GameRule {
 	}
 }
 
+var gc = (function() {
+	var ratio = {
+		width:1707,
+		height:838,
+		cardWidth:106,
+		cardHeight:146,
+		handLeft:542,
+		handRight:1166,
+		handTop:637,
+		heroLeft:34,
+		heroTop1:588,
+		heroTop2:264,
+		cardTop:45,
+		cardLeft1:78,
+		cardLeft2:315,
+		cardLeft3:529,
+		cardLeft4:715,
+		cardLeft5:903,
+		cardLeft6:1091,
+		cardLeft7:1278,
+		cardLeft8:1529,
+		chooseTop:290,
+		showTop:247,
+		showLeft1:804,
+		showLeft2:873,
+		messageTop:230,
+		messageBottom:550+230,
+		messageLeft:1489,
+		messageRight:190+1489,
+		buttonTop:668,
+		buttonLeft:1322,
+		castTop:300,
+		castBottom:610,
+		castLeft:242,
+		castRight:1466,
+		playTop:320,
+		playLeft:300,
+		playRight:450,
+		revealLeft:798,
+		revealTop:422,
+		flagWidth:28,
+		flagHeight:44,
+		numberWidth:22,
+		numberHeight:25.5,
+		btnWidth:136,
+		btnHeight:139,
+		selfPileLeft:85,
+		selfPileTop1:146,
+		selfPileTop2:146+18,
+		selfPileTop3:146+18*2,
+		selfPileTop4:146+18*3,
+		weaponLeft:117,
+		weaponTop1:11,
+		weaponTop2:127,
+		durableWidth:70.2,
+		durableHeight:83.2,
+		durablenumberWidth:44,
+		durablenumberHeight:51,
+		attackShowLeft:720,
+		attackShowTop:250,
+		fireShowLeft:819,
+		fireShowTop:250,
+		timerShowLeft:960,
+		timerShowTop:250
+	};
+	var rate = window.innerWidth/ratio.width;
+	var globalcoordinate = {};
+	for (x in ratio) {
+		globalcoordinate[x] = ratio[x]*rate;
+		// console.log(globalcoordinate[x])
+	}
+	return globalcoordinate;
+})();
+
 var gr = null;
 var ws = null;
 var eventList = [null, null];
 $(function() {
 	document.onselectstart = function(){return false;};
+	document.ondragstart = function(){return false;};
+	
+	
 	// document.body.style.cursor = 'wait';
 	var defaultName = '营地老哥';
 	var opponentName = '营地老哥';
@@ -4407,6 +4839,11 @@ $(function() {
 		}
 	}
 	function start(_opponentName, isFirst, seed) {
+		
+		var img = $('<img src="img/bg.png"/>');
+		img.css('width', gc.width);
+		img.css('height', gc.height);
+		$('#gamebody').append(img);
 		opponentName = delHtmlTag(_opponentName);
 		isGaming = true;
 		$('#showOpponent').html('正在与'+opponentName+'对战');
@@ -4422,7 +4859,7 @@ $(function() {
 		if (wsOk) ws.send(JSON.stringify({'type':'name','name':name}));
 	});
 	let protocol = location.protocol=='https'?'wss://118.190.96.152:8888/firefightol':'ws://118.190.96.152:8888/firefightol';
-	ws = new WebSocket(protocol);// "ws://192.168.1.137:8888/firefightol"
+	ws = new WebSocket("ws://192.168.1.137:8888/firefightol");// "ws://192.168.1.137:8888/firefightol"
 	ws.onopen = function(evt) { 
 		console.log('open');
 		wsOk = true;
@@ -4432,16 +4869,16 @@ $(function() {
     };
 	ws.onmessage = function(e) {
 		var msg = JSON.parse(e.data);
-		console.log(msg.type);
+		// console.log(msg.type);
 		if (msg.type == 'peopleNumber') {
 			$('#peopleNumber').html(msg.number);
 		}
 		if (msg.type == 'match') {
-			console.log(e.data);
+			// console.log(e.data);
 		}
 		if (eventList[0]) eventList[0](e);
 		if (msg.type == 'chat' && msg.position == 'opponent') {
-			gr.chat(opponentName+':'+delHtmlTag(msg.content));
+			if(gr) gr.chat(opponentName+':'+delHtmlTag(msg.content));
 		} else {
 			if (isGaming && eventList[1]) eventList[1](e);
 		}

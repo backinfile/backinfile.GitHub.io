@@ -62,6 +62,8 @@ Resources.loadImage('img/900533.jpg');
 Resources.loadImage('img/900722.jpg');
 Resources.loadImage('img/900771.jpg');
 Resources.loadImage('img/900772.jpg');
+Resources.loadImage('img/healthDigit.png');
+Resources.loadImage('img/healthbg.png');
 
 Resources.CardData = {
 	9: {name:'起势',		type:'武技',style:'气功',number:2,cost:1,ability:{},effect:{'战力':1}},
