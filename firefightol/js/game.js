@@ -324,7 +324,7 @@ class Card{
 		this.no = no;
 		$(show).hide();
 		if (!isShow) this.divHide();
-		if (no>=9 && no<=81) {
+		if (no!=20 && no>=9 && no<=81) {
 			this.buildDecorateDiv();
 			this.setCost(Resources.CardData[no].cost);
 		}
@@ -713,6 +713,7 @@ class Card{
 	setCost(n) {
 		this.cost = n;
 		if (n<0) n = 0;
+		if(this.no == 20) return;
 		if (n == Resources.CardData[this.no].cost) {
 			this.url = 'img/healthDigit.png';
 		} else {
@@ -944,7 +945,7 @@ class Hero extends Card {
 		//this.data[3].push(new Card(28));
 		//this.data[3].push(new Card(26));
 		Math.shuffle(this.data[3]);
-		// this.data[3].push(new Card(69));
+		// this.data[3].push(new Card(55));
 		// this.data[3].push(new Card(69));
 		// this.data[3].push(new Card(69));
 		// this.data[3].push(new Card(69));
@@ -2374,11 +2375,11 @@ class Hero extends Card {
 					my.gr.log('--展示'+my.getName(card)+',费用为'+cost);
 					my.revealCard(card, function() {
 						cards.push(card);
+						cnt += 1;
 						if (cost<=2) {
 							_end();
 							return;
 						}
-						cnt += 1;
 						indexCnt++;
 						_loop();
 					},indexCnt);
@@ -3522,6 +3523,38 @@ class Hero extends Card {
 			if (my.data[3].length) {
 				let card = my.data[3][my.data[3].length-1];
 				my.revealCard(card, function() {
+					/* var reveal_card = card;
+					my.setAllBack(function() {
+						my.gr.log('--弃置所有与该牌类型相同的牌吗?');
+						my.opponent.nchoose(2, [900151,900152], function(n){});
+						function _loop() {
+							let action = my.opponent.actionList.shift();
+							if (action) {
+								if (action.type != 'select') {
+									my.gr.log('游戏出错');
+								}
+								if (action.location == 0) {
+									my.attack(3, callback);
+								} else {
+									var cards = [];
+									for (var i=0; i<my.opponent.data[4].length; i++) {
+										let card = my.opponent.data[4][i];
+										if (!my.isSameType(card, reveal_card)) continue;
+										cards.push(card);
+										my.opponent.data[4].remove(card);
+										i=-1;
+									}
+									var mc = new MultiCallback();
+									for (var i=0; i<cards.length; i++) {
+										my.opponent.discardCard(cards[i], mc.pipe());
+									}
+									my.opponent.handRevise(mc.pipe());
+									mc.all(callback);
+								}
+							} else setTimeout(_loop, 500);
+						}
+						_loop();
+					}); */
 					my.setAllBack(callback);
 				});
 				return;
@@ -4727,7 +4760,7 @@ class GameRule {
 			this.firePile.push(card);
 		}
 		Math.shuffle(this.commonPile);
-		//this.commonPile.push(new Card(20, true)); ////////
+		// this.commonPile.push(new Card(20, true)); ////////
 		//this.commonPile.push(new Card(81, true)); ////////
 		for (let i=0; i<this.commonPile.length; i++) {
 			this.commonPile[i].setZIndex(i);
@@ -4923,7 +4956,7 @@ $(function() {
 		if (wsOk) ws.send(JSON.stringify({'type':'name','name':name}));
 	});
 	let protocol = location.protocol=='https'?'wss://118.190.96.152:8888/firefightol':'ws://118.190.96.152:8888/firefightol';
-	ws = new WebSocket("ws://192.168.1.137:8888/firefightol");// "ws://192.168.1.137:8888/firefightol"
+	ws = new WebSocket(protocol);// "ws://192.168.1.137:8888/firefightol"
 	ws.onclose = function(err) {
 		alert('服务器出错');
 	}
