@@ -874,16 +874,23 @@ class Hero extends Card {
 		}
 	}
 	setWeaponBorder(n, type) {
+		var card = this.weapons[n];
+		if (!card) return;
 		if (type==0) {
-			this._weaponDivs[n].css('box-shadow','');
+			//this._weaponDivs[n].css('box-shadow','');
+			card.setBorder(0);
 		} else {
-			this._weaponDivs[n].css('box-shadow','0px 0px 10px 2px blue');
+			//this._weaponDivs[n].css('box-shadow','0px 0px 10px 2px blue');
+			card.setBorder(1);
 		}
 	}
 	setWeaponClick(n, f=null) {
-		let div = this._weaponDivs[n];
-		div.off('click');
-		div.on('click', f);
+		// let div = this._weaponDivs[n];
+		// div.off('click');
+		// div.on('click', f);
+		var card = this.weapons[n];
+		if (!card) return;
+		card.onclick(f);
 	}
 	resetWeapon(n) {
 		let card = this.weapons[n];
@@ -932,9 +939,9 @@ class Hero extends Card {
 		//this.data[3].push(new Card(28));
 		//this.data[3].push(new Card(26));
 		Math.shuffle(this.data[3]);
-		this.data[3].push(new Card(31));
-		this.data[3].push(new Card(31));
-		this.data[3].push(new Card(31));
+		// this.data[3].push(new Card(31));
+		// this.data[3].push(new Card(31));
+		// this.data[3].push(new Card(31));
 		// this.data[3].push(new Card(69));
 		// this.data[3].push(new Card(69));
 		// this.data[3].push(new Card(69));
@@ -1066,6 +1073,8 @@ class Hero extends Card {
 		my.cardnum = 0; // 已经打出的卡牌数
 		my.gr.log('<span class="tip">营火火剩余'+my.gr.firePile.length+'张</span>');
 		my.gr.log('<span class="tip">中央牌库剩余'+my.gr.commonPile.length+'张</span>');
+		clearInterval(my.opponent.timer);
+		clearInterval(my.timer);
 		var timerCnt = 30;
 		my.gr.setTimer(timerCnt--);
 		var timer = setInterval(function() {
@@ -1076,6 +1085,7 @@ class Hero extends Card {
 				my.gr.btn.click();
 			}
 		}, 1000);
+		this.timer = timer;
 		this.gr.log('回合开始');
 		var i=-1;
 		function _loop() {
@@ -3589,6 +3599,8 @@ class Hero2 extends Hero {
 		my.counter = [0,0,0,0,0,0,0,0,0,0,0];
 		my.power = 0; // 战力
 		my.cardnum = 0; // 已经打出的卡牌数
+		clearInterval(my.opponent.timer);
+		clearInterval(my.timer);
 		var timerCnt = 30;
 		var timer = setInterval(function() {
 			my.gr.setTimer(timerCnt--);
@@ -3596,6 +3608,7 @@ class Hero2 extends Hero {
 				clearInterval(timer);
 			}
 		}, 1000);
+		this.timer = timer;
 		var i=-1;
 		function _loop() {
 			i++;
@@ -3696,9 +3709,9 @@ class Hero2 extends Hero {
 		for (var j=0; j<8; j++) this.data[3].push(new Card(68));
 		for (var j=0; j<2; j++) this.data[3].push(new Card(67));
 		Math.shuffle(this.data[3]);
-		this.data[3].push(new Card(31));
-		this.data[3].push(new Card(31));
-		this.data[3].push(new Card(31));
+		// this.data[3].push(new Card(31));
+		// this.data[3].push(new Card(31));
+		// this.data[3].push(new Card(31));
 		// this.data[3].push(new Card(26));
 		//this.data[3].push(new Card(69));
 		//this.data[3].push(new Card(18));
@@ -4426,7 +4439,7 @@ class Hero2 extends Hero {
 }
  
 class GameRule {
-	constructor() {
+	constructor(name1, name2) {
 		
 		var btn = $('<div>');
 		btn.data = {'on':'回合结束', 'off':'对手回合'};
@@ -4486,6 +4499,22 @@ class GameRule {
 		fireDiv.style.cursor = 'default';
 		$('#gamebody').append(fireDiv);
 		this.fireDiv = $(fireDiv);
+		
+		
+		var nameShow = $('<div>');
+		nameShow.css('position', 'absolute');
+		nameShow.css('color', 'white');
+		nameShow.css('left', gc.nameLeft);
+		nameShow.css('top', gc.nameTop1);
+		nameShow.html('<span style="color:#9febff">'+name1+'</span>');
+		nameShow.appendTo($('#gamebody'));
+		var nameShow2 = $('<div>');
+		nameShow2.css('position', 'absolute');
+		nameShow2.css('color', 'white');
+		nameShow2.css('left', gc.nameLeft);
+		nameShow2.css('top', gc.nameTop2);
+		nameShow2.html('<span style="color:#ff4242">'+name2+'</span>');
+		nameShow2.appendTo($('#gamebody'));
 		
 		// $('#gamebody').append($div);
 		this.poses = [[gc.cardLeft1,gc.cardTop],[gc.cardLeft2,gc.cardTop],[gc.cardLeft3,gc.cardTop],
@@ -4658,13 +4687,15 @@ class GameRule {
 		
 		
 		var styles = ['气功', '街斗', '连击', '聚流', '精神', '充能'];
+		var str = '';
 		for (var i=0; i<3; i++) {
 			var index = Math.seededRandom(0,styles.length-1);
-			// my.log('选择风格'+styles[index]);
+			str += styles[index];
 			my.loadStyle(styles[index]);
 			styles.remove(styles[index]);
 		}
 		
+		my.log('选择风格:'+str);
 		
 		
 		var pos0 = this.getPos(0);
@@ -4701,8 +4732,8 @@ class GameRule {
 		}
 		my.turnOff();
 		my.btn.on('click', function() {
-			if (me.timer) clearInterval(me.timer);
-			if (me.opponent.timer) clearInterval(me.opponent.timer);
+			clearInterval(me.timer);
+			clearInterval(me.opponent.timer);
 			my.turnOff();
 			me.turnEnd(function() {
 				me.opponent.turnStart();
@@ -4757,7 +4788,7 @@ var gc = (function() {
 		buttonTop:668,
 		buttonLeft:1322,
 		castTop:300,
-		castBottom:610,
+		castBottom:630,
 		castLeft:242,
 		castRight:1466,
 		playTop:320,
@@ -4788,7 +4819,10 @@ var gc = (function() {
 		fireShowLeft:819,
 		fireShowTop:250,
 		timerShowLeft:960,
-		timerShowTop:250
+		timerShowTop:250,
+		nameLeft:25,
+		nameTop1:553,
+		nameTop2:230
 	};
 	var rate = window.innerWidth/ratio.width;
 	var globalcoordinate = {};
@@ -4802,14 +4836,14 @@ var gc = (function() {
 var gr = null;
 var ws = null;
 var eventList = [null, null];
+var defaultName = '营地老哥';
+var opponentName = '营地老哥';
 $(function() {
 	document.onselectstart = function(){return false;};
 	document.ondragstart = function(){return false;};
 	
 	
 	// document.body.style.cursor = 'wait';
-	var defaultName = '营地老哥';
-	var opponentName = '营地老哥';
 	if ($.cookie('name')) {
 		defaultName = $.cookie('name');
 	}
@@ -4826,6 +4860,9 @@ $(function() {
 		if (wsOk && imgOk) {
 			$('#search').attr('disabled', false);
 			$('#search').on('click', function() {
+				var can = $("<div id='canvas'><canvas width='300' height='300'></canvas></div>");
+				can.css('transform', 'scale(0.3)');
+				can.appendTo($('#gameintro'));
 				$('#search').attr('disabled', true);
 				ws.send(JSON.stringify({type:'searching'}));
 				eventList[0] = function(e) {
@@ -4848,7 +4885,7 @@ $(function() {
 		isGaming = true;
 		$('#showOpponent').html('正在与'+opponentName+'对战');
 		$('#gameintro').hide();
-		gr = new GameRule();
+		gr = new GameRule(defaultName, opponentName);
 		gr.init(seed, isFirst);
 	}
 	$('#changeName').on('click', function() {

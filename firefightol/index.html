@@ -5,6 +5,7 @@
     <title>营火战争联机版</title>
     <script src="./js/jquery.min.js"></script>
     <script src="./js/jquery.cookie.js"></script>
+    <script src="./js/jcanvas.min.js"></script>
     <script src="./js/resources.js?version=2.0.1"></script>
     <script src="./js/game.js?version=2.0.2"></script>
 	<style>
@@ -14,6 +15,7 @@
 			height:100%
 		}
 		body {
+			background-color:#262c39;
 			overflow:hidden;
 		}
 		#search, #name, #changeName{
@@ -21,9 +23,11 @@
 			width:100px;height:26px;
 		}
 		#gameintro {
-			position:absolute;
-			left:800px;
-			top:289px;
+			width:500px;
+			height:500px;
+			position:absolute; 
+			margin: auto; 
+			top: 0; left: 0; bottom: 0; right: 0; 
 			text-align:center;
 		}
 		input{
@@ -40,6 +44,9 @@
 		  text-decoration:none;
 		  width:100%;
 		}
+		button {
+		  border-radius:6px;
+		}
 		.gain {
 			color:#efe343;
 		}
@@ -55,19 +62,31 @@
 		.tip {
 			color:#efe343;
 		}
+		#canvas{
+			position:absolute;
+			top: 0; left: 0; bottom: 0; right: 0; 
+		}
+		#search{
+			width:90px;
+			height:26px;
+		}
 	</style>
 </head>
 <body>
 	<div id='gamebody'>
 	</div>
-	<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
 	<div id='gameintro'>
 		<div id='showOpponent'></div>
-		<div id='loading'>游戏资源加载中...<span id='per'>0%</span></div><br/>
-		<!-- <div>推荐使用chrome浏览器打开</div><br/> -->
-		在线人数<span id='peopleNumber'>0</span>
-		<button id='search' disabled="disabled">寻找对手</button><br/><br/>
+		<div style='color:white'>在线人数<span id='peopleNumber'>0</span></div><br/><br/>
 		<input value='营地老哥' id='name'/> <button id='changeName' disabled="disabled">更改昵称</button><br/>
+		<!-- <div>推荐使用chrome浏览器打开</div><br/> -->
+		<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+		<button id='search' disabled="disabled">寻找对手</button><br/><br/>
+		
+		<!-- <div id='canvas'><canvas width="300" height="300"></canvas></div> -->
+		<script src="js/circle.js"></script>
+		<div id='loading'  style='color:white'><br/>游戏资源加载中...<span id='per'>0%</span></div>
+		
 	</div>
 
 
