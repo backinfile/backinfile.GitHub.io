@@ -64,6 +64,20 @@ Resources.loadImage('img/900771.jpg');
 Resources.loadImage('img/900772.jpg');
 Resources.loadImage('img/healthDigit.png');
 Resources.loadImage('img/healthbg.png');
+Resources.loadImage('img/bg.png');
+Resources.loadImage('img/attackNumber.png');
+Resources.loadImage('img/btn.png');
+Resources.loadImage('img/btn2.png');
+Resources.loadImage('img/cost.png');
+Resources.loadImage('img/durable.png');
+Resources.loadImage('img/durablebg.png');
+Resources.loadImage('img/fireNumber.png');
+Resources.loadImage('img/healthDigit.png');
+Resources.loadImage('img/法术.png');
+Resources.loadImage('img/特殊.png');
+Resources.loadImage('img/无.png');
+Resources.loadImage('img/武技.png');
+Resources.loadImage('img/装备.png');
 
 Resources.CardData = {
 	9: {name:'起势',		type:'武技',style:'气功',number:2,cost:1,ability:{},effect:{'战力':1}},

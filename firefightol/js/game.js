@@ -244,6 +244,7 @@ class MultiCallback {
 	}
 }
 
+var scard = null;
 
 class Card{
 	constructor(no, isShow=false) {
@@ -390,14 +391,16 @@ class Card{
 		digitDiv.css('background-image', 'url(img/durable.png)');
 	}
 	activeDurable(isTrue=true) {
-		if (!this.durableDiv) {
+		if (!this.DurableDigitDiv) {
 			this.buildDurableDiv();
 		}
 		if (isTrue) {
+			//console.log(this.no, 'in true');
 			//this.DurableDigitDiv.css('background-position', (-gc.numberWidth*n)+'px 0px');
 			this.DurableDigitDiv.show();
 			this.DurableDigitBackDiv.show();
 		} else {
+			//console.log(this.no, 'in false');
 			this.DurableDigitDiv.hide();
 			this.DurableDigitBackDiv.hide();
 		}
@@ -803,6 +806,8 @@ class Hero extends Card {
 			this.setDecorate(1,this.data[4].length);
 			this.setDecorate(2,this.data[5].length);
 			this.setDecorate(3,this.data[6].length);
+			// console.log(this.weapons);
+			if (this.weapons[0]) scard = this.weapons[0];
 			for(var i=0; i<2; i++) {
 				let card = this.weapons[i];
 				if (card) {
@@ -833,7 +838,6 @@ class Hero extends Card {
 			div.css('position', 'absolute');
 			div.css('left', pos[0]+5);
 			div.css('top', pos[1]);
-			console.log();
 			//div.css('background-color', 'rgba(255,255,255,0.9)');
 			div.css('background-image', 'url(img/weapon.png)');
 			div.css('background-size', '100% 100%');
@@ -918,7 +922,8 @@ class Hero extends Card {
 		var card = this.weapons[n];
 		if (card) {
 			card.durable = durable;
-			card.activeDurable();
+			if (!card.durableDiv) card.activeDurable();
+			// console.log('in setWeaponDurable', this.weapons);
 			card.updateDurable();
 		}
 	}
@@ -939,8 +944,7 @@ class Hero extends Card {
 		//this.data[3].push(new Card(28));
 		//this.data[3].push(new Card(26));
 		Math.shuffle(this.data[3]);
-		// this.data[3].push(new Card(31));
-		// this.data[3].push(new Card(31));
+		// this.data[3].push(new Card(70));
 		// this.data[3].push(new Card(31));
 		// this.data[3].push(new Card(69));
 		// this.data[3].push(new Card(69));
@@ -1075,7 +1079,7 @@ class Hero extends Card {
 		my.gr.log('<span class="tip">中央牌库剩余'+my.gr.commonPile.length+'张</span>');
 		clearInterval(my.opponent.timer);
 		clearInterval(my.timer);
-		var timerCnt = 30;
+		var timerCnt = 60;
 		my.gr.setTimer(timerCnt--);
 		var timer = setInterval(function() {
 			my.gr.setTimer(timerCnt--);
@@ -1219,10 +1223,11 @@ class Hero extends Card {
 			}
 			for (let i=0; i<my.data[4].length; i++) {
 				let card = my.data[4][i];
-				card.shrink().move(pos[0], pos[1]).action(mc.pipe(function() {
-					card.divHide();
-				}));
-				my.data[5].push(card);
+				// card.shrink().move(pos[0], pos[1]).action(mc.pipe(function() {
+					// card.divHide();
+				// }));
+				// my.data[5].push(card);
+				my.discardCard(card, mc.pipe());
 			}
 			my.gr.playPile = [];
 			my.data[4] = [];
@@ -1328,7 +1333,7 @@ class Hero extends Card {
 				if (my.isBase(card)) baseCards.push(card);
 				my._examHandCard(card);
 			}
-			if (false && baseCards.length) {
+			if (baseCards.length) {
 				my.gr.playAllbtn.show();
 				my.gr.playAllbtn.off('click');
 				my.gr.playAllbtn.on('click', function() {
@@ -2937,6 +2942,9 @@ class Hero extends Card {
 			my.turnBuff['弃置过手牌'] = true;
 			this.gr.log('--丢弃'+Resources.CardData[card.no].name);
 		}
+		if (my.isType(card, '武器')) {
+			card.activeDurable(false);
+		}
 		my.updateData();
 		card.shrink().move(pos[0], pos[1]).action(function() {
 			card.divHide();
@@ -3409,8 +3417,9 @@ class Hero extends Card {
 		let card = this.weapons[no];
 		if(card) {
 			//this._weaponDivs[no].hide();
-			this.weapons[no] = null;
 			card.activeDurable(false);
+			this.weapons[no] = null;
+			//console.log(this.weapons);
 			this.discardCard(card, callback,false);
 			return;
 		}
@@ -3601,7 +3610,7 @@ class Hero2 extends Hero {
 		my.cardnum = 0; // 已经打出的卡牌数
 		clearInterval(my.opponent.timer);
 		clearInterval(my.timer);
-		var timerCnt = 30;
+		var timerCnt = 60;
 		var timer = setInterval(function() {
 			my.gr.setTimer(timerCnt--);
 			if (timerCnt<0) {
@@ -3674,10 +3683,11 @@ class Hero2 extends Hero {
 			}
 			for (let i=0; i<my.data[4].length; i++) {
 				let card = my.data[4][i];
-				my.data[5].push(card);
-				card.shrink().move(pos[0], pos[1]).action(mc.pipe(function() {
-					card.divHide();
-				}));
+				// my.data[5].push(card);
+				// card.shrink().move(pos[0], pos[1]).action(mc.pipe(function() {
+					// card.divHide();
+				// }));
+				my.discardCard(card, mc.pipe());
 			}
 			my.gr.playPile = [];
 			my.data[4] = [];
@@ -3709,7 +3719,7 @@ class Hero2 extends Hero {
 		for (var j=0; j<8; j++) this.data[3].push(new Card(68));
 		for (var j=0; j<2; j++) this.data[3].push(new Card(67));
 		Math.shuffle(this.data[3]);
-		// this.data[3].push(new Card(31));
+		// this.data[3].push(new Card(70));
 		// this.data[3].push(new Card(31));
 		// this.data[3].push(new Card(31));
 		// this.data[3].push(new Card(26));
@@ -3839,7 +3849,7 @@ class Hero2 extends Hero {
 				if (card.no == 65) {
 					if (my.data[2]) {
 						my.gr.log('选择要为超重量武器支付的营火(不足8将用战力补齐)');
-						console.log('in buy 65');
+						// console.log('in buy 65');
 						my.nchoose(my.data[2]+1, [900151,900201,900202,900203,900204,900205,900206,900207,900208],
 							function(n) {
 							if (my.power+n >= 8) {
@@ -4234,7 +4244,7 @@ class Hero2 extends Hero {
 					my.select(cards, function(card) {
 						my.data[4].push(card);
 						my.handRevise(function() {
-							console.log('selectinnn');
+							// console.log('selectinnn');
 							cards.remove(card);
 							my.updateData();
 							if (!cards.length) {
@@ -4461,14 +4471,15 @@ class GameRule {
 		this.btn = btn;
 		btn.hide();
 		
-		var playAllbtn = $('<button>Play Base</button>');
+		var playAllbtn = $('<div>');
 		playAllbtn.css('position', 'absolute');
 		playAllbtn.css('border-radius', '5px');
-		playAllbtn.css('font-size', gc.btnHeight*4/9/2+'px');
-		playAllbtn.css('width', gc.btnWidth*2/3);
-		playAllbtn.css('height', gc.btnHeight*2/3);
-		playAllbtn.css('left', gc.buttonLeft);
-		playAllbtn.css('top', gc.buttonTop+gc.btnHeight+4);
+		playAllbtn.css('width', gc.btn2Width);
+		playAllbtn.css('height', gc.btn2Height);
+		playAllbtn.css('left', gc.btn2Left);
+		playAllbtn.css('top', gc.btn2Top);
+		playAllbtn.css('background-image', 'url(img/btn2.png)');
+		playAllbtn.css('background-size', '100%');
 		$('#gamebody').append(playAllbtn);
 		this.playAllbtn = playAllbtn;
 		playAllbtn.hide();
@@ -4707,7 +4718,7 @@ class GameRule {
 			this.firePile.push(card);
 		}
 		Math.shuffle(this.commonPile);
-		// this.commonPile.push(new Card(63, true)); ////////
+		//this.commonPile.push(new Card(20, true)); ////////
 		//this.commonPile.push(new Card(81, true)); ////////
 		for (let i=0; i<this.commonPile.length; i++) {
 			this.commonPile[i].setZIndex(i);
@@ -4822,7 +4833,11 @@ var gc = (function() {
 		timerShowTop:250,
 		nameLeft:25,
 		nameTop1:553,
-		nameTop2:230
+		nameTop2:230,
+		btn2Width:75,
+		btn2Height:76,
+		btn2Left:259,
+		btn2Top:734
 	};
 	var rate = window.innerWidth/ratio.width;
 	var globalcoordinate = {};
