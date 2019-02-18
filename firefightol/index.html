@@ -6,8 +6,8 @@
     <script src="./js/jquery.min.js"></script>
     <script src="./js/jquery.cookie.js"></script>
     <script src="./js/jcanvas.min.js"></script>
-    <script src="./js/resources.js?version=2.0.2"></script>
-    <script src="./js/game.js?version=2.0.3"></script>
+    <script src="./js/resources.js?version=2.0.3"></script>
+    <script src="./js/game.js?version=2.0.4"></script>
 	<style>
 		*{margin:0;padding:0}
 		html,body{
@@ -25,23 +25,29 @@
 			margin:auto;
 			top:201px;
 		}
+		#number{
+			position:absolute;
+			left:0px;right:0px;
+			margin:auto;
+			top:250px;
+		}
 		#name{
 			width:150px;height:28px;
 			position:absolute;
 			left:130px;
-			top:305px;
+			top:154px;
 		}
 		#nametext{
 			width:172px;height:37px;
 			position:absolute;
 			left:118px;
-			top:301px;
+			top:150px;
 		}
 		#changeName{
 			width:89px;height:41px;
 			position:absolute;
 			left:288px;
-			top:300px;
+			top:150px;
 		}
 		#gameintro {
 			width:500px;
@@ -92,15 +98,17 @@
 <body>
 	<div id='gamebody'>
 	</div>
-	<div style='color:white;display:none'>在线人数<span id='peopleNumber'>0</span></div>
+	
 	<div id='gameintro'>
 		<img id='nametext' src='img/nametext.png'/>
 		<input value='营地老哥' id='name'/> <img id='changeName' disabled="disabled" src='img/name.png' alt="更改昵称"/>
 		<!-- <button id='search' disabled="disabled">寻找对手</button><br/><br/> -->
 		<img src='img/search.png' id='search'/>
+		<div style='color:white;' id='number'>在线人数：<span id='peopleNumber'>0</span></div>
 		<!-- <div id='canvas'><canvas width="300" height="300"></canvas></div> -->
 		<script src="js/circle.js"></script>
-		<div id='loading'  style='color:white'><br/>游戏资源加载中...<span id='per'>0%</span></div>
+		<br/><br/><br/><br/><br/>
+		<div id='loading'  style='color:white'>游戏资源加载中...<span id='per'>0%</span></div>
 		
 	</div>
 
