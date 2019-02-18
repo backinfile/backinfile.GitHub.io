@@ -78,6 +78,19 @@ Resources.loadImage('img/特殊.png');
 Resources.loadImage('img/无.png');
 Resources.loadImage('img/武技.png');
 Resources.loadImage('img/装备.png');
+Resources.loadImage('img/01.png');
+Resources.loadImage('img/02.png');
+Resources.loadImage('img/03.png');
+Resources.loadImage('img/04.png');
+Resources.loadImage('img/05.png');
+Resources.loadImage('img/06.png');
+Resources.loadImage('img/07.png');
+Resources.loadImage('img/08.png');
+Resources.loadImage('img/09.png');
+Resources.loadImage('img/10.png');
+Resources.loadImage('img/11.png');
+Resources.loadImage('img/12.png');
+Resources.loadImage('img/chooseNumber.png');
 
 Resources.CardData = {
 	9: {name:'起势',		type:'武技',style:'气功',number:2,cost:1,ability:{},effect:{'战力':1}},

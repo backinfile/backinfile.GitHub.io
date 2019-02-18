@@ -722,7 +722,29 @@ class Card{
 		this.digitDiv.css('background-image', 'url('+this.url+')');
 		this.digitDiv.css('background-position', (-gc.numberWidth*n)+'px 0px');
 	}
-}
+};
+
+class TmpCard extends Card {
+	constructor(type='01', hasValue=false, value=1) {
+		super(20, true);
+		this.front.style.backgroundImage = 'url(img/'+type+'.png)';
+		if (hasValue) {
+			var number = $('<div>');
+			number.css('width', gc.chooseNumberWidth);
+			number.css('height', gc.chooseNumberHeight);
+			number.css('left', gc.cardWidth/2-gc.chooseNumberWidth/2);
+			number.css('top', gc.cardHeight/2-gc.chooseNumberHeight/2);
+			number.css('overflow', 'hidden');
+			number.css('position', 'absolute');
+			number.css('transform', 'translateZ(3px)');
+			number.css('background-image', 'url(img/chooseNumber.png)');
+			number.css('background-size', 10*gc.chooseNumberWidth+'px '+gc.chooseNumberHeight+'px');
+			number.css('background-position', -value*gc.chooseNumberWidth+'px 0px');
+			number.css('overflow', 'hidden');
+			number.appendTo(this.div);
+		}
+	}
+};
 
 class Hero extends Card {
 	constructor(no, isShow=true) {
@@ -932,9 +954,7 @@ class Hero extends Card {
 		//this._weaponDivs[n].children()[1].innerHTML = name;
 	}
 	
-	setCost(n) {
-		
-	}
+	setCost(n) {}
 	init(callback) {
 		var my = this;
 		my.power = 0;
@@ -1079,14 +1099,19 @@ class Hero extends Card {
 		my.gr.log('<span class="tip">中央牌库剩余'+my.gr.commonPile.length+'张</span>');
 		clearInterval(my.opponent.timer);
 		clearInterval(my.timer);
+		this.turnOffflag = false;
 		var timerCnt = 60;
 		my.gr.setTimer(timerCnt--);
 		var timer = setInterval(function() {
 			my.gr.setTimer(timerCnt--);
 			if (timerCnt<0) {
 				clearInterval(timer);
-				my.interactive(false);
-				my.gr.btn.click();
+				if (my.interactiveflag) {
+					my.interactive(false);
+					my.gr.btn.click();
+				} else {
+					my.turnOffflag = true;
+				}
 			}
 		}, 1000);
 		this.timer = timer;
@@ -1135,8 +1160,10 @@ class Hero extends Card {
 					my.turnBuff['受到过伤害'] = true;
 					my.data[0] -= n;
 					if (my.data[0]<=0) {
-						my.gr._winflag = true;
-						my.gr.log('你输了！但游戏仍可以继续');
+						if (!my.gr._winflag) {
+							my.gr._winflag = true;
+							my.gr.log('你输了！但游戏仍可以继续');
+						}
 					}
 				} else {
 					no--;
@@ -1172,8 +1199,10 @@ class Hero extends Card {
 					my.gr.log('<span class="attack">--对方失去'+n+'点生命</span>');
 					my.opponent.data[0] -= n;
 					if (my.opponent.data[0]<=0) {
-						my.gr._winflag = true;
-						my.gr.log('你赢了！但游戏仍可以继续');
+						if (!my.gr._winflag) {
+							my.gr._winflag = true;
+							my.gr.log('你赢了！但游戏仍可以继续');
+						}
 					}
 				} else {
 					no--;
@@ -1322,8 +1351,14 @@ class Hero extends Card {
 		// 开关交互
 		var my = this;
 		if (!my.isPlayAll && isOn) {
+			if (this.turnOffflag) {
+				this.interactive(false);
+				my.gr.btn.click();
+				return;
+			}
 			this.updateData();
 			this.interactive(false);
+			this.interactiveflag = true;
 			this.gr.btnInteractive(true);
 			var len = this.data[4].length;
 			// 手牌
@@ -1396,7 +1431,9 @@ class Hero extends Card {
 						my.sendMessage({type:'buyCard', location: i});
 						if (my.data[2]) {
 							my.gr.log('选择要为超重量武器支付的营火(不足8将用战力补齐)');
-							my.nchoose(my.data[2]+1, [900151,900201,900202,900203,900204,900205,900206,900207,900208],
+							my.nchoose(my.data[2]+1, [new TmpCard('02',true,0),new TmpCard('02',true,1),new TmpCard('02',true,2),
+								new TmpCard('02',true,3),new TmpCard('02',true,4),new TmpCard('02',true,5),new TmpCard('02',true,6),
+								new TmpCard('02',true,7),new TmpCard('02',true,8)],
 								function(n) {
 								if (my.power+n >= 8) {
 									my.power -= 8-n;
@@ -1457,6 +1494,7 @@ class Hero extends Card {
 			}
 			
 		} else { // off interactive
+			this.interactiveflag = false;
 			my.gr.playAllbtn.hide();
 			my.gr.playAllbtn.off('click');
 			this.gr.btnInteractive(false);
@@ -1707,7 +1745,7 @@ class Hero extends Card {
 			}
 		} else if (card.no == 15) {
 			if (my.isFillFire(card)) {
-				my.nchoose(2, [900151, 900152], function(n) {
+				my.nchoose(2, [new TmpCard('05'), new TmpCard('11',true,1)], function(n) {
 					if (n==0) {
 						setTimeout(callback, 0);
 					} else {
@@ -1756,7 +1794,7 @@ class Hero extends Card {
 		if (card.no == 21) {
 			my.drawCard(1, function() {
 				my.gr.log('--要流放吗?');
-				my.nchoose(2, [900151,900152], function(n) {
+				my.nchoose(2, [new TmpCard('05'),new TmpCard('11')], function(n) {
 					if (n==0) {
 						setTimeout(callback, 0);
 					} else {
@@ -1789,7 +1827,7 @@ class Hero extends Card {
 			}
 		} else if (card.no == 23) {
 			if (my.counter[1] >= 2) {
-				my.nchoose(2, [900231,900232], function(n) {
+				my.nchoose(2, [new TmpCard('01',true,1),new TmpCard('06',true,1)], function(n) {
 					if (n==0) {
 						effect['战力'] += 1;
 						setTimeout(callback, 0);
@@ -1809,7 +1847,7 @@ class Hero extends Card {
 			}
 			my.drawCard(1, function() {
 				my.gr.log('--从手牌中放逐一张基本牌吗?');
-				my.nchoose(2, [900151, 900152], function(n) {
+				my.nchoose(2, [new TmpCard('05'), new TmpCard('11',true,1)], function(n) {
 					if (n == 0) {
 						_then();
 					} else {
@@ -1940,7 +1978,7 @@ class Hero extends Card {
 			return;
 		} else if (card.no == 29) {
 			my.gr.log('--要将弃牌区的一张牌洗回牌库吗?');
-			my.nchoose(2, [900151, 900152], function(n) {
+			my.nchoose(2, [new TmpCard('05'), new TmpCard('10',true,1)], function(n) {
 				if (n==0) {
 					setTimeout(callback, 0);
 				} else {
@@ -1997,7 +2035,7 @@ class Hero extends Card {
 			my.drawCard(1, function() {
 				if (my.getStyleNum()>=3) {
 					my.gr.log('--从打出区或弃牌区放逐一张牌吗?');
-					my.nchoose(2, [900151,900152], function(n) {
+					my.nchoose(2, [new TmpCard('05'),new TmpCard('11',true,1)], function(n) {
 						if (n==0) {
 							setTimeout(callback, 0);
 						} else {
@@ -2038,7 +2076,7 @@ class Hero extends Card {
 			my.turnBuff['断片感应'] = true;
 		} else if (card.no == 38) {
 			my.gr.log('--抓两张牌或者从弃牌区将2张不同风格的牌置入手牌');
-			my.nchoose(2, [900381, 900382], function(n) {
+			my.nchoose(2, [new TmpCard('06',true,2), new TmpCard('09',true,2)], function(n) {
 				if (n==0) {
 					my.drawCard(2, callback);
 				} else {
@@ -2082,7 +2120,7 @@ class Hero extends Card {
 			return;
 		} else if (card.no == 39) {
 			my.gr.log('--你可以从打出区放逐一张牌');
-			my.nchoose(2, [900151, 900152], function(n) {
+			my.nchoose(2, [new TmpCard('05'), new TmpCard('11',true,1)], function(n) {
 				if (n==0) {
 					setTimeout(callback, 0);
 					return;
@@ -2108,7 +2146,7 @@ class Hero extends Card {
 			});
 			return;
 		} else if (card.no == 41) {
-			my.nchoose(2, [900411, 900412], function(n) {
+			my.nchoose(2, [new TmpCard('02',true,2), new TmpCard('01',true,2)], function(n) {
 				if (n==0) {
 					effect['营火'] += 2;
 				} else {
@@ -2118,7 +2156,7 @@ class Hero extends Card {
 			});
 			return;
 		} else if (card.no == 42) {
-			my.nchoose(2, [900421, 900422], function(n) {
+			my.nchoose(2, [new TmpCard('02',true,3), new TmpCard('01',true,3)], function(n) {
 				if (n==0) {
 					effect['营火'] += 3;
 				} else {
@@ -2227,7 +2265,7 @@ class Hero extends Card {
 					my.handRevise(function() {
 						if (!my.isType(card, '武技')) {
 							my.gr.log('--要放逐一张手牌吗？');
-							my.nchoose(2, [900151,900152], function(n) {
+							my.nchoose(2, [new TmpCard('05'),new TmpCard('11',true,1)], function(n) {
 								if (n==0) {
 									setTimeout(callback, 0);
 								} else {
@@ -2305,7 +2343,7 @@ class Hero extends Card {
 					my.seek(3, callback);
 				}
 				my.gr.log('--要将弃牌区的几张牌洗回牌库？');
-				my.nchoose(4, [900151,900531,900532,900533],function(n) {
+				my.nchoose(4, [new TmpCard('10',true,0),new TmpCard('10',true,1),new TmpCard('10',true,2),new TmpCard('10',true,3)],function(n) {
 					function _loop() {
 						if (!my.data[5].length || !n) {
 							my.setPileBack(_end);
@@ -2456,7 +2494,7 @@ class Hero extends Card {
 			function _end(){
 				my.handRevise(function() {
 					my.gr.log('--要流放吗?');
-					my.nchoose(2, [900151,900152], function(n) {
+					my.nchoose(2, [new TmpCard('05'),new TmpCard('11')], function(n) {
 						if (n==0) {
 							setTimeout(callback, 0);
 						} else {
@@ -2494,7 +2532,7 @@ class Hero extends Card {
 			my.attackSelf(2, function() {
 				effect['战力'] += 3;
 				my.gr.log('--要流放吗?');
-				my.nchoose(2, [900151,900152], function(n) {
+				my.nchoose(2, [new TmpCard('05'),new TmpCard('11')], function(n) {
 					if (n==0) {
 						setTimeout(callback, 0);
 					} else {
@@ -2542,7 +2580,7 @@ class Hero extends Card {
 				function _end2() {
 					my.gr.playPile.push(ori_card);
 					if (my.data[0] < my.opponent.data[0]) {
-						my.nchoose(2, [900231,900201], function(n) {
+						my.nchoose(2, [new TmpCard('01',true,1),new TmpCard('02',true,1)], function(n) {
 							if (n==0) {
 								effect['战力'] += 1;
 							} else {
@@ -2555,7 +2593,7 @@ class Hero extends Card {
 					}
 				}
 				my.gr.log('--要从打出区或弃牌区放逐一张牌吗？');
-				my.nchoose(2, [900151,900152], function(n) {
+				my.nchoose(2, [new TmpCard('05'), new TmpCard('11',true,1)], function(n) {
 					if (n==0) {
 						setTimeout(_end2, 0);
 						return;
@@ -2608,7 +2646,7 @@ class Hero extends Card {
 		} else if (card.no == 74) {
 			if (my.data[2] >= 1) {
 				my.gr.log('--是否要充能');
-				my.nchoose(2, [900151, 900722], function(n) {
+				my.nchoose(2, [new TmpCard('05'), new TmpCard('12',true,1)], function(n) {
 					if (n==1) {
 						my.data[2] -= 1;
 						my.charging();
@@ -2623,7 +2661,7 @@ class Hero extends Card {
 			if (true) {
 				my.turnBuff['粒子数反转'] = true;
 				my.gr.log('--要流放吗?');
-				my.nchoose(2, [900151,900152], function(n) {
+				my.nchoose(2, [new TmpCard('05'),new TmpCard('11')], function(n) {
 					if (n==0) {
 						setTimeout(callback, 0);
 					} else {
@@ -2639,7 +2677,7 @@ class Hero extends Card {
 			my.drawCard(1, function() {
 				if (my.data[2] >= 3) {
 					my.gr.log('--是否要充能');
-					my.nchoose(2, [900151, 900722], function(n) {
+					my.nchoose(2, [new TmpCard('05'), new TmpCard('12',true,3)], function(n) {
 						if (n==1) {
 							my.data[2] -= 3;
 							effect['战力'] += 2;
@@ -2658,7 +2696,7 @@ class Hero extends Card {
 			function _end() {
 				my.handRevise(function() {
 					my.gr.log('--声明一种资源');
-					my.nchoose(2, [900771,900772], function(n) {
+					my.nchoose(2, [new TmpCard('01',false),new TmpCard('02',false)], function(n) {
 						if(!my.turnBuff['电眼逼人']) my.turnBuff['电眼逼人'] = [];
 						if (n==0) {
 							my.turnBuff['电眼逼人'].push('战力');
@@ -2693,8 +2731,8 @@ class Hero extends Card {
 			return;
 		} else if (card.no == 80) {
 			if (my.data[2] >= 1) {
-				my.gr.log('--选择要充能的营火');
-				my.nchoose(my.data[2]>=2?3:2, [900151, 900201, 900202], function(n) {
+				my.gr.log('--选择要充能');
+				my.nchoose(my.data[2]>=2?3:2, [new TmpCard('12',true,0), new TmpCard('12',true,1), new TmpCard('12',true,2)], function(n) {
 					if (n) {
 						my.data[2] -= n;
 						my.charging();
@@ -2718,7 +2756,8 @@ class Hero extends Card {
 		my.updateData();
 		let lefts = my.getLefts(n, 10);
 		for (let i=0; i<n; i++) {
-			let card = new Card(nos[i], true);
+			//let card = new Card(nos[i], true);
+			let card = nos[i];
 			cards[i] = card;
 			card.setZIndex(1100, true);
 			card.setPos(lefts[i],gc.chooseTop);
@@ -2921,7 +2960,7 @@ class Hero extends Card {
 		var my = this;
 		if (my.data[2] >= n) {
 			my.gr.log('--是否要充能?');
-			my.nchoose(2, [900151, 900722], function(n) {
+			my.nchoose(2, [new TmpCard('05'), new TmpCard('12',true,n)], function(n) {
 				if (n == 0) {
 					callback(0);
 				} else {
@@ -3178,8 +3217,9 @@ class Hero extends Card {
 				var ori_card = card;
 				my.data[2]+=Resources.CardData[20].cost;
 				my.updateData();
-				my.nchoose(my.data[2]>8?8:my.data[2], [900201, 900202, 900203,
-					900204, 900205, 900206, 900207, 900208], function(n) {
+				my.nchoose(my.data[2]>8?8:my.data[2], [new TmpCard('02',true,1), new TmpCard('02',true,2), 
+					new TmpCard('02',true,3), new TmpCard('02',true,4), new TmpCard('02',true,5), 
+					new TmpCard('02',true,6), new TmpCard('02',true,7), new TmpCard('02',true,8)], function(n) {
 					n++;
 					my.data[2] -= n;
 					let cards = [];
@@ -3255,7 +3295,7 @@ class Hero extends Card {
 			return;
 		} else if (card.no == 40) {
 			my.gr.log('--要从打出区放逐一张牌吗？');
-			my.nchoose(2, [900151,900152], function(n) {
+			my.nchoose(2, [new TmpCard('05'),new TmpCard('11',true,1)], function(n) {
 				if (n==0) {
 					my.discardCard(card, callback, false);
 				} else {
@@ -3274,7 +3314,7 @@ class Hero extends Card {
 			return;
 		} else if (card.no == 31) {
 			my.gr.log('--要将弃牌区的一张费用不大于5的武技牌置入手牌吗？');
-			my.nchoose(2, [900151,900152], function(n) {
+			my.nchoose(2, [new TmpCard('05'),new TmpCard('09',true,1)], function(n) {
 				var ori_card = card;
 				if (n==0) {
 					my.discardCard(ori_card, callback, false);
@@ -3351,7 +3391,7 @@ class Hero extends Card {
 		} else if (card.no == 80) {
 			if (my.data[2] >= 1) {
 				my.gr.log('--选择要充能的营火');
-				my.nchoose(my.data[2]>=2?3:2, [900151, 900201, 900202], function(n) {
+				my.nchoose(my.data[2]>=2?3:2, [new TmpCard('12',true,0), new TmpCard('12',true,1), new TmpCard('12',true,2)], function(n) {
 					if (n) {
 						my.data[2] -= n;
 						my.charging();
@@ -3456,7 +3496,7 @@ class Hero extends Card {
 		
 		if (card.no == 18) {
 			my.gr.log('--要流放吗?');
-			my.nchoose(2, [900151,900152], function(n) {
+			my.nchoose(2, [new TmpCard('05'),new TmpCard('11')], function(n) {
 				if (n==0) {
 					setTimeout(callback, 0);
 				} else {
@@ -3474,7 +3514,7 @@ class Hero extends Card {
 		}
 		if (card.no == 64) {
 			my.gr.log('--要流放吗?');
-			my.nchoose(2, [900151,900152], function(n) {
+			my.nchoose(2, [new TmpCard('05'),new TmpCard('11')], function(n) {
 				if (n==0) {
 					setTimeout(callback, 0);
 				} else {
@@ -3492,7 +3532,7 @@ class Hero extends Card {
 		}
 		if (card.no == 40) {
 			my.gr.log('--要放逐中央牌列的一张牌吗?');
-			my.nchoose(2, [900151,900152], function(n) {
+			my.nchoose(2, [new TmpCard('05'),new TmpCard('11',true,1)], function(n) {
 				if (n==0) {
 					setTimeout(callback, 0);
 				} else {
@@ -3837,8 +3877,10 @@ class Hero2 extends Hero {
 					my.gr.log('<span class="attack">--你失去'+n+'点生命</span>');
 					my.opponent.data[0] -= n;
 					if (my.opponent.data[0]<=0) {
-						my.gr._winflag = true;
-						my.gr.log('你输了！但游戏仍可以继续');
+						if (!my.gr._winflag) {
+							my.gr._winflag = true;
+							my.gr.log('你输了！但游戏仍可以继续');
+						}
 					}
 				} else {
 					no--;
@@ -3892,7 +3934,9 @@ class Hero2 extends Hero {
 					if (my.data[2]) {
 						my.gr.log('选择要为超重量武器支付的营火(不足8将用战力补齐)');
 						// console.log('in buy 65');
-						my.nchoose(my.data[2]+1, [900151,900201,900202,900203,900204,900205,900206,900207,900208],
+						my.nchoose(my.data[2]+1, [new TmpCard('02',true,0),new TmpCard('02',true,1),new TmpCard('02',true,2),
+							new TmpCard('02',true,3),new TmpCard('02',true,4),new TmpCard('02',true,5),
+							new TmpCard('02',true,6),new TmpCard('02',true,7),new TmpCard('02',true,8)],
 							function(n) {
 							if (my.power+n >= 8) {
 								my.power -= 8-n;
@@ -4243,8 +4287,9 @@ class Hero2 extends Hero {
 				var ori_card = card;
 				my.data[2]+=Resources.CardData[20].cost;
 				my.updateData();
-				my.nchoose(my.data[2]>8?8:my.data[2], [900201, 900202, 900203,
-					900204, 900205, 900206, 900207, 900208], function(n) {
+				my.nchoose(my.data[2]>8?8:my.data[2], [new TmpCard('02',true,1), new TmpCard('02',true,2), 
+					new TmpCard('02',true,3),new TmpCard('02',true,4), new TmpCard('02',true,5), 
+					new TmpCard('02',true,6), new TmpCard('02',true,7), new TmpCard('02',true,8)], function(n) {
 					n++;
 					my.data[2] -= n;
 					let cards = [];
@@ -4321,7 +4366,7 @@ class Hero2 extends Hero {
 			return;
 		} else if (card.no == 40) {
 			my.gr.log('--要从打出区放逐一张牌吗？');
-			my.nchoose(2, [900151,900152], function(n) {
+			my.nchoose(2, [new TmpCard('05'),new TmpCard('11',true,1)], function(n) {
 				if (n==0) {
 					my.discardCard(card, callback,false);
 				} else {
@@ -4340,7 +4385,7 @@ class Hero2 extends Hero {
 			return;
 		} else if (card.no == 31) {
 			my.gr.log('--要将弃牌区的一张费用不大于5的武技牌置入手牌吗？');
-			my.nchoose(2, [900151,900152], function(n) {
+			my.nchoose(2, [new TmpCard('05'),new TmpCard('09',true,1)], function(n) {
 				var ori_card = card;
 				if (n==0) {
 					my.discardCard(ori_card, callback,false);
@@ -4417,8 +4462,8 @@ class Hero2 extends Hero {
 			});
 		} else if (card.no == 80) {
 			if (my.data[2] >= 1) {
-				my.gr.log('--选择要充能的营火');
-				my.nchoose(my.data[2]>=2?3:2, [900151, 900201, 900202], function(n) {
+				my.gr.log('--选择要充能X');
+				my.nchoose(my.data[2]>=2?3:2, [new TmpCard('12',true,0), new TmpCard('12',true,1), new TmpCard('12',true,2)], function(n) {
 					if (n) {
 						my.data[2] -= n;
 						my.charging();
@@ -4489,7 +4534,74 @@ class Hero2 extends Hero {
 	}
 	
 }
- 
+
+class AI001 extends Hero2 {
+	turnStart() {
+		var my = this;
+		my.isPlaying = true;
+		my.counter = [0,0,0,0,0,0,0,0,0,0,0];
+		my.power = 0; // 战力
+		my.cardnum = 0; // 已经打出的卡牌数
+		clearInterval(my.opponent.timer);
+		clearInterval(my.timer);
+		var timerCnt = 60;
+		var timer = setInterval(function() {
+			my.gr.setTimer(timerCnt--);
+			if (timerCnt<0) {
+				clearInterval(timer);
+			}
+		}, 1000);
+		this.timer = timer;
+		var i=-1;
+		function _loop() {
+			i++;
+			if (i>=2) {
+				_end();
+				return;
+			}
+			if (!my.weapons[i]) {
+				_loop();
+				return;
+			}
+			var effect = Resources.CardData[my.weapons[i].no].effect;
+			if (!my.isEffectEmpty(effect)) {
+				my.gr.log('装备'+my.getName(my.weapons[i])+'发动');
+				my.applyEffect(effect, function() {
+					_loop();
+				});
+			} else {
+				_loop();
+			}
+		}
+		function _end() {
+			for (var i=0; i<2; i++) {
+				my.resetWeapon(i);
+				my.opponent.resetWeapon(i);
+			}
+			// this.actionList.push({'type':'select', location:0});
+			my.turnEnd(function() {
+				my.attack(3, function() {
+					my.gr.heros[0].turnStart();
+				});
+			});
+			// my.interactive(true);
+			// my.triggerAction(function() {
+				// my.turnEnd(function() {
+					// my.opponent.turnStart();
+				// });
+			// });
+		}
+		_loop();
+	}
+	select(cards, click, height=280, zIndexAdd=100) {
+		// 挑选
+		var my = this;
+		my.updateData();
+		click.call(my, cards[0]);
+		my.updateData();
+	}
+}
+
 class GameRule {
 	constructor(name1, name2) {
 		
@@ -4637,6 +4749,8 @@ class GameRule {
 		let send = $('<button>发送</button>');
 		chat.css('width', gc.messageRight-gc.messageLeft-75);
 		chat.css('height', 18);
+		chat.css('background-color', '#33333f');
+		chat.css('border-color', '#33333f');
 		chat.css('display', 'inline-block');
 		chat.css('box-radius', '5px');
 		send.css('width', 50);
@@ -4690,6 +4804,7 @@ class GameRule {
 		for (let i=0; i<my.trashPile.length; i++) {
 			var card = my.trashPile[i]
 			card.setZIndex(i+1, true);
+			card.setBorder(0);
 			var pos = my.getPos(7);
 			card.move(pos[0], pos[1]).action(mc.pipe());
 		}
@@ -4726,7 +4841,7 @@ class GameRule {
 		}
 		this.fireShow.set(n);
 	}
-	init(seed, isFirst=false, callback) {
+	init(seed, isFirst=false, isUseAI=false,callback) {
 		var my = this;
 		Math.setSeed(seed);
 		this.firePile = [];
@@ -4772,11 +4887,15 @@ class GameRule {
 		let mc = new MultiCallback();
 		my.fillCard(mc.pipe());
 		
-		var heros = [new Hero(2), new Hero2(2)];
+		if (isUseAI) {
+			var heros = [new Hero(2), new AI001(2)];
+		} else {
+			var heros = [new Hero(2), new Hero2(2)];
+		}
 		var me = heros[0];
 		this.heros = heros;
 		for (let i=0; i<2; i++) {
-			var index = [isFirst, 1-isFirst][i];
+			var index = [0+isFirst, 1-isFirst][i];
 			heros[index].setPos(my.heroPos[index][0],my.heroPos[index][1]);
 			heros[index].gr = my;
 			heros[index].activeShowBig();
@@ -4879,7 +4998,9 @@ var gc = (function() {
 		btn2Width:75,
 		btn2Height:76,
 		btn2Left:259,
-		btn2Top:734
+		btn2Top:734,
+		chooseNumberWidth:51,
+		chooseNumberHeight:65
 	};
 	var rate = window.innerWidth/ratio.width;
 	var globalcoordinate = {};
@@ -4933,9 +5054,14 @@ $(function() {
 					}
 				};
 			});
+			$('#solo').on('click', function() {
+				eventList[0] = null;
+				startsolo();
+			});
 		}
 	}
 	function start(_opponentName, isFirst, seed) {
+		if (isGaming) return;
 		imgS.remove();
 		var img = $('<img src="img/bg.png"/>');
 		img.css('width', gc.width);
@@ -4943,10 +5069,22 @@ $(function() {
 		$('#gamebody').append(img);
 		opponentName = delHtmlTag(_opponentName);
 		isGaming = true;
-		$('#showOpponent').html('正在与'+opponentName+'对战');
+		//$('#showOpponent').html('正在与'+opponentName+'对战');
 		$('#gameintro').hide();
 		gr = new GameRule(defaultName, opponentName);
 		gr.init(seed, isFirst);
+	}
+	function startsolo() {
+		imgS.remove();
+		var img = $('<img src="img/bg.png"/>');
+		img.css('width', gc.width);
+		img.css('height', gc.height);
+		$('#gamebody').append(img);
+		isGaming = true;
+		//$('#showOpponent').html('正在与'+opponentName+'对战');
+		$('#gameintro').hide();
+		gr = new GameRule(defaultName, '训练靶场机器人');
+		gr.init(Math.Random(5,10000), true, true);
 	}
 	$('#changeName').on('click', function() {
 		let name = delHtmlTag($('#name').val());
@@ -4956,9 +5094,10 @@ $(function() {
 		if (wsOk) ws.send(JSON.stringify({'type':'name','name':name}));
 	});
 	let protocol = location.protocol=='https'?'wss://118.190.96.152:8888/firefightol':'ws://118.190.96.152:8888/firefightol';
+	let protocol2 = "ws://192.168.1.137:8888/firefightol";
 	ws = new WebSocket(protocol);// "ws://192.168.1.137:8888/firefightol"
 	ws.onclose = function(err) {
-		alert('服务器出错');
+		alert('服务器连接已断开');
 	}
 	ws.onopen = function(evt) { 
 		console.log('open');
