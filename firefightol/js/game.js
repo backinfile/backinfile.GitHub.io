@@ -4896,7 +4896,7 @@ $(function() {
 		if (wsOk) ws.send(JSON.stringify({'type':'name','name':name}));
 	});
 	let protocol = location.protocol=='https'?'wss://118.190.96.152:8888/firefightol':'ws://118.190.96.152:8888/firefightol';
-	ws = new WebSocket("ws://192.168.1.137:8888/firefightol");// "ws://192.168.1.137:8888/firefightol"
+	ws = new WebSocket(protocol);// "ws://192.168.1.137:8888/firefightol"
 	ws.onopen = function(evt) { 
 		console.log('open');
 		wsOk = true;
