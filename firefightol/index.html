@@ -18,9 +18,30 @@
 			background-color:#262c39;
 			overflow:hidden;
 		}
-		#search, #name, #changeName{
-			display: inline-block;
-			width:100px;height:26px;
+		#search{
+			width:252px;height:40px;
+			position:absolute;
+			left:0px;right:0px;
+			margin:auto;
+			top:201px;
+		}
+		#name{
+			width:150px;height:28px;
+			position:absolute;
+			left:130px;
+			top:305px;
+		}
+		#nametext{
+			width:172px;height:37px;
+			position:absolute;
+			left:118px;
+			top:301px;
+		}
+		#changeName{
+			width:89px;height:41px;
+			position:absolute;
+			left:288px;
+			top:300px;
 		}
 		#gameintro {
 			width:500px;
@@ -66,23 +87,17 @@
 			position:absolute;
 			top: 0; left: 0; bottom: 0; right: 0; 
 		}
-		#search{
-			width:90px;
-			height:26px;
-		}
 	</style>
 </head>
 <body>
 	<div id='gamebody'>
 	</div>
+	<div style='color:white;display:none'>在线人数<span id='peopleNumber'>0</span></div>
 	<div id='gameintro'>
-		<div id='showOpponent'></div>
-		<div style='color:white'>在线人数<span id='peopleNumber'>0</span></div><br/><br/>
-		<input value='营地老哥' id='name'/> <button id='changeName' disabled="disabled">更改昵称</button><br/>
-		<!-- <div>推荐使用chrome浏览器打开</div><br/> -->
-		<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
-		<button id='search' disabled="disabled">寻找对手</button><br/><br/>
-		
+		<img id='nametext' src='img/nametext.png'/>
+		<input value='营地老哥' id='name'/> <img id='changeName' disabled="disabled" src='img/name.png' alt="更改昵称"/>
+		<!-- <button id='search' disabled="disabled">寻找对手</button><br/><br/> -->
+		<img src='img/search.png' id='search'/>
 		<!-- <div id='canvas'><canvas width="300" height="300"></canvas></div> -->
 		<script src="js/circle.js"></script>
 		<div id='loading'  style='color:white'><br/>游戏资源加载中...<span id='per'>0%</span></div>

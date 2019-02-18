@@ -944,13 +944,12 @@ class Hero extends Card {
 		//this.data[3].push(new Card(28));
 		//this.data[3].push(new Card(26));
 		Math.shuffle(this.data[3]);
-		// this.data[3].push(new Card(70));
-		// this.data[3].push(new Card(31));
 		// this.data[3].push(new Card(69));
 		// this.data[3].push(new Card(69));
 		// this.data[3].push(new Card(69));
-		// this.data[3].push(new Card(24));
-		// this.data[3].push(new Card(26));
+		// this.data[3].push(new Card(69));
+		// this.data[3].push(new Card(69));
+		// this.data[3].push(new Card(54));
 		var pos = this.getDecoratePos(3, true);
 		for (var i=0; i<this.data[3].length; i++) {
 			let card = this.data[3][i];
@@ -2334,12 +2333,23 @@ class Hero extends Card {
 					my.setPileBack(function() {
 						if (cost<=3) {
 							// todo 弃置手牌
-							//my.opponent.discardCard(my.opponent.data[4][index])
+							var cards = [];
 							var aim = my.opponent.data[4].length -cost
 							while(my.opponent.data[4].length>aim){
-								my.opponent.data[5].push(my.opponent.data[4].pop());
+								//my.opponent.data[5].push(my.opponent.data[4].pop());
+								let index = Math.seededRandom(0, my.opponent.data[4].length-1);
+								var card = my.opponent.data[4][index];
+								my.opponent.data[4].remove(card);
+								cards.push(card);
 							}
-							my.attack(cost, callback);
+							var mc = new MultiCallback();
+							for (var i=0; i<cards.length; i++) {
+								my.opponent.discardCard(cards[i], mc.pipe());
+							}
+							my.opponent.handRevise(mc.pipe());
+							mc.all(function() {
+								my.attack(cost, callback);
+							});
 						} else {
 							my.seek(3, callback);
 						}
@@ -3719,13 +3729,12 @@ class Hero2 extends Hero {
 		for (var j=0; j<8; j++) this.data[3].push(new Card(68));
 		for (var j=0; j<2; j++) this.data[3].push(new Card(67));
 		Math.shuffle(this.data[3]);
-		// this.data[3].push(new Card(70));
-		// this.data[3].push(new Card(31));
-		// this.data[3].push(new Card(31));
-		// this.data[3].push(new Card(26));
-		//this.data[3].push(new Card(69));
-		//this.data[3].push(new Card(18));
-		//this.data[3].push(new Card(30));
+		// this.data[3].push(new Card(69));
+		// this.data[3].push(new Card(69));
+		// this.data[3].push(new Card(69));
+		// this.data[3].push(new Card(69));
+		// this.data[3].push(new Card(69));
+		// this.data[3].push(new Card(54));
 		var pos = this.getDecoratePos(3, true);
 		for (var i=0; i<this.data[3].length; i++) {
 			let card = this.data[3][i];
@@ -4593,7 +4602,7 @@ class GameRule {
 		//div.css('overflow', 'hidden');
 		let chat = $('<input>');
 		let send = $('<button>发送</button>');
-		chat.css('width', gc.messageRight-gc.messageLeft-55);
+		chat.css('width', gc.messageRight-gc.messageLeft-75);
 		chat.css('height', 18);
 		chat.css('display', 'inline-block');
 		chat.css('box-radius', '5px');
@@ -4856,7 +4865,10 @@ var opponentName = '营地老哥';
 $(function() {
 	document.onselectstart = function(){return false;};
 	document.ondragstart = function(){return false;};
-	
+	var imgS = $('<img src="img/开机界面.png"/>');
+	imgS.css('width', gc.width);
+	imgS.css('height', gc.height);
+	$('#gamebody').append(imgS);
 	
 	// document.body.style.cursor = 'wait';
 	if ($.cookie('name')) {
@@ -4891,7 +4903,7 @@ $(function() {
 		}
 	}
 	function start(_opponentName, isFirst, seed) {
-		
+		imgS.remove();
 		var img = $('<img src="img/bg.png"/>');
 		img.css('width', gc.width);
 		img.css('height', gc.height);
@@ -4911,7 +4923,7 @@ $(function() {
 		if (wsOk) ws.send(JSON.stringify({'type':'name','name':name}));
 	});
 	let protocol = location.protocol=='https'?'wss://118.190.96.152:8888/firefightol':'ws://118.190.96.152:8888/firefightol';
-	ws = new WebSocket(protocol);// "ws://192.168.1.137:8888/firefightol"
+	ws = new WebSocket("ws://192.168.1.137:8888/firefightol");// "ws://192.168.1.137:8888/firefightol"
 	ws.onopen = function(evt) { 
 		console.log('open');
 		wsOk = true;
