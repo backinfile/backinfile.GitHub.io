@@ -965,12 +965,11 @@ class Hero extends Card {
 		//this.data[3].push(new Card(28));
 		//this.data[3].push(new Card(26));
 		Math.shuffle(this.data[3]);
-		// this.data[3].push(new Card(55));
 		// this.data[3].push(new Card(69));
 		// this.data[3].push(new Card(69));
 		// this.data[3].push(new Card(69));
 		// this.data[3].push(new Card(69));
-		// this.data[3].push(new Card(54));
+		// this.data[3].push(new Card(75));
 		var pos = this.getDecoratePos(3, true);
 		for (var i=0; i<this.data[3].length; i++) {
 			let card = this.data[3][i];
@@ -1471,15 +1470,15 @@ class Hero extends Card {
 				let card = my.gr.firePile[my.gr.firePile.length-1];
 				let cost = 3;
 				if (my.turnBuff['粒子数反转']) cost--;
-				if (my.data[2] >= Resources.CardData[card.no].cost) {
+				if (my.data[2] >= cost) {
 					card.setBorder(2);
 				} else {
 					card.setBorder(0);
 				}
 				card.setCost(cost);
 				card.onclick(function() {
-					if (my.data[2] >= Resources.CardData[card.no].cost) {
-						my.data[2] -= Resources.CardData[card.no].cost;
+					if (my.data[2] >= cost) {
+						my.data[2] -= cost;
 						my.gr.firePile.pop();
 						my.sendMessage({type:'buyFire'});
 						my.buyCard(card);
@@ -2755,6 +2754,10 @@ class Hero extends Card {
 		var my = this;
 		my.updateData();
 		let lefts = my.getLefts(n, 10);
+		for (let i=n; i<nos.length; i++) {
+			let card = nos[i];
+			if (card)card.destroy();
+		}
 		for (let i=0; i<n; i++) {
 			//let card = new Card(nos[i], true);
 			let card = nos[i];
@@ -3256,18 +3259,18 @@ class Hero extends Card {
 						_end();
 						return;
 					}
-					console.log('select', cards.length);
+					// console.log('select', cards.length);
 					my.select(cards, function(card) {
 						my.data[4].push(card);
 						my.handRevise(function() {
-							console.log('selectinnn');
+							// console.log('selectinnn');
 							cards.remove(card);
 							my.updateData();
 							if (!cards.length) {
 								_end();
 								return;
 							}
-							console.log('select', cards.length);
+							// console.log('select', cards.length);
 							my.select(cards, function(card) {
 								cards.remove(card);
 								my.data[4].push(card);
@@ -4119,7 +4122,7 @@ class Hero2 extends Hero {
 				let card = my.gr.firePile[my.gr.firePile.length-1];
 				let cost = 3;
 				if (my.turnBuff['粒子数反转']) cost--;
-				if (my.data[2] >= Resources.CardData[card.no].cost) {
+				if (my.data[2] >= cost) {
 					card.setBorder(2);
 				} else {
 					card.setBorder(0);
@@ -4600,6 +4603,7 @@ class AI001 extends Hero2 {
 		click.call(my, cards[0]);
 		my.updateData();
 	}
+	sendMessage(msg) {}
 }
 
 class GameRule {
@@ -4876,6 +4880,7 @@ class GameRule {
 		}
 		Math.shuffle(this.commonPile);
 		// this.commonPile.push(new Card(20, true)); ////////
+		// this.commonPile.push(new Card(65, true)); ////////
 		//this.commonPile.push(new Card(81, true)); ////////
 		for (let i=0; i<this.commonPile.length; i++) {
 			this.commonPile[i].setZIndex(i);
@@ -5100,7 +5105,7 @@ $(function() {
 		alert('服务器连接已断开');
 	}
 	ws.onopen = function(evt) { 
-		console.log('open');
+		// console.log('open');
 		wsOk = true;
 		let name = delHtmlTag($('#name').val());
 		ws.send(JSON.stringify({'type':'name','name':name}));
@@ -5111,7 +5116,7 @@ $(function() {
 		// console.log(msg.type);
 		if (msg.type == 'peopleNumber') {
 			$('#peopleNumber').html(msg.number);
-			// console.log('目前在线人数：'+msg.number);
+			console.log('目前在线人数：'+msg.number);
 		}
 		if (msg.type == 'match') {
 			// console.log(e.data);
