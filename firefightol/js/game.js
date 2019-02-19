@@ -4753,8 +4753,8 @@ class GameRule {
 		let send = $('<button>发送</button>');
 		chat.css('width', gc.messageRight-gc.messageLeft-75);
 		chat.css('height', 18);
-		chat.css('background-color', '#33333f');
-		chat.css('border-color', '#33333f');
+		chat.css('background-color', 'rgba(255,255,255,0)');
+		chat.css('border-color', 'rgba(255,255,255,0)');
 		chat.css('display', 'inline-block');
 		chat.css('box-radius', '5px');
 		send.css('width', 50);
@@ -4894,6 +4894,8 @@ class GameRule {
 		
 		if (isUseAI) {
 			var heros = [new Hero(2), new AI001(2)];
+			heros[0].sendMessage = function(msg){};
+			heros[1].sendMessage = function(msg){};
 		} else {
 			var heros = [new Hero(2), new Hero2(2)];
 		}
@@ -5100,7 +5102,8 @@ $(function() {
 	});
 	let protocol = location.protocol=='https'?'wss://118.190.96.152:8888/firefightol':'ws://118.190.96.152:8888/firefightol';
 	let protocol2 = "ws://192.168.1.137:8888/firefightol";
-	ws = new WebSocket(protocol);// "ws://192.168.1.137:8888/firefightol"
+	let protocol3 = "ws://47.93.138.35:8888/firefightol";
+	ws = new WebSocket(protocol3);// "ws://192.168.1.137:8888/firefightol"
 	ws.onclose = function(err) {
 		alert('服务器连接已断开');
 	}
