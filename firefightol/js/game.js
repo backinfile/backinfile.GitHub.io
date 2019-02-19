@@ -965,10 +965,7 @@ class Hero extends Card {
 		//this.data[3].push(new Card(28));
 		//this.data[3].push(new Card(26));
 		Math.shuffle(this.data[3]);
-		// this.data[3].push(new Card(69));
-		// this.data[3].push(new Card(69));
-		// this.data[3].push(new Card(69));
-		// this.data[3].push(new Card(69));
+		// this.data[3].push(new Card(39));
 		// this.data[3].push(new Card(75));
 		var pos = this.getDecoratePos(3, true);
 		for (var i=0; i<this.data[3].length; i++) {
@@ -3087,13 +3084,14 @@ class Hero extends Card {
 		if (!effect['生命'])effect['生命']=0;
 		if (my.turnBuff['电眼逼人']) {
 			var buff = my.turnBuff['电眼逼人'];
-			if (buff.indexOf('营火')>=0) {
-				if (effect['营火']) my.gr.log('--电眼逼人生效');
-				effect['营火'] *= 2;
-			}
-			if (buff.indexOf('战力')>=0) {
-				if (effect['战力']) my.gr.log('--电眼逼人生效');
-				effect['战力'] *= 2;
+			for (var i=0; i<buff.length; i++) {
+				if (buff[i] == '营火') {
+					if (effect['营火']) my.gr.log('--电眼逼人生效');
+					effect['营火'] *= 2;
+				} else {
+					if (effect['战力']) my.gr.log('--电眼逼人生效');
+					effect['战力'] *= 2;
+				}
 			}
 		}
 		if (effect['营火']) {
@@ -4161,6 +4159,10 @@ class Hero2 extends Hero {
 	nchoose(n, nos, callback) {
 		// 抉择
 		var my = this;
+		for (let i=0; i<nos.length; i++) {
+			let card = nos[i];
+			if (card)card.destroy();
+		}
 		function _loop() {
 			console.log('nchoose loop');
 			let action = my.actionList.shift();
@@ -4879,7 +4881,7 @@ class GameRule {
 			this.firePile.push(card);
 		}
 		Math.shuffle(this.commonPile);
-		// this.commonPile.push(new Card(20, true)); ////////
+		// this.commonPile.push(new Card(65, true)); ////////
 		// this.commonPile.push(new Card(65, true)); ////////
 		//this.commonPile.push(new Card(81, true)); ////////
 		for (let i=0; i<this.commonPile.length; i++) {
@@ -5061,12 +5063,13 @@ $(function() {
 					}
 				};
 			});
-			$('#solo').on('click', function() {
-				eventList[0] = null;
-				startsolo();
-			});
+			
 		}
 	}
+	$('#solo').on('click', function() {
+		eventList[0] = null;
+		startsolo();
+	});
 	function start(_opponentName, isFirst, seed) {
 		if (isGaming) return;
 		imgS.remove();
