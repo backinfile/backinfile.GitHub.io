@@ -23,7 +23,7 @@ function htmlcontent(name, url) {
 		+'		<div class="weui-cell__ft">'
 		+'		</div>'
 		+'	  </a>'; */
-	return '<li><a href='+url+'>'+name+'</a></li>';
+	return '<li><a onclick="'+"_hmt.push(['_trackEvent', 'nav', 'click', '"+name+"'])"+'" href='+url+'>'+name+'</a></li>';
 }
 
 function htmlphone() {
