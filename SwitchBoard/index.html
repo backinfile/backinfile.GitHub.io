@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>接线总机 Switchboard</title>
+    <link rel="shortcut icon" href="TemplateData/favicon.ico">
+    <link rel="stylesheet" href="TemplateData/style.css">
+    <script src="TemplateData/UnityProgress.js"></script>  
+    <script src="Build/UnityLoader.js"></script>
+    <script>
+      var gameInstance = UnityLoader.instantiate("gameContainer", "Build/SwitchBoard.json", {onProgress: UnityProgress});
+    </script>
+  </head>
+  <body>
+    <div class="webgl-content">
+      <div id="gameContainer" style="width: 960px; height: 600px"></div>
+      <div class="footer">
+        <div class="webgl-logo"></div>
+        <div class="fullscreen" onclick="gameInstance.SetFullscreen(1)"></div>
+        <div class="title">
+          <a href="https://www.iyingdi.com/web/article/boardgame/84135?title=%E6%8E%A5%E7%BA%BF%E6%80%BB%E6%9C%BA%EF%BC%9A%E5%85%8D%E8%B4%B9%E7%9A%84%E6%A1%8C%E6%B8%B8%E3%80%8A%E7%BB%99%E4%BD%A0PNP%E3%80%8B&remark=seed">
+            介绍
+          </a>
+          ·
+          <a href="http://wspic.iyingdi.cn/common/2019/08/25/f0f68ce1-b9b0-4064-866e-301971a170df.jpg">
+            规则
+          </a>
+          ·
+          <a href="SWITCHBOARD v3.pdf">
+            PNP
+          </a>
+          请使用全屏模式玩耍→
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

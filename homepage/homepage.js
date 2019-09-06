@@ -1,6 +1,7 @@
 
 var content = [
-	['营火战争','../firefight/index.html'],
+	['SwitchBoard','../SwitchBoard/index.html'],
+	['营火战争单机版','../firefight/index.html'],
 	['井字棋','../chess99/index.html'],
 	['贝塞尔曲线','../curve/index.html'],
 	['shadow','../tank/index.html'],
