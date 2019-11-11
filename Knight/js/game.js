@@ -113,7 +113,7 @@ class Game {
             }
         });
         Resources.ready(function(per) {
-            my.tip(true, "加载中..." + "(" + (per * 100 + "").slice(0, 3) + "%)");
+            my.tip(true, "加载中..." + "(" + (per * 100 + "").slice(0, 4) + "%)");
             if (per >= 1) {
                 my.tip(false);
                 setTimeout(() => {
