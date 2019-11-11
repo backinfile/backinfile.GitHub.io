@@ -21,7 +21,7 @@ var Resources = (function() {
                     if (cnt >= loadImageList.length) {
                         if (callback) callback(1);
                     } else {
-                        if (callback) callback(cnt / (loadImageList));
+                        if (callback) callback(cnt / (loadImageList.length));
                         // $('#per').html(Math.floor(cnt/total*100)+'%');
                     }
                 };
