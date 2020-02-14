@@ -1,5 +1,6 @@
 
 var content = [
+	['骑士黄昏','../Knight/index.html'],
 	['SwitchBoard','../SwitchBoard/index.html'],
 	['营火战争单机版','../firefight/index.html'],
 	['井字棋','../chess99/index.html'],
